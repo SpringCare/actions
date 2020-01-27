@@ -1,5 +1,8 @@
 name: Pull Request Labeler
 description: "A GitHub Action to label pull requests on open and on review"
+inputs:
+  repo-token:
+    description: 'The GITHUB_TOKEN secret'
 branding:
   icon: "git-pull-request"
   color: green

@@ -1,18 +1,8 @@
 const core = require('@actions/core');
 
 module.exports = function() {
-	const token = process.env.GITHUB_TOKEN,
-		repo = process.env.GITHUB_REPOSITORY,
+	const repo = process.env.GITHUB_REPOSITORY,
 		ref = process.env.GITHUB_REF;
-
-	if (!token) {
-		core.setFailed(
-			`GITHUB_TOKEN is not configured. Make sure you made it available to your action
-			env:
-				GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}`
-		);
-		return;
-	}
 
 	if (!repo) {
 		core.setFailed(
@@ -28,8 +18,7 @@ module.exports = function() {
 	}
 
 	return {
-		token,
 		repo,
 		ref
 	};
-}
+};

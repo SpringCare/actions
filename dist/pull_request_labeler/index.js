@@ -4897,7 +4897,6 @@ module.exports = readShebang;
 
 const core = __webpack_require__(470);
 const github = __webpack_require__(469);
-const { request } = __webpack_require__(753);
 
 const verifyConfig = __webpack_require__(446);
 
@@ -4936,12 +4935,31 @@ function parseReviews(reviews = []) {
 	return Object.keys(data).map(k => data[k]);
 }
 
+async function addLabels(client, prNumber, labels) {
+	await client.issues.addLabels({
+		owner: github.context.repo.owner,
+		repo: github.context.repo.repo,
+		issue_number: prNumber,
+		labels: labels
+	});
+}
+
+async function removeLabel(client, prNumber, label) {
+	await client.issues.addLabels({
+		owner: github.context.repo.owner,
+		repo: github.context.repo.repo,
+		issue_number: prNumber,
+		name: label
+	});
+}
+
 async function main() {
 	// Grab the config variables. Abort if they're unavailable.
 	const config = verifyConfig();
 
 	// Get a few inputs from the GitHub event.
 	const inputs = {
+		token: core.getInput('repo-token', { required: true }),
 		requiredReviews: core.getInput('required'),
 		alertChangesRequested: core.getInput('alert-on-changes-requested')
 	};
@@ -4951,51 +4969,60 @@ async function main() {
 		core.setFailed('This action must be run with only "pull_request" or "pull_request_review".');
 		return;
 	}
-	const number = pr.number;
+	const pull_number = pr.number;
 
-	console.log('PR number is ', number);
+	console.log('PR number is', pull_number);
 	console.log('Config', config);
 	console.log('Inputs', inputs);
 
 	if (inputs.requredReviews && !inputs.requiredReviews > 0) {
-		core.setFailed('"required" much be an integer greater than 0');
+		core.setFailed('If set, "required" much be an integer greater than 0');
 		return;
 	}
 
-	request.defaults({
-		headers: {
-			authorization: `token ${config.token}`,
-		}
+
+	const client = new github.GitHub(inputs.token);
+
+	const allReviews = await client.pulls.listReviews({
+		owner: github.context.repo.owner,
+		repo: github.context.repo.repo,
+		pull_number,
 	});
-
-	await request( `GET /repos/${config.repo}/pulls/${number}`);
-
-	const allReviews = await request(`GET /repos/${config.repo}/pulls/${number}/reviews`);
 
 	const activeReviews = parseReviews(allReviews);
 	const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
 	const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 
 	if (inputs.alertChangesRequested && deniedReviews > 0) {
-		request(
-			`POST /repos/${config.repo}/issues/${number}/labels`,
-			{ labels: ['changes requested'] }
+		addLabels(
+			client,
+			pull_number,
+			['changes_requested']
 		);
 	}
 
 	if (inputs.alertChangesRequested && deniedReviews === 0) {
-		request(`DELETE /repos/${config.repo}/issues/${number}/labels/changes%20requested`);
+		removeLabel(
+			client,
+			pull_number,
+			'changes%20requested'
+		);
 	}
 
 	if (inputs.requiredReviews > 0) {
 		// Loop through the current labels and remove any existing "x of y" labels
 		for (let i = 0; i <= inputs.requredReviews; i++) {
-			request(`DELETE /repos/${config.repo}/issues/${number}/labels/${i} of ${inputs.requiredReviews}`);
+			removeLabel(
+				client,
+				pull_number,
+				`${i} of ${inputs.requiredReviews}`
+			);
 		}
 
-		request(
-			`POST /repos/${config.repo}/issues/${number}/labels`,
-			{ labels: [`${approvedReviews.length} of ${inputs.requiredReviews}`] }
+		addLabels(
+			client,
+			pull_number,
+			[`${approvedReviews.length} of ${inputs.requiredReviews}`]
 		);
 	}
 }
@@ -5197,18 +5224,8 @@ function escapeProperty(s) {
 const core = __webpack_require__(470);
 
 module.exports = function() {
-	const token = process.env.GITHUB_TOKEN,
-		repo = process.env.GITHUB_REPOSITORY,
+	const repo = process.env.GITHUB_REPOSITORY,
 		ref = process.env.GITHUB_REF;
-
-	if (!token) {
-		core.setFailed(
-			`GITHUB_TOKEN is not configured. Make sure you made it available to your action
-			env:
-				GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}`
-		);
-		return;
-	}
 
 	if (!repo) {
 		core.setFailed(
@@ -5224,11 +5241,10 @@ module.exports = function() {
 	}
 
 	return {
-		token,
 		repo,
 		ref
 	};
-}
+};
 
 /***/ }),
 
