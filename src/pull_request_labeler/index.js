@@ -1,4 +1,5 @@
 const core = require('@actions/core');
+const github = require('@actions/github');
 const { request } = require('@octokit/request');
 
 const verifyConfig = require('../utils/verifyConfig');
@@ -44,18 +45,17 @@ async function main() {
 
 	// Get a few inputs from the GitHub event.
 	const inputs = {
-		number: core.getInput('number'),
 		requiredReviews: core.getInput('required'),
 		alertChangesRequested: core.getInput('alert-on-changes-requested')
 	};
+
+	const pr = github.context.payload.pull_request;
+	const number = pr.number;
 
 	if (inputs.requredReviews && !inputs.requiredReviews > 0) {
 		core.setFailed('"required" much be an integer greater than 0');
 		return;
 	}
-
-	console.log('Config:', config);
-	console.log('Inputs:', inputs);
 
 	request.defaults({
 		headers: {
@@ -63,9 +63,9 @@ async function main() {
 		}
 	});
 
-	await request( `GET /repos/${config.repo}/pulls/${inputs.number}`);
+	await request( `GET /repos/${config.repo}/pulls/${number}`);
 
-	const allReviews = await request(`GET /repos/${config.repo}/pulls/${inputs.number}/reviews`);
+	const allReviews = await request(`GET /repos/${config.repo}/pulls/${number}/reviews`);
 
 	const activeReviews = parseReviews(allReviews);
 	const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
@@ -73,23 +73,23 @@ async function main() {
 
 	if (inputs.alertChangesRequested && deniedReviews > 0) {
 		request(
-			`POST /repos/${config.repo}/issues/${inputs.number}/labels`,
+			`POST /repos/${config.repo}/issues/${number}/labels`,
 			{ labels: ['changes requested'] }
 		);
 	}
 
 	if (inputs.alertChangesRequested && deniedReviews === 0) {
-		request(`DELETE /repos/${config.repo}/issues/${inputs.number}/labels/changes%20requested`);
+		request(`DELETE /repos/${config.repo}/issues/${number}/labels/changes%20requested`);
 	}
 
 	if (inputs.requiredReviews > 0) {
 		// Loop through the current labels and remove any existing "x of y" labels
 		for (let i = 0; i <= inputs.requredReviews; i++) {
-			request(`DELETE /repos/${config.repo}/issues/${inputs.number}/labels/${i} of ${inputs.requiredReviews}`);
+			request(`DELETE /repos/${config.repo}/issues/${number}/labels/${i} of ${inputs.requiredReviews}`);
 		}
 
 		request(
-			`POST /repos/${config.repo}/issues/${inputs.number}/labels`,
+			`POST /repos/${config.repo}/issues/${number}/labels`,
 			{ labels: [`${approvedReviews.length} of ${inputs.requiredReviews}`] }
 		);
 	}
