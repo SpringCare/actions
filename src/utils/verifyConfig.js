@@ -1,6 +1,6 @@
 const core = require('@actions/core');
 
-export function verify() {
+module.exports = function() {
 	const token = process.env.GITHUB_TOKEN,
 		repo = process.env.GITHUB_REPOSITORY,
 		ref = process.env.GITHUB_REF;
