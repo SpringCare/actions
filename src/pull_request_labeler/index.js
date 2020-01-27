@@ -83,7 +83,7 @@ async function main() {
 	console.log('Inputs', inputs);
 
 	if (inputs.requredReviews && !inputs.requiredReviews > 0) {
-		core.setFailed('If set, "required" much be an integer greater than 0');
+		core.setFailed('If set, "required" must be an integer greater than 0');
 		return;
 	}
 
