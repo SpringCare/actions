@@ -83,7 +83,6 @@ async function main() {
 		return;
 	}
 
-
 	const client = new github.GitHub(inputs.token);
 
 	const allReviews = await client.pulls.listReviews({
@@ -92,7 +91,9 @@ async function main() {
 		pull_number,
 	});
 
-	const activeReviews = parseReviews(allReviews);
+	console.log('reviews', allReviews);
+
+	const activeReviews = parseReviews(allReviews || []);
 	const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
 	const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 
