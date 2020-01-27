@@ -54,6 +54,9 @@ async function main() {
 		return;
 	}
 
+	console.log('Config:', config);
+	console.log('Inputs:', inputs);
+
 	await request(
 		`GET /repos/${config.repo}/pulls/${inputs.number}`,
 		{ headers: { authorization: `token ${config.token}`} }
