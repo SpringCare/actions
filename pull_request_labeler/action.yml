@@ -1,0 +1,8 @@
+name: Pull Request Labeler
+description: "A GitHub Action to label pull requests on open and on review"
+branding:
+  icon: "git-pull-request"
+  color: green
+runs:
+  using: "node12"
+  main: "index.js"
