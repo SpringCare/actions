@@ -1,27 +1,3 @@
-// require('@zeit/ncc')('/path/to/input', {
-// 	// provide a custom cache path or disable caching
-// 	cache: "./custom/cache/path" | false,
-// 	// externals to leave as requires of the build
-// 	externals: ["externalpackage"],
-// 	// directory outside of which never to emit assets
-// 	filterAssetBase: process.cwd(), // default
-// 	minify: false, // default
-// 	sourceMap: false, // default
-// 	sourceMapBasePrefix: '../', // default treats sources as output-relative
-// 	// when outputting a sourcemap, automatically include
-// 	// source-map-support in the output file (increases output by 32kB).
-// 	sourceMapRegister: true, // default
-// 	watch: false, // default
-// 	v8cache: false, // default
-// 	quiet: false, // default
-// 	debugLog: false // default
-//   }).then(({ code, map, assets }) => {
-// 	console.log(code);
-// 	// Assets is an object of asset file names to { source, permissions, symlinks }
-// 	// expected relative to the output code (if any)
-//   })
-
-
 const fs = require('fs');
 const path = require('path');
 
@@ -83,6 +59,9 @@ getBuildFiles('./src').forEach((file) => {
 				fs.writeFile(output, code, function() {
 					console.log(`wrote ${file}`);
 				});
+
+				fs.copyFileSync(`./src/${dir}/action.yml`, `./dist/${dir}/action.yml`);
+				console.log('copied action.yml');
 			} else {
 				console.error(err);
 				return;
@@ -90,7 +69,3 @@ getBuildFiles('./src').forEach((file) => {
 		});
 	});
 });
-
-// ncc('./src/pull_request_labeler/index.js').then(({ code, map, assets }) => {
-// 	console.log(code);
-// });
