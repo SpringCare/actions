@@ -2761,15 +2761,15 @@ async function main() {
 	console.log('Config:', config);
 	console.log('Inputs:', inputs);
 
-	await request(
-		`GET /repos/${config.repo}/pulls/${inputs.number}`,
-		{ headers: { authorization: `Bearer ${config.token}`} }
-	);
+	request.defaults({
+		headers: {
+			authorization: `token ${config.token}`,
+		}
+	});
 
-	const allReviews = await request(
-		`GET /repos/${config.repo}/pulls/${inputs.number}/reviews`,
-		{ headers: { authorization: `Bearer ${config.token}`} }
-	);
+	await request( `GET /repos/${config.repo}/pulls/${inputs.number}`);
+
+	const allReviews = await request(`GET /repos/${config.repo}/pulls/${inputs.number}/reviews`);
 
 	const activeReviews = parseReviews(allReviews);
 	const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
@@ -2778,35 +2778,23 @@ async function main() {
 	if (inputs.alertChangesRequested && deniedReviews > 0) {
 		request(
 			`POST /repos/${config.repo}/issues/${inputs.number}/labels`,
-			{
-				headers: { authorization: `Bearer ${config.token}`},
-				labels: ['changes requested']
-			}
+			{ labels: ['changes requested'] }
 		);
 	}
 
 	if (inputs.alertChangesRequested && deniedReviews === 0) {
-		request(
-			`DELETE /repos/${config.repo}/issues/${inputs.number}/labels/changes%20requested`,
-			{ headers: { authorization: `Bearer ${config.token}`} }
-		);
+		request(`DELETE /repos/${config.repo}/issues/${inputs.number}/labels/changes%20requested`);
 	}
 
 	if (inputs.requiredReviews > 0) {
 		// Loop through the current labels and remove any existing "x of y" labels
 		for (let i = 0; i <= inputs.requredReviews; i++) {
-			request(
-				`DELETE /repos/${config.repo}/issues/${inputs.number}/labels/${i} of ${inputs.requiredReviews}`,
-				{ headers: { authorization: `Bearer ${config.token}`} }
-			);
+			request(`DELETE /repos/${config.repo}/issues/${inputs.number}/labels/${i} of ${inputs.requiredReviews}`);
 		}
 
 		request(
 			`POST /repos/${config.repo}/issues/${inputs.number}/labels`,
-			{
-				headers: { authorization: `Bearer ${config.token}`},
-				labels: [`${approvedReviews.length} of ${inputs.requiredReviews}`]
-			}
+			{ labels: [`${approvedReviews.length} of ${inputs.requiredReviews}`] }
 		);
 	}
 }
