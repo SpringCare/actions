@@ -1,5 +1,5 @@
 const core = require('@actions/core');
-const { request } = require("@octokit/request");
+const { request } = require('@octokit/request');
 
 const verifyConfig = require('../utils/verifyConfig');
 
