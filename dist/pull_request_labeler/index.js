@@ -4998,7 +4998,7 @@ async function main() {
 		addLabels(
 			client,
 			pull_number,
-			['changes_requested']
+			['changes requested']
 		);
 	}
 
@@ -5016,7 +5016,7 @@ async function main() {
 			removeLabel(
 				client,
 				pull_number,
-				`${i} of ${inputs.requiredReviews}`
+				`${i}%20of%20${inputs.requiredReviews}`
 			);
 		}
 
