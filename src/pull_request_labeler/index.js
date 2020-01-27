@@ -52,7 +52,7 @@ async function addLabels(client, prNumber, labels) {
 async function removeLabel(client, prNumber, label) {
 	console.log('Removing label:', label);
 
-	await client.issues.addLabels({
+	await client.issues.removeLabel({
 		owner: github.context.repo.owner,
 		repo: github.context.repo.repo,
 		issue_number: prNumber,
@@ -104,7 +104,7 @@ async function main() {
 
 	console.log('alert', inputs.alertChangesRequested);
 
-	if (inputs.alertChangesRequested && deniedReviews > 0) {
+	if (inputs.alertChangesRequested && deniedReviews.length > 0) {
 		addLabels(
 			client,
 			pull_number,
@@ -112,7 +112,7 @@ async function main() {
 		);
 	}
 
-	if (inputs.alertChangesRequested && deniedReviews === 0) {
+	if (inputs.alertChangesRequested && deniedReviews.length === 0) {
 		removeLabel(
 			client,
 			pull_number,
