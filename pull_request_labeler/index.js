@@ -38,8 +38,6 @@ function parseReviews(reviews = []) {
 	return Object.keys(data).map(k => data[k]);
 }
 
-
-
 async function main() {
 	// Grab the config variables. Abort if they're unavailable.
 	const config = verifyConfig();
@@ -51,7 +49,7 @@ async function main() {
 		alertChangesRequested: core.getInput('alert-on-changes-requested')
 	};
 
-	if (requredReviews && !requiredReviews > 0) {
+	if (inputs.requredReviews && !inputs.requiredReviews > 0) {
 		core.setFailed('"required" much be an integer greater than 0');
 		return;
 	}
@@ -62,7 +60,7 @@ async function main() {
 	);
 
 	const allReviews = await request(
-		`GET /repos/${config.repo}/pulls/${inputs.number}/reviews`
+		`GET /repos/${config.repo}/pulls/${inputs.number}/reviews`,
 		{ headers: { authorization: `token ${config.token}`} }
 	);
 
@@ -70,7 +68,7 @@ async function main() {
 	const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
 	const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 
-	if (alertChangesRequested && deniedReviews > 0) {
+	if (inputs.alertChangesRequested && deniedReviews > 0) {
 		request(
 			`POST /repos/${config.repo}/issues/${inputs.number}/labels`,
 			{
@@ -80,18 +78,18 @@ async function main() {
 		);
 	}
 
-	if (alertChangesRequested && deniedReviews === 0) {
+	if (inputs.alertChangesRequested && deniedReviews === 0) {
 		request(
 			`DELETE /repos/${config.repo}/issues/${inputs.number}/labels/changes%20requested`,
 			{ headers: { authorization: `token ${config.token}`} }
 		);
 	}
 
-	if (requiredReviews > 0) {
+	if (inputs.requiredReviews > 0) {
 		// Loop through the current labels and remove any existing "x of y" labels
-		for (let i = 0; i <= requredReviews; i++) {
+		for (let i = 0; i <= inputs.requredReviews; i++) {
 			request(
-				`DELETE /repos/${config.repo}/issues/${inputs.number}/labels/${i} of ${requiredReviews}`,
+				`DELETE /repos/${config.repo}/issues/${inputs.number}/labels/${i} of ${inputs.requiredReviews}`,
 				{ headers: { authorization: `token ${config.token}`} }
 			);
 		}
@@ -100,7 +98,7 @@ async function main() {
 			`POST /repos/${config.repo}/issues/${inputs.number}/labels`,
 			{
 				headers: { authorization: `token ${config.token}`},
-				labels: [`${approvedReviews.length} of ${requiredReviews}`]
+				labels: [`${approvedReviews.length} of ${inputs.requiredReviews}`]
 			}
 		);
 	}
