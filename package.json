@@ -1,0 +1,16 @@
+{
+  "name": "@spring/actions",
+  "version": "0.0.1",
+  "description": "Actions used by Spring Health",
+  "main": "index.js",
+  "author": "Kyle Mendes",
+  "license": "ISC",
+  "dependencies": {
+    "@actions/core": "^1.2.2",
+    "@actions/github": "^2.1.0",
+    "@octokit/request": "^5.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0"
+  }
+}
