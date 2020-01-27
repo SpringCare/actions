@@ -4936,6 +4936,8 @@ function parseReviews(reviews = []) {
 }
 
 async function addLabels(client, prNumber, labels) {
+	console.log('Adding labels:', labels);
+
 	await client.issues.addLabels({
 		owner: github.context.repo.owner,
 		repo: github.context.repo.repo,
@@ -4945,6 +4947,8 @@ async function addLabels(client, prNumber, labels) {
 }
 
 async function removeLabel(client, prNumber, label) {
+	console.log('Removing label:', label);
+
 	await client.issues.addLabels({
 		owner: github.context.repo.owner,
 		repo: github.context.repo.repo,
@@ -4988,11 +4992,14 @@ async function main() {
 		pull_number,
 	});
 
-	console.log('reviews', data);
-
 	const activeReviews = parseReviews(data || []);
 	const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
 	const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
+
+	console.log('active', activeReviews);
+	console.log('denied', deniedReviews.length);
+
+	console.log('alert', inputs.alertChangesRequested);
 
 	if (inputs.alertChangesRequested && deniedReviews > 0) {
 		addLabels(
@@ -5012,7 +5019,7 @@ async function main() {
 
 	if (inputs.requiredReviews > 0) {
 		// Loop through the current labels and remove any existing "x of y" labels
-		for (let i = 0; i <= inputs.requredReviews; i++) {
+		for (let i = 0; i <= inputs.requiredReviews; i++) {
 			removeLabel(
 				client,
 				pull_number,
