@@ -50,7 +50,15 @@ async function main() {
 	};
 
 	const pr = github.context.payload.pull_request;
+	if (!pr) {
+		core.setFailed('This action must be run with only "pull_request" or "pull_request_review".');
+		return;
+	}
 	const number = pr.number;
+
+	console.log('PR number is ', number);
+	console.log('Config', config);
+	console.log('Inputs', inputs);
 
 	if (inputs.requredReviews && !inputs.requiredReviews > 0) {
 		core.setFailed('"required" much be an integer greater than 0');
