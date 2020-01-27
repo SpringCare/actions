@@ -2763,12 +2763,12 @@ async function main() {
 
 	await request(
 		`GET /repos/${config.repo}/pulls/${inputs.number}`,
-		{ headers: { authorization: `token ${config.token}`} }
+		{ headers: { authorization: `Bearer ${config.token}`} }
 	);
 
 	const allReviews = await request(
 		`GET /repos/${config.repo}/pulls/${inputs.number}/reviews`,
-		{ headers: { authorization: `token ${config.token}`} }
+		{ headers: { authorization: `Bearer ${config.token}`} }
 	);
 
 	const activeReviews = parseReviews(allReviews);
@@ -2779,7 +2779,7 @@ async function main() {
 		request(
 			`POST /repos/${config.repo}/issues/${inputs.number}/labels`,
 			{
-				headers: { authorization: `token ${config.token}`},
+				headers: { authorization: `Bearer ${config.token}`},
 				labels: ['changes requested']
 			}
 		);
@@ -2788,7 +2788,7 @@ async function main() {
 	if (inputs.alertChangesRequested && deniedReviews === 0) {
 		request(
 			`DELETE /repos/${config.repo}/issues/${inputs.number}/labels/changes%20requested`,
-			{ headers: { authorization: `token ${config.token}`} }
+			{ headers: { authorization: `Bearer ${config.token}`} }
 		);
 	}
 
@@ -2797,14 +2797,14 @@ async function main() {
 		for (let i = 0; i <= inputs.requredReviews; i++) {
 			request(
 				`DELETE /repos/${config.repo}/issues/${inputs.number}/labels/${i} of ${inputs.requiredReviews}`,
-				{ headers: { authorization: `token ${config.token}`} }
+				{ headers: { authorization: `Bearer ${config.token}`} }
 			);
 		}
 
 		request(
 			`POST /repos/${config.repo}/issues/${inputs.number}/labels`,
 			{
-				headers: { authorization: `token ${config.token}`},
+				headers: { authorization: `Bearer ${config.token}`},
 				labels: [`${approvedReviews.length} of ${inputs.requiredReviews}`]
 			}
 		);
