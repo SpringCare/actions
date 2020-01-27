@@ -85,15 +85,15 @@ async function main() {
 
 	const client = new github.GitHub(inputs.token);
 
-	const allReviews = await client.pulls.listReviews({
+	const { data } = await client.pulls.listReviews({
 		owner: github.context.repo.owner,
 		repo: github.context.repo.repo,
 		pull_number,
 	});
 
-	console.log('reviews', allReviews);
+	console.log('reviews', data);
 
-	const activeReviews = parseReviews(allReviews || []);
+	const activeReviews = parseReviews(data || []);
 	const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
 	const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 
