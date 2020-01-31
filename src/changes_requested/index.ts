@@ -5,9 +5,6 @@ const verifyConfig = require('../utils/verifyConfig');
 import { addLabels, removeLabel } from '../utils/labeler';
 import { sendMessage } from '../utils/slack';
 
-// Call the main function.
-main();
-
 function parseReviews(reviews = []) {
 	//TODO: Add argument for states to care about
 
@@ -71,7 +68,7 @@ async function main() {
 	const { data } = await client.pulls.listReviews({
 		owner: github.context.repo.owner,
 		repo: github.context.repo.repo,
-		pullNumber,
+		pull_number: pullNumber,
 	});
 
 	const activeReviews = parseReviews(data || []);
@@ -100,8 +97,12 @@ async function main() {
 		sendMessage(
 			inputs.slackUrl,
 			inputs.slackChannel,
-			`Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in ${github.context.repo.repo}.`
+			`Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in ${github.context.repo.repo}.`,
+			inputs.botName,
+			inputs.iconEmoji
 		);
 	}
-
 }
+
+// Call the main function.
+main();

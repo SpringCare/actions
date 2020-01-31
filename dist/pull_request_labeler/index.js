@@ -7486,7 +7486,7 @@ function main() {
         const { data } = yield client.pulls.listReviews({
             owner: pull_request_labeler_github.context.repo.owner,
             repo: pull_request_labeler_github.context.repo.repo,
-            pullNumber,
+            pull_number: pullNumber,
         });
         const activeReviews = parseReviews(data || []);
         const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');

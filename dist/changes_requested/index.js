@@ -11250,8 +11250,6 @@ const changes_requested_github = __webpack_require__(469);
 const verifyConfig = __webpack_require__(359);
 
 
-// Call the main function.
-main();
 function parseReviews(reviews = []) {
     //TODO: Add argument for states to care about
     // grab the data we care about
@@ -11306,7 +11304,7 @@ function main() {
         const { data } = yield client.pulls.listReviews({
             owner: changes_requested_github.context.repo.owner,
             repo: changes_requested_github.context.repo.repo,
-            pullNumber,
+            pull_number: pullNumber,
         });
         const activeReviews = parseReviews(data || []);
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
@@ -11319,10 +11317,12 @@ function main() {
             removeLabel(client, pullNumber, 'changes%20requested');
         }
         if (inputs.slackChannel && inputs.slackUrl) {
-            sendMessage(inputs.slackUrl, inputs.slackChannel, `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in ${changes_requested_github.context.repo.repo}.`);
+            sendMessage(inputs.slackUrl, inputs.slackChannel, `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in ${changes_requested_github.context.repo.repo}.`, inputs.botName, inputs.iconEmoji);
         }
     });
 }
+// Call the main function.
+main();
 
 
 /***/ }),
