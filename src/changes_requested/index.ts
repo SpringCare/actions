@@ -58,7 +58,7 @@ async function main(): Promise<{}> {
 		return;
 	}
 	const pullNumber = pr.number;
-	const pullUrl = pr.url;
+	const pullUrl = pr.html_url;
 	const author = pr.user.id;
 
 	console.log('PR number is', pullNumber);

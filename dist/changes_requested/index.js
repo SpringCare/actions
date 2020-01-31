@@ -11297,7 +11297,7 @@ function main() {
             return;
         }
         const pullNumber = pr.number;
-        const pullUrl = pr.url;
+        const pullUrl = pr.html_url;
         const author = pr.user.id;
         console.log('PR number is', pullNumber);
         console.log('Config', config);
