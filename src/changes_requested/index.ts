@@ -96,12 +96,14 @@ async function main(): Promise<{}> {
 		);
 	}
 
-	if (inputs.slackChannel && inputs.slackUrl) {
+	if ((inputs.slackChannel || inputs.githubSlackMapping) && inputs.slackUrl) {
 		const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${github.context.repo.repo}\`.`;
 
 		if (inputs.githubSlackMapping) {
 			const mapping = JSON.parse(inputs.githubSlackMapping);
 			const slackUser = mapping[author];
+
+			console.log(`Slacking author: ${author} at slack ID: ${slackUser}`);
 
 			if (!slackUser) {
 				core.setFailed(`Couldn't find an associated slack ID for user: ${author}`);
@@ -116,7 +118,7 @@ async function main(): Promise<{}> {
 				inputs.iconEmoji
 			);
 
-		} else {
+		} else if (inputs.slackChannel) {
 			sendMessage(
 				inputs.slackUrl,
 				inputs.slackChannel,

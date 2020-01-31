@@ -11319,18 +11319,19 @@ function main() {
         if (inputs.labelChangesRequested && deniedReviews.length === 0) {
             removeLabel(client, pullNumber, 'changes%20requested');
         }
-        if (inputs.slackChannel && inputs.slackUrl) {
+        if ((inputs.slackChannel || inputs.githubSlackMapping) && inputs.slackUrl) {
             const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${changes_requested_github.context.repo.repo}\`.`;
             if (inputs.githubSlackMapping) {
                 const mapping = JSON.parse(inputs.githubSlackMapping);
                 const slackUser = mapping[author];
+                console.log(`Slacking author: ${author} at slack ID: ${slackUser}`);
                 if (!slackUser) {
                     core.setFailed(`Couldn't find an associated slack ID for user: ${author}`);
                     return;
                 }
                 sendMessage(inputs.slackUrl, slackUser, message, inputs.botName, inputs.iconEmoji);
             }
-            else {
+            else if (inputs.slackChannel) {
                 sendMessage(inputs.slackUrl, inputs.slackChannel, message, inputs.botName, inputs.iconEmoji);
             }
         }
