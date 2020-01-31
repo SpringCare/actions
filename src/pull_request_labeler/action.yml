@@ -3,6 +3,10 @@ description: "A GitHub Action to label pull requests on open and on review"
 inputs:
   repo-token:
     description: 'The GITHUB_TOKEN secret'
+  required:
+    description: 'The number of Reviews required to allow a PR'
+  alert-on-changes-requested:
+    description: '"true" will add a label for changes requested. It is removed when there are no remaining requests.'
 branding:
   icon: "git-pull-request"
   color: green
