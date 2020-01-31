@@ -11319,7 +11319,9 @@ function main() {
         if (inputs.labelChangesRequested && deniedReviews.length === 0) {
             removeLabel(client, pullNumber, 'changes%20requested');
         }
-        if ((inputs.slackChannel || inputs.githubSlackMapping) && inputs.slackUrl) {
+        if (deniedReviews.length > 0 &&
+            (inputs.slackChannel || inputs.githubSlackMapping)
+            && inputs.slackUrl) {
             const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${changes_requested_github.context.repo.repo}\`.`;
             if (inputs.githubSlackMapping) {
                 const mapping = JSON.parse(inputs.githubSlackMapping);

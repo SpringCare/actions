@@ -96,7 +96,11 @@ async function main(): Promise<{}> {
 		);
 	}
 
-	if ((inputs.slackChannel || inputs.githubSlackMapping) && inputs.slackUrl) {
+	if (
+		deniedReviews.length > 0 &&
+		(inputs.slackChannel || inputs.githubSlackMapping)
+		&& inputs.slackUrl
+	) {
 		const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${github.context.repo.repo}\`.`;
 
 		if (inputs.githubSlackMapping) {
