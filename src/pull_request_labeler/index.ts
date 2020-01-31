@@ -59,9 +59,9 @@ async function main() {
 		core.setFailed('This action must be run with only "pull_request" or "pull_request_review".');
 		return;
 	}
-	const pull_number = pr.number;
+	const pullNumber = pr.number;
 
-	console.log('PR number is', pull_number);
+	console.log('PR number is', pullNumber);
 	console.log('Config', config);
 	console.log('Inputs', inputs);
 
@@ -75,7 +75,7 @@ async function main() {
 	const { data } = await client.pulls.listReviews({
 		owner: github.context.repo.owner,
 		repo: github.context.repo.repo,
-		pull_number,
+		pullNumber,
 	});
 
 	const activeReviews = parseReviews(data || []);
@@ -90,7 +90,7 @@ async function main() {
 	if (inputs.alertChangesRequested && deniedReviews.length > 0) {
 		addLabels(
 			client,
-			pull_number,
+			pullNumber,
 			['changes requested']
 		);
 	}
@@ -98,7 +98,7 @@ async function main() {
 	if (inputs.alertChangesRequested && deniedReviews.length === 0) {
 		removeLabel(
 			client,
-			pull_number,
+			pullNumber,
 			'changes%20requested'
 		);
 	}
@@ -108,14 +108,14 @@ async function main() {
 		for (let i = 0; i <= inputs.requiredReviews; i++) {
 			removeLabel(
 				client,
-				pull_number,
+				pullNumber,
 				`${i}%20of%20${inputs.requiredReviews}`
 			);
 		}
 
 		addLabels(
 			client,
-			pull_number,
+			pullNumber,
 			[`${approvedReviews.length} of ${inputs.requiredReviews}`]
 		);
 	}

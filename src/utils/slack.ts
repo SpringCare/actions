@@ -5,13 +5,13 @@ export function sendMessage(
 	channel: string,
 	message: string,
 	username: string = "Spring Health",
-	icon_emoji?: string,
+	iconEmoji?: string,
 	) {
 
 	axios.post(webhookUrl, {
 		channel,
 		username,
-		icon_emoji,
+		icon_emoji: iconEmoji,
 		text: message,
 	});
 }

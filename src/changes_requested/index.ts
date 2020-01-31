@@ -3,6 +3,7 @@ const github = require('@actions/github');
 
 const verifyConfig = require('../utils/verifyConfig');
 import { addLabels, removeLabel } from '../utils/labeler';
+import { sendMessage } from '../utils/slack';
 
 // Call the main function.
 main();
@@ -49,6 +50,8 @@ async function main() {
 		labelChangesRequested: core.getInput('label-on-changes-requested'),
 		slackUrl: core.getInput('slack-webhook-url'),
 		slackChannel: core.getInput('slack-channel'),
+		botName: core.getInput('bot-name'),
+		iconEmoji: core.getInput('icon_emoji'),
 	};
 
 	const pr = github.context.payload.pull_request;
@@ -56,9 +59,10 @@ async function main() {
 		core.setFailed('This action must be run with only "pull_request_review".');
 		return;
 	}
-	const pull_number = pr.number;
+	const pullNumber = pr.number;
+	const pullUrl = pr.url;
 
-	console.log('PR number is', pull_number);
+	console.log('PR number is', pullNumber);
 	console.log('Config', config);
 	console.log('Inputs', inputs);
 
@@ -67,7 +71,7 @@ async function main() {
 	const { data } = await client.pulls.listReviews({
 		owner: github.context.repo.owner,
 		repo: github.context.repo.repo,
-		pull_number,
+		pullNumber,
 	});
 
 	const activeReviews = parseReviews(data || []);
@@ -79,7 +83,7 @@ async function main() {
 	if (inputs.labelChangesRequested && deniedReviews.length > 0) {
 		addLabels(
 			client,
-			pull_number,
+			pullNumber,
 			['changes requested']
 		);
 	}
@@ -87,13 +91,17 @@ async function main() {
 	if (inputs.labelChangesRequested && deniedReviews.length === 0) {
 		removeLabel(
 			client,
-			pull_number,
+			pullNumber,
 			'changes%20requested'
 		);
 	}
 
 	if (inputs.slackChannel && inputs.slackUrl) {
-
+		sendMessage(
+			inputs.slackUrl,
+			inputs.slackChannel,
+			`Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in ${github.context.repo.repo}.`
+		);
 	}
 
 }

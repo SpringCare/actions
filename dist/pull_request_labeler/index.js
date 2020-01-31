@@ -7474,8 +7474,8 @@ function main() {
             core.setFailed('This action must be run with only "pull_request" or "pull_request_review".');
             return;
         }
-        const pull_number = pr.number;
-        console.log('PR number is', pull_number);
+        const pullNumber = pr.number;
+        console.log('PR number is', pullNumber);
         console.log('Config', config);
         console.log('Inputs', inputs);
         if (inputs.requiredReviews && !(inputs.requiredReviews > 0)) {
@@ -7486,7 +7486,7 @@ function main() {
         const { data } = yield client.pulls.listReviews({
             owner: pull_request_labeler_github.context.repo.owner,
             repo: pull_request_labeler_github.context.repo.repo,
-            pull_number,
+            pullNumber,
         });
         const activeReviews = parseReviews(data || []);
         const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
@@ -7495,17 +7495,17 @@ function main() {
         console.log('denied', deniedReviews.length);
         console.log('alert', inputs.alertChangesRequested);
         if (inputs.alertChangesRequested && deniedReviews.length > 0) {
-            addLabels(client, pull_number, ['changes requested']);
+            addLabels(client, pullNumber, ['changes requested']);
         }
         if (inputs.alertChangesRequested && deniedReviews.length === 0) {
-            removeLabel(client, pull_number, 'changes%20requested');
+            removeLabel(client, pullNumber, 'changes%20requested');
         }
         if (inputs.requiredReviews > 0) {
             // Loop through the current labels and remove any existing "x of y" labels
             for (let i = 0; i <= inputs.requiredReviews; i++) {
-                removeLabel(client, pull_number, `${i}%20of%20${inputs.requiredReviews}`);
+                removeLabel(client, pullNumber, `${i}%20of%20${inputs.requiredReviews}`);
             }
-            addLabels(client, pull_number, [`${approvedReviews.length} of ${inputs.requiredReviews}`]);
+            addLabels(client, pullNumber, [`${approvedReviews.length} of ${inputs.requiredReviews}`]);
         }
     });
 }
