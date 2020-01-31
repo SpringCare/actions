@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(506);
+/******/ 		return __webpack_require__(296);
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -3985,6 +3985,133 @@ function parseOptions(options, log, hook) {
 
 /***/ }),
 
+/***/ 296:
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+// CONCATENATED MODULE: ./src/utils/labeler.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const github = __webpack_require__(469);
+function addLabels(client, prNumber, labels) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Adding labels:', labels);
+        yield client.issues.addLabels({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+            labels: labels
+        });
+    });
+}
+function removeLabel(client, prNumber, label) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Removing label:', label);
+        yield client.issues.removeLabel({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+            name: label
+        });
+    });
+}
+
+// CONCATENATED MODULE: ./src/changes_requested/index.ts
+var changes_requested_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const core = __webpack_require__(470);
+const changes_requested_github = __webpack_require__(469);
+const verifyConfig = __webpack_require__(359);
+
+// Call the main function.
+main();
+function parseReviews(reviews = []) {
+    //TODO: Add argument for states to care about
+    // grab the data we care about
+    const parsed = reviews.map(r => ({
+        state: r.state,
+        user: r.user.id,
+        submitted: new Date(r.submitted_at),
+    }));
+    const data = {};
+    // group reviews by review author, and only keep the newest review
+    parsed.forEach((p) => {
+        // we only care about reviews that are approved or denied.
+        if (p.state.toLowerCase() !== 'approved' && p.state.toLowerCase() !== 'changes_requested') {
+            return;
+        }
+        // Check if the new item was submitted AFTER
+        // the already saved review.  If it was, overwrite
+        if (data[p.user]) {
+            const submitted = data[p.user].submitted;
+            data[p.user] = submitted > p.submitted ? data[p.user] : p;
+        }
+        else {
+            data[p.user] = p;
+        }
+    });
+    return Object.keys(data).map(k => data[k]);
+}
+function main() {
+    return changes_requested_awaiter(this, void 0, void 0, function* () {
+        // Grab the config variables. Abort if they're unavailable.
+        const config = verifyConfig();
+        // Get a few inputs from the GitHub event.
+        const inputs = {
+            token: core.getInput('repo-token', { required: true }),
+            labelChangesRequested: core.getInput('label-on-changes-requested'),
+            slackUrl: core.getInput('slack-webhook-url'),
+            slackChannel: core.getInput('slack-channel'),
+        };
+        const pr = changes_requested_github.context.payload.pull_request;
+        if (!pr) {
+            core.setFailed('This action must be run with only "pull_request_review".');
+            return;
+        }
+        const pull_number = pr.number;
+        console.log('PR number is', pull_number);
+        console.log('Config', config);
+        console.log('Inputs', inputs);
+        const client = new changes_requested_github.GitHub(inputs.token);
+        const { data } = yield client.pulls.listReviews({
+            owner: changes_requested_github.context.repo.owner,
+            repo: changes_requested_github.context.repo.repo,
+            pull_number,
+        });
+        const activeReviews = parseReviews(data || []);
+        const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
+        console.log('denied', deniedReviews.length);
+        console.log('alert', inputs.labelChangesRequested);
+        if (inputs.labelChangesRequested && deniedReviews.length > 0) {
+            addLabels(client, pull_number, ['changes requested']);
+        }
+        if (inputs.labelChangesRequested && deniedReviews.length === 0) {
+            removeLabel(client, pull_number, 'changes%20requested');
+        }
+        if (inputs.slackChannel && inputs.slackUrl) {
+        }
+    });
+}
+
+
+/***/ }),
+
 /***/ 297:
 /***/ (function(module) {
 
@@ -7372,143 +7499,6 @@ function resolveCommand(parsed) {
 }
 
 module.exports = resolveCommand;
-
-
-/***/ }),
-
-/***/ 506:
-/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-
-// CONCATENATED MODULE: ./src/utils/labeler.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const github = __webpack_require__(469);
-function addLabels(client, prNumber, labels) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Adding labels:', labels);
-        yield client.issues.addLabels({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            labels: labels
-        });
-    });
-}
-function removeLabel(client, prNumber, label) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Removing label:', label);
-        yield client.issues.removeLabel({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            name: label
-        });
-    });
-}
-
-// CONCATENATED MODULE: ./src/pull_request_labeler/index.ts
-var pull_request_labeler_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const core = __webpack_require__(470);
-const pull_request_labeler_github = __webpack_require__(469);
-const verifyConfig = __webpack_require__(359);
-
-// Call the main function.
-main();
-function parseReviews(reviews = []) {
-    //TODO: Add argument for states to care about
-    // grab the data we care about
-    const parsed = reviews.map(r => ({
-        state: r.state,
-        user: r.user.id,
-        submitted: new Date(r.submitted_at),
-    }));
-    const data = {};
-    // group reviews by review author, and only keep the newest review
-    parsed.forEach((p) => {
-        // we only care about reviews that are approved or denied.
-        if (p.state.toLowerCase() !== 'approved' && p.state.toLowerCase() !== 'changes_requested') {
-            return;
-        }
-        // Check if the new item was submitted AFTER
-        // the already saved review.  If it was, overwrite
-        if (data[p.user]) {
-            const submitted = data[p.user].submitted;
-            data[p.user] = submitted > p.submitted ? data[p.user] : p;
-        }
-        else {
-            data[p.user] = p;
-        }
-    });
-    return Object.keys(data).map(k => data[k]);
-}
-function main() {
-    return pull_request_labeler_awaiter(this, void 0, void 0, function* () {
-        // Grab the config variables. Abort if they're unavailable.
-        const config = verifyConfig();
-        // Get a few inputs from the GitHub event.
-        const inputs = {
-            token: core.getInput('repo-token', { required: true }),
-            requiredReviews: core.getInput('required'),
-            alertChangesRequested: core.getInput('alert-on-changes-requested')
-        };
-        const pr = pull_request_labeler_github.context.payload.pull_request;
-        if (!pr) {
-            core.setFailed('This action must be run with only "pull_request" or "pull_request_review".');
-            return;
-        }
-        const pull_number = pr.number;
-        console.log('PR number is', pull_number);
-        console.log('Config', config);
-        console.log('Inputs', inputs);
-        if (inputs.requiredReviews && !(inputs.requiredReviews > 0)) {
-            core.setFailed('If set, "required" must be an integer greater than 0');
-            return;
-        }
-        const client = new pull_request_labeler_github.GitHub(inputs.token);
-        const { data } = yield client.pulls.listReviews({
-            owner: pull_request_labeler_github.context.repo.owner,
-            repo: pull_request_labeler_github.context.repo.repo,
-            pull_number,
-        });
-        const activeReviews = parseReviews(data || []);
-        const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
-        const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
-        console.log('active', activeReviews);
-        console.log('denied', deniedReviews.length);
-        console.log('alert', inputs.alertChangesRequested);
-        if (inputs.alertChangesRequested && deniedReviews.length > 0) {
-            addLabels(client, pull_number, ['changes requested']);
-        }
-        if (inputs.alertChangesRequested && deniedReviews.length === 0) {
-            removeLabel(client, pull_number, 'changes%20requested');
-        }
-        if (inputs.requiredReviews > 0) {
-            // Loop through the current labels and remove any existing "x of y" labels
-            for (let i = 0; i <= inputs.requiredReviews; i++) {
-                removeLabel(client, pull_number, `${i}%20of%20${inputs.requiredReviews}`);
-            }
-            addLabels(client, pull_number, [`${approvedReviews.length} of ${inputs.requiredReviews}`]);
-        }
-    });
-}
 
 
 /***/ }),

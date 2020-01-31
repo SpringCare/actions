@@ -1,0 +1,15 @@
+name: Changes Requested
+description: "A GitHub Action to handle when PRs get changes requested"
+inputs:
+  repo-token:
+    description: 'The GITHUB_TOKEN secret'
+  slack-webhook-url:
+    description: 'The SLACK_WEBHOOK_URL secret, required if sending slack messages'
+  slack-channel:
+    description: 'The channel in which to report that changes were requested.'
+branding:
+  icon: "git-pull-request"
+  color: green
+runs:
+  using: "node12"
+  main: "index.js"

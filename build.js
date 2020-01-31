@@ -15,7 +15,7 @@ function getBuildFiles(path, prepend = '') {
 					const nestedPages = getBuildFiles(`${path}/${val}`, `${prepend}${val}/`);
 					acc.push(...nestedPages);
 				} else {
-					if (val.includes('.js')) {
+					if (val.includes('.js') || val.includes('.ts')) {
 						acc.push(prepend.length ? `${prepend}${val}` : val);
 					}
 				}
@@ -46,18 +46,27 @@ function clearDirectory(directory) {
 clearDirectory('./dist');
 
 getBuildFiles('./src').forEach((file) => {
-	const output = './dist/' + file;
+	// Swap .ts for .js
+	let jsFile;
+
+	if (file.includes('.ts')) {
+		jsFile = file.substr(0, file.indexOf('.ts')) + '.js';
+	} else {
+		jsFile = file;
+	}
+
+	const output = './dist/' + jsFile;
 	console.log(`building ${file} to ${output}`);
 
 	ncc(`./src/${file}`).then(({ code }) => {
-		let dir = file.split('/');
+		let dir = jsFile.split('/');
 		dir.pop(); // remove the file name, leaving just parent dirs
 		dir = dir.join('/');
 
 		fs.mkdir(`./dist/${dir}`, { recursive: true }, (err) => {
 			if (!err) {
 				fs.writeFile(output, code, function() {
-					console.log(`wrote ${file}`);
+					console.log(`wrote ${jsFile}`);
 				});
 
 				fs.copyFileSync(`./src/${dir}/action.yml`, `./dist/${dir}/action.yml`);

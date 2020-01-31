@@ -2,6 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 
 const verifyConfig = require('../utils/verifyConfig');
+import { addLabels, removeLabel } from '../utils/labeler';
 
 // Call the main function.
 main();
@@ -38,28 +39,6 @@ function parseReviews(reviews = []) {
 	return Object.keys(data).map(k => data[k]);
 }
 
-async function addLabels(client, prNumber, labels) {
-	console.log('Adding labels:', labels);
-
-	await client.issues.addLabels({
-		owner: github.context.repo.owner,
-		repo: github.context.repo.repo,
-		issue_number: prNumber,
-		labels: labels
-	});
-}
-
-async function removeLabel(client, prNumber, label) {
-	console.log('Removing label:', label);
-
-	await client.issues.removeLabel({
-		owner: github.context.repo.owner,
-		repo: github.context.repo.repo,
-		issue_number: prNumber,
-		name: label
-	});
-}
-
 async function main() {
 	// Grab the config variables. Abort if they're unavailable.
 	const config = verifyConfig();
@@ -67,13 +46,14 @@ async function main() {
 	// Get a few inputs from the GitHub event.
 	const inputs = {
 		token: core.getInput('repo-token', { required: true }),
-		requiredReviews: core.getInput('required'),
-		alertChangesRequested: core.getInput('alert-on-changes-requested')
+		labelChangesRequested: core.getInput('label-on-changes-requested'),
+		slackUrl: core.getInput('slack-webhook-url'),
+		slackChannel: core.getInput('slack-channel'),
 	};
 
 	const pr = github.context.payload.pull_request;
 	if (!pr) {
-		core.setFailed('This action must be run with only "pull_request" or "pull_request_review".');
+		core.setFailed('This action must be run with only "pull_request_review".');
 		return;
 	}
 	const pull_number = pr.number;
@@ -81,11 +61,6 @@ async function main() {
 	console.log('PR number is', pull_number);
 	console.log('Config', config);
 	console.log('Inputs', inputs);
-
-	if (inputs.requredReviews && !inputs.requiredReviews > 0) {
-		core.setFailed('If set, "required" must be an integer greater than 0');
-		return;
-	}
 
 	const client = new github.GitHub(inputs.token);
 
@@ -96,15 +71,12 @@ async function main() {
 	});
 
 	const activeReviews = parseReviews(data || []);
-	const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
 	const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 
-	console.log('active', activeReviews);
 	console.log('denied', deniedReviews.length);
+	console.log('alert', inputs.labelChangesRequested);
 
-	console.log('alert', inputs.alertChangesRequested);
-
-	if (inputs.alertChangesRequested && deniedReviews.length > 0) {
+	if (inputs.labelChangesRequested && deniedReviews.length > 0) {
 		addLabels(
 			client,
 			pull_number,
@@ -112,7 +84,7 @@ async function main() {
 		);
 	}
 
-	if (inputs.alertChangesRequested && deniedReviews.length === 0) {
+	if (inputs.labelChangesRequested && deniedReviews.length === 0) {
 		removeLabel(
 			client,
 			pull_number,
@@ -120,20 +92,8 @@ async function main() {
 		);
 	}
 
-	if (inputs.requiredReviews > 0) {
-		// Loop through the current labels and remove any existing "x of y" labels
-		for (let i = 0; i <= inputs.requiredReviews; i++) {
-			removeLabel(
-				client,
-				pull_number,
-				`${i}%20of%20${inputs.requiredReviews}`
-			);
-		}
+	if (inputs.slackChannel && inputs.slackUrl) {
 
-		addLabels(
-			client,
-			pull_number,
-			[`${approvedReviews.length} of ${inputs.requiredReviews}`]
-		);
 	}
+
 }
