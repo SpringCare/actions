@@ -7467,7 +7467,6 @@ function main() {
         const inputs = {
             token: core.getInput('repo-token', { required: true }),
             requiredReviews: core.getInput('required'),
-            alertChangesRequested: core.getInput('alert-on-changes-requested')
         };
         const pr = pull_request_labeler_github.context.payload.pull_request;
         if (!pr) {
@@ -7490,16 +7489,7 @@ function main() {
         });
         const activeReviews = parseReviews(data || []);
         const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
-        const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
         console.log('active', activeReviews);
-        console.log('denied', deniedReviews.length);
-        console.log('alert', inputs.alertChangesRequested);
-        if (inputs.alertChangesRequested && deniedReviews.length > 0) {
-            addLabels(client, pullNumber, ['changes requested']);
-        }
-        if (inputs.alertChangesRequested && deniedReviews.length === 0) {
-            removeLabel(client, pullNumber, 'changes%20requested');
-        }
         if (inputs.requiredReviews > 0) {
             // Loop through the current labels and remove any existing "x of y" labels
             for (let i = 0; i <= inputs.requiredReviews; i++) {

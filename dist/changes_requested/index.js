@@ -11289,6 +11289,7 @@ function main() {
             slackChannel: core.getInput('slack-channel'),
             botName: core.getInput('bot-name'),
             iconEmoji: core.getInput('icon_emoji'),
+            githubSlackMapping: core.getInput('github-slack-mapping'),
         };
         const pr = changes_requested_github.context.payload.pull_request;
         if (!pr) {
@@ -11297,6 +11298,7 @@ function main() {
         }
         const pullNumber = pr.number;
         const pullUrl = pr.url;
+        const author = pr.user.id;
         console.log('PR number is', pullNumber);
         console.log('Config', config);
         console.log('Inputs', inputs);
@@ -11304,6 +11306,7 @@ function main() {
         const { data } = yield client.pulls.listReviews({
             owner: changes_requested_github.context.repo.owner,
             repo: changes_requested_github.context.repo.repo,
+            // eslint-disable-next-line @typescript-eslint/camelcase
             pull_number: pullNumber,
         });
         const activeReviews = parseReviews(data || []);
@@ -11317,7 +11320,19 @@ function main() {
             removeLabel(client, pullNumber, 'changes%20requested');
         }
         if (inputs.slackChannel && inputs.slackUrl) {
-            sendMessage(inputs.slackUrl, inputs.slackChannel, `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in ${changes_requested_github.context.repo.repo}.`, inputs.botName, inputs.iconEmoji);
+            const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${changes_requested_github.context.repo.repo}\`.`;
+            if (inputs.githubSlackMapping) {
+                const mapping = JSON.parse(inputs.githubSlackMapping);
+                const slackUser = mapping[author];
+                if (!slackUser) {
+                    core.setFailed(`Couldn't find an associated slack ID for user: ${author}`);
+                    return;
+                }
+                sendMessage(inputs.slackUrl, slackUser, message, inputs.botName, inputs.iconEmoji);
+            }
+            else {
+                sendMessage(inputs.slackUrl, inputs.slackChannel, message, inputs.botName, inputs.iconEmoji);
+            }
         }
     });
 }

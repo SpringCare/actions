@@ -7,6 +7,8 @@ inputs:
     description: 'The SLACK_WEBHOOK_URL secret, required if sending slack messages'
   slack-channel:
     description: 'The channel in which to report that changes were requested.'
+  github-slack-mapping:
+    description: "A JSON encoded string with of { <github-user-id>: <slack-user-id> } for all members of your org."
 branding:
   icon: "git-pull-request"
   color: green
