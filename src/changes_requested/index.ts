@@ -71,7 +71,7 @@ async function main() {
 	const { data } = await client.pulls.listReviews({
 		owner: github.context.repo.owner,
 		repo: github.context.repo.repo,
-		pullNumber,
+		pull_number: pullNumber,
 	});
 
 	const activeReviews = parseReviews(data || []);

@@ -11306,7 +11306,7 @@ function main() {
         const { data } = yield client.pulls.listReviews({
             owner: changes_requested_github.context.repo.owner,
             repo: changes_requested_github.context.repo.repo,
-            pullNumber,
+            pull_number: pullNumber,
         });
         const activeReviews = parseReviews(data || []);
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
