@@ -7467,6 +7467,7 @@ function main() {
         const inputs = {
             token: core.getInput('repo-token', { required: true }),
             requiredReviews: core.getInput('required'),
+            labelWIP: core.getInput('wip'),
         };
         const pr = pull_request_labeler_github.context.payload.pull_request;
         if (!pr) {
@@ -7474,6 +7475,7 @@ function main() {
             return;
         }
         const pullNumber = pr.number;
+        const draftPR = pr.draft;
         console.log('PR number is', pullNumber);
         console.log('Config', config);
         console.log('Inputs', inputs);
@@ -7487,15 +7489,21 @@ function main() {
             repo: pull_request_labeler_github.context.repo.repo,
             pull_number: pullNumber,
         });
-        const activeReviews = parseReviews(data || []);
-        const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
-        console.log('active', activeReviews);
         if (inputs.requiredReviews > 0) {
+            const activeReviews = parseReviews(data || []);
+            const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
+            console.log('active', activeReviews);
             // Loop through the current labels and remove any existing "x of y" labels
             for (let i = 0; i <= inputs.requiredReviews; i++) {
                 removeLabel(client, pullNumber, `${i}%20of%20${inputs.requiredReviews}`);
             }
             addLabels(client, pullNumber, [`${approvedReviews.length} of ${inputs.requiredReviews}`]);
+        }
+        if (inputs.labelWIP && draftPR) {
+            addLabels(client, pullNumber, ['WIP']);
+        }
+        else if (inputs.labelWIP && !draftPR) {
+            removeLabel(client, pullNumber, 'WIP');
         }
     });
 }
