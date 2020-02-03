@@ -31,3 +31,20 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         required: 2
 ```
+**Label Draft PRs.**
+
+```yml
+name: Spring Changes Requested
+
+on: [pull_request_review, pull_request]
+
+jobs:
+  ChangesRequested:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: 'SpringCare/actions/dist/pull_request_labeler@master'
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        wip: true
+```
