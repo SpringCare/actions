@@ -5,6 +5,8 @@ inputs:
     description: 'The GITHUB_TOKEN secret'
   required:
     description: 'The number of Reviews required to allow a PR'
+  wip:
+    description: 'Whether to label WIP PRs automatically'
 branding:
   icon: "git-pull-request"
   color: green
