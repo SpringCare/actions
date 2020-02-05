@@ -53,6 +53,8 @@ async function main(): Promise<{}> {
 	};
 
 	const pr = github.context.payload.pull_request;
+	const review = github.context.payload.review;
+
 	if (!pr) {
 		core.setFailed('This action must be run with only "pull_request_review".');
 		return;
@@ -60,6 +62,7 @@ async function main(): Promise<{}> {
 	const pullNumber = pr.number;
 	const pullUrl = pr.html_url;
 	const author = pr.user.id;
+	const state = review.state;
 
 	console.log('PR number is', pullNumber);
 	console.log('Config', config);
@@ -80,7 +83,7 @@ async function main(): Promise<{}> {
 	console.log('denied', deniedReviews.length);
 	console.log('alert', inputs.labelChangesRequested);
 
-	if (inputs.labelChangesRequested && deniedReviews.length > 0) {
+	if (inputs.labelChangesRequested && state === 'changes_requested') {
 		addLabels(
 			client,
 			pullNumber,
@@ -97,7 +100,7 @@ async function main(): Promise<{}> {
 	}
 
 	if (
-		deniedReviews.length > 0 &&
+		state === 'changes_requested' &&
 		(inputs.slackChannel || inputs.githubSlackMapping)
 		&& inputs.slackUrl
 	) {

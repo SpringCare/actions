@@ -11292,6 +11292,7 @@ function main() {
             githubSlackMapping: core.getInput('github-slack-mapping'),
         };
         const pr = changes_requested_github.context.payload.pull_request;
+        const review = changes_requested_github.context.payload.review;
         if (!pr) {
             core.setFailed('This action must be run with only "pull_request_review".');
             return;
@@ -11299,6 +11300,7 @@ function main() {
         const pullNumber = pr.number;
         const pullUrl = pr.html_url;
         const author = pr.user.id;
+        const state = review.state;
         console.log('PR number is', pullNumber);
         console.log('Config', config);
         console.log('Inputs', inputs);
@@ -11313,13 +11315,13 @@ function main() {
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
         console.log('denied', deniedReviews.length);
         console.log('alert', inputs.labelChangesRequested);
-        if (inputs.labelChangesRequested && deniedReviews.length > 0) {
+        if (inputs.labelChangesRequested && state === 'changes_requested') {
             addLabels(client, pullNumber, ['changes requested']);
         }
         if (inputs.labelChangesRequested && deniedReviews.length === 0) {
             removeLabel(client, pullNumber, 'changes%20requested');
         }
-        if (deniedReviews.length > 0 &&
+        if (state === 'changes_requested' &&
             (inputs.slackChannel || inputs.githubSlackMapping)
             && inputs.slackUrl) {
             const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${changes_requested_github.context.repo.repo}\`.`;
