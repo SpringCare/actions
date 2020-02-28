@@ -7493,11 +7493,20 @@ function main() {
             const activeReviews = parseReviews(data || []);
             const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
             console.log('active', activeReviews);
+            let reviewCount = approvedReviews.length;
+            if (reviewCount > inputs.requiredReviews) {
+                reviewCount = inputs.requiredReviews;
+            }
+            const toAdd = `${reviewCount} of ${inputs.requiredReviews}`;
             // Loop through the current labels and remove any existing "x of y" labels
             for (let i = 0; i <= inputs.requiredReviews; i++) {
-                removeLabel(client, pullNumber, `${i}%20of%20${inputs.requiredReviews}`);
+                const loopCount = `${i}%20of%20${inputs.requiredReviews}`;
+                // Don't remove the one we're trying to add, just in case a race condition happens on the server
+                if (loopCount !== toAdd) {
+                    removeLabel(client, pullNumber, loopCount);
+                }
             }
-            addLabels(client, pullNumber, [`${approvedReviews.length} of ${inputs.requiredReviews}`]);
+            addLabels(client, pullNumber, [toAdd]);
         }
         if (inputs.labelWIP && draftPR) {
             addLabels(client, pullNumber, ['WIP']);
