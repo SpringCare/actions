@@ -7500,9 +7500,10 @@ function main() {
             const toAdd = `${reviewCount} of ${inputs.requiredReviews}`;
             // Loop through the current labels and remove any existing "x of y" labels
             for (let i = 0; i <= inputs.requiredReviews; i++) {
+                // When removing, we need to escape special characters
                 const loopCount = `${i}%20of%20${inputs.requiredReviews}`;
                 // Don't remove the one we're trying to add, just in case a race condition happens on the server
-                if (loopCount !== toAdd) {
+                if (i !== reviewCount) {
                     removeLabel(client, pullNumber, loopCount);
                 }
             }
