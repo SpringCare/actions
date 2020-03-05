@@ -63,9 +63,9 @@ async function main(): Promise<{}> {
 
 	const pr = github.context.payload.pull_request;
 	const review = github.context.payload.review;
-	const action = github.context.action;
+	const payload = github.context.payload;
 
-	console.log(action);
+	console.log(payload);
 
 	if (!pr) {
 		core.setFailed('This action must be run with only "pull_request_review".');

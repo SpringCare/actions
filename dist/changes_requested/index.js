@@ -11299,8 +11299,8 @@ function main() {
         // send out slack message with link to this PR
         const pr = changes_requested_github.context.payload.pull_request;
         const review = changes_requested_github.context.payload.review;
-        const action = changes_requested_github.context.action;
-        console.log(action);
+        const payload = changes_requested_github.context.payload;
+        console.log(payload);
         if (!pr) {
             core.setFailed('This action must be run with only "pull_request_review".');
             return;
