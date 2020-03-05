@@ -4,44 +4,17 @@ const github = require('@actions/github');
 const verifyConfig = require('../utils/verifyConfig');
 import { addLabels, removeLabel } from '../utils/labeler';
 import { sendMessage } from '../utils/slack';
+import { parseReviews } from '../utils/parseReviews';
+import { getReviews } from '../utils/getReviews';
+/// CREATE: Pull request submitted
+/// CREATE: Pull request unlabeled
 
-function parseReviews(reviews = []) {
-	//TODO: Add argument for states to care about
-
-	// grab the data we care about
-	const parsed = reviews.map(r => ({
-		state: r.state,
-		user: r.user.id,
-		submitted: new Date(r.submitted_at),
-	}));
-
-	const data = {};
-
-	// group reviews by review author, and only keep the newest review
-	parsed.forEach((p) => {
-		// we only care about reviews that are approved or denied.
-		if (p.state.toLowerCase() !== 'approved' && p.state.toLowerCase() !== 'changes_requested') {
-			return;
-		}
-
-		// Check if the new item was submitted AFTER
-		// the already saved review.  If it was, overwrite
-		if (data[p.user]) {
-			const submitted = data[p.user].submitted;
-			data[p.user] = submitted > p.submitted ? data[p.user] : p;
-		} else {
-			data[p.user] = p;
-		}
-	});
-
-	return Object.keys(data).map(k => data[k]);
-}
 
 async function main(): Promise<{}> {
 	// Grab the config variables. Abort if they're unavailable.
 	const config = verifyConfig();
 
-	// Get a few inputs from the GitHub event.
+	// // Get a few inputs from the GitHub event.
 	const inputs = {
 		token: core.getInput('repo-token', { required: true }),
 		labelChangesRequested: core.getInput('label-on-changes-requested'),
@@ -54,23 +27,43 @@ async function main(): Promise<{}> {
 	};
 
 
-	// check to see if label was removed
-	// get all reviews
-	// filter only active requests for change 
-	// get github ID for negative reviewers
-	// send out slack message with link to this PR
+	////// 1. check to see if label was removed ////// 
+	// if event === pull_request && action === submitted
+	// else if action === unlabeled
+
+	////// 2. get all reviews ////// 
+	// const { data } = await client.pulls.listReviews({
+	// 	owner: github.context.repo.owner,
+	// 	repo: github.context.repo.repo,
+	// 	pull_number: pullNumber,
+	// });
+
+	////// 3. filter only active requests for change ////// 
+	//  parseReviews()
+
+	////// 4. get github ID for negative reviewers ////// 
+
+
+	////// 5. send out slack message with link to this PR ////// 
 
 
 	const pr = github.context.payload.pull_request;
 	const review = github.context.payload.review;
-	const payload = github.context.payload;
+	const event = github.context.eventName;
+	const action = github.context.payload.action;
 
-	console.log(payload);
+	console.log(event)
+	console.log(action)
+
 
 	if (!pr) {
 		core.setFailed('This action must be run with only "pull_request_review".');
 		return;
 	}
+
+	
+
+
 	const pullNumber = pr.number;
 	const pullUrl = pr.html_url;
 	const author = pr.user.id;
@@ -80,15 +73,7 @@ async function main(): Promise<{}> {
 	console.log('Config', config);
 	console.log('Inputs', inputs);
 
-	const client = new github.GitHub(inputs.token);
-
-	const { data } = await client.pulls.listReviews({
-		owner: github.context.repo.owner,
-		repo: github.context.repo.repo,
-		// eslint-disable-next-line @typescript-eslint/camelcase
-		pull_number: pullNumber,
-	});
-
+    const data = getReviews(inputs, pullNumber);
 	const activeReviews = parseReviews(data || []);
 	const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 
