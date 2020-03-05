@@ -11285,14 +11285,22 @@ function main() {
         const inputs = {
             token: core.getInput('repo-token', { required: true }),
             labelChangesRequested: core.getInput('label-on-changes-requested'),
+            alertOnRemoved: core.getInput('alert-on-label-removed'),
             slackUrl: core.getInput('slack-webhook-url'),
             slackChannel: core.getInput('slack-channel'),
             botName: core.getInput('bot-name'),
             iconEmoji: core.getInput('icon_emoji'),
             githubSlackMapping: core.getInput('github-slack-mapping'),
         };
+        // check to see if label was removed
+        // get all reviews
+        // filter only active requests for change 
+        // get github ID for negative reviewers
+        // send out slack message with link to this PR
         const pr = changes_requested_github.context.payload.pull_request;
         const review = changes_requested_github.context.payload.review;
+        const action = changes_requested_github.context.action;
+        console.log(action);
         if (!pr) {
             core.setFailed('This action must be run with only "pull_request_review".');
             return;
