@@ -14756,8 +14756,17 @@ async function pullRequestSubmitted(context, inputs) {
         console.log('Action === submitted');
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
-    
-        const { data } = getReviews(inputs, pullNumber);
+
+                
+        const client = new pullRequestSubmitted_github.GitHub(inputs.token);
+
+        const { data } = client.pulls.listReviews({
+            owner: pullRequestSubmitted_github.context.repo.owner,
+            repo: pullRequestSubmitted_github.context.repo.repo,
+            // eslint-disable-next-line @typescript-eslint/camelcase
+            pull_number: pullNumber,
+        });
+        
         const activeReviews = parseReviews(data || []);
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
     
