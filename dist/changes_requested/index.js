@@ -15542,7 +15542,9 @@ async function pullRequestUnlabeled(context, inputs) {
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
         console.log(label);
-        console.log(pullRequestUnlabeled_github.context)
+        // console.log(github.context)
+        console.log(pullRequestUnlabeled_github.context.repo.owner)
+        console.log(pullRequestUnlabeled_github.context.repo.repo)
         
         const client = new pullRequestUnlabeled_github.GitHub(inputs.token);
 
