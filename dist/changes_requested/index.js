@@ -15546,7 +15546,7 @@ async function pullRequestUnlabeled(context, inputs) {
 
         const client = new pullRequestUnlabeled_github.GitHub(inputs.token);
 
-        const { data } = client.pulls.listReviews({
+        const data = client.pulls.listReviews({
             owner: pullRequestUnlabeled_github.context.repo.owner,
             repo: pullRequestUnlabeled_github.context.repo.repo,
             // eslint-disable-next-line @typescript-eslint/camelcase
