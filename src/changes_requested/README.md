@@ -2,11 +2,13 @@
 
 ### Features
 1. Adds a label when changes are requested on a PR (`label-on-changes-requested` = true)
+1. Slacks reviewer when label (`changes requested`) has been removed.
 1. Can optionally send a slack message to the author of the PR when a change is requested.
 
 ### Configuration Options
-1. Must be run `on: [pull_request_review]`
+1. Must be run `on: [pull_request_review, pull_request]`
 1. Toggle on / off the label (`label-on-changes-requested: boolean`)
+1. Toggle on / off the label (`alert-on-label-removed: boolean`)
 1. Send a slack message to the PR author:
    - **Required** Must provide `slack-webhook-url` in your Repo's secrets
    - EITHER:
