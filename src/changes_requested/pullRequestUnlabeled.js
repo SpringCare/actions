@@ -21,7 +21,7 @@ export async function pullRequestUnlabeled(context, inputs) {
         // const { data } = getReviews(inputs, pullNumber);
         const client = new github.GitHub(inputs.token);
 
-        const response = client.pulls.listReviews({
+        const response = await client.pulls.listReviews({
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
             // eslint-disable-next-line @typescript-eslint/camelcase
