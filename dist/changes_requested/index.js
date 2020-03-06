@@ -15437,85 +15437,90 @@ const core = __webpack_require__(393);
 
 async function pullRequestSubmitted(context, inputs) {
 
-    console.log('Action ==== pullRequestSubmitted');
+    try {
+        console.log('Action ==== pullRequestSubmitted');
 
-    const pr = context.payload.pull_request;
-    const review = context.payload.review;
-    const pullNumber = pr.number;
-	const pullUrl = pr.html_url;
-	const author = pr.user.id;
-	const state = review.state;
-
-    console.log('PR number is', pullNumber);
-    console.log('Inputs', inputs);
+        const pr = context.payload.pull_request;
+        const review = context.payload.review;
+        const pullNumber = pr.number;
+        const pullUrl = pr.html_url;
+        const author = pr.user.id;
+        const state = review.state;
     
-	const client = new pullRequestSubmitted_github.GitHub(inputs.token);
-
-	const { data } = await client.pulls.listReviews({
-		owner: pullRequestSubmitted_github.context.repo.owner,
-		repo: pullRequestSubmitted_github.context.repo.repo,
-		// eslint-disable-next-line @typescript-eslint/camelcase
-		pull_number: pullNumber,
-	});
-
-	const activeReviews = parseReviews(data || []);
-	const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
-
-	console.log('denied', deniedReviews.length);
-    console.log('alert', inputs.labelChangesRequested);
-
-    if (inputs.labelChangesRequested && state === 'changes_requested') {
-		addLabels(
-			client,
-			pullNumber,
-			['changes requested']
-		);
-	}
-
-	if (inputs.labelChangesRequested && deniedReviews.length === 0) {
-		removeLabel(
-			client,
-			pullNumber,
-			'changes%20requested'
-		);
-	}
-
-	if (
-		state === 'changes_requested' &&
-		(inputs.slackChannel || inputs.githubSlackMapping)
-		&& inputs.slackUrl
-	) {
-		const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${pullRequestSubmitted_github.context.repo.repo}\`.`;
-
-		if (inputs.githubSlackMapping) {
-			const mapping = JSON.parse(inputs.githubSlackMapping);
-			const slackUser = mapping[author];
-
-			console.log(`Slacking author: ${author} at slack ID: ${slackUser}`);
-
-			if (!slackUser) {
-				core.setFailed(`Couldn't find an associated slack ID for user: ${author}`);
-				return;
-			}
-
-			sendMessage(
-				inputs.slackUrl,
-				slackUser,
-				message,
-				inputs.botName,
-				inputs.iconEmoji
-			);
-
-		} else if (inputs.slackChannel) {
-			sendMessage(
-				inputs.slackUrl,
-				inputs.slackChannel,
-				message,
-				inputs.botName,
-				inputs.iconEmoji
-			);
-		}
-	}
+        console.log('PR number is', pullNumber);
+        console.log('Inputs', inputs);
+        
+        const client = new pullRequestSubmitted_github.GitHub(inputs.token);
+    
+        const { data } = await client.pulls.listReviews({
+            owner: pullRequestSubmitted_github.context.repo.owner,
+            repo: pullRequestSubmitted_github.context.repo.repo,
+            // eslint-disable-next-line @typescript-eslint/camelcase
+            pull_number: pullNumber,
+        });
+    
+        const activeReviews = parseReviews(data || []);
+        const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
+    
+        console.log('denied', deniedReviews.length);
+        console.log('alert', inputs.labelChangesRequested);
+    
+        if (inputs.labelChangesRequested && state === 'changes_requested') {
+            addLabels(
+                client,
+                pullNumber,
+                ['changes requested']
+            );
+        }
+    
+        if (inputs.labelChangesRequested && deniedReviews.length === 0) {
+            removeLabel(
+                client,
+                pullNumber,
+                'changes%20requested'
+            );
+        }
+    
+        if (
+            state === 'changes_requested' &&
+            (inputs.slackChannel || inputs.githubSlackMapping)
+            && inputs.slackUrl
+        ) {
+            const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${pullRequestSubmitted_github.context.repo.repo}\`.`;
+    
+            if (inputs.githubSlackMapping) {
+                const mapping = JSON.parse(inputs.githubSlackMapping);
+                const slackUser = mapping[author];
+    
+                console.log(`Slacking author: ${author} at slack ID: ${slackUser}`);
+    
+                if (!slackUser) {
+                    core.setFailed(`Couldn't find an associated slack ID for user: ${author}`);
+                    return;
+                }
+    
+                sendMessage(
+                    inputs.slackUrl,
+                    slackUser,
+                    message,
+                    inputs.botName,
+                    inputs.iconEmoji
+                );
+    
+            } else if (inputs.slackChannel) {
+                sendMessage(
+                    inputs.slackUrl,
+                    inputs.slackChannel,
+                    message,
+                    inputs.botName,
+                    inputs.iconEmoji
+                );
+            }
+        }
+    } catch(error) {
+        console.log(error);
+    }
+   
 }
 // CONCATENATED MODULE: ./src/changes_requested/pullRequestUnlabeled.js
 const pullRequestUnlabeled_github = __webpack_require__(469);
@@ -15528,88 +15533,97 @@ const pullRequestUnlabeled_core = __webpack_require__(393);
 
 async function pullRequestUnlabeled(context, inputs) {
 
-    console.log('Action ==== pullRequestUnlabeled');
+    try {
+        console.log('Action ==== pullRequestUnlabeled');
 
-    const pr = context.payload.pull_request;
-    const review = context.payload.review;
-    const pullNumber = pr.number;
-	const pullUrl = pr.html_url;
-	const author = pr.user.id;
-	// const state = review.state;
+        const pr = context.payload.pull_request;
+        const review = context.payload.review;
+        const pullNumber = pr.number;
+        const pullUrl = pr.html_url;
+        const author = pr.user.id;
+        // const state = review.state;
 
-    console.log('PR number is', pullNumber);
-    console.log('Inputs', inputs);
-    console.log('Review', review);
-    
-	const client = new pullRequestUnlabeled_github.GitHub(inputs.token);
+        console.log('PR number is', pullNumber);
+        console.log('Inputs', inputs);
+        console.log('Review', review);
+        
+        const client = new pullRequestUnlabeled_github.GitHub(inputs.token);
 
-	const { data } = await client.pulls.listReviews({
-		owner: pullRequestUnlabeled_github.context.repo.owner,
-		repo: pullRequestUnlabeled_github.context.repo.repo,
-		// eslint-disable-next-line @typescript-eslint/camelcase
-		pull_number: pullNumber,
-	});
+        const { data } = await client.pulls.listReviews({
+            owner: pullRequestUnlabeled_github.context.repo.owner,
+            repo: pullRequestUnlabeled_github.context.repo.repo,
+            // eslint-disable-next-line @typescript-eslint/camelcase
+            pull_number: pullNumber,
+        });
 
-	const activeReviews = parseReviews(data || []);
-	// const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
+        const activeReviews = parseReviews(data || []);
+        const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 
-    console.log('Active Reviews -------------------------------------');
-    console.log(activeReviews);
-	console.log('denied', deniedReviews.length);
-    console.log('alert', inputs.labelChangesRequested);
+        console.log('Active Reviews -------------------------------------');
+        console.log(activeReviews);
+        console.log('Denied Reviews -------------------------------------');
+        console.log(deniedReviews);
 
-    // if (inputs.labelChangesRequested && state === 'changes_requested') {
-	// 	addLabels(
-	// 		client,
-	// 		pullNumber,
-	// 		['changes requested']
-	// 	);
-	// }
+        console.log('denied', deniedReviews.length);
+        console.log('alert 1 -> labelChangesRequested', inputs.labelChangesRequested);
+        console.log('alert 2 -> alertOnRemoved', inputs.alertOnRemoved);
 
-	// if (inputs.labelChangesRequested && deniedReviews.length === 0) {
-	// 	removeLabel(
-	// 		client,
-	// 		pullNumber,
-	// 		'changes%20requested'
-	// 	);
-	// }
 
-	// if (
-	// 	state === 'changes_requested' &&
-	// 	(inputs.slackChannel || inputs.githubSlackMapping)
-	// 	&& inputs.slackUrl
-	// ) {
-	// 	const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${github.context.repo.repo}\`.`;
+        // if (inputs.labelChangesRequested && state === 'changes_requested') {
+        // 	addLabels(
+        // 		client,
+        // 		pullNumber,
+        // 		['changes requested']
+        // 	);
+        // }
 
-	// 	if (inputs.githubSlackMapping) {
-	// 		const mapping = JSON.parse(inputs.githubSlackMapping);
-	// 		const slackUser = mapping[author];
+        // if (inputs.labelChangesRequested && deniedReviews.length === 0) {
+        // 	removeLabel(
+        // 		client,
+        // 		pullNumber,
+        // 		'changes%20requested'
+        // 	);
+        // }
 
-	// 		console.log(`Slacking author: ${author} at slack ID: ${slackUser}`);
+        // if (
+        // 	state === 'changes_requested' &&
+        // 	(inputs.slackChannel || inputs.githubSlackMapping)
+        // 	&& inputs.slackUrl
+        // ) {
+        // 	const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${github.context.repo.repo}\`.`;
 
-	// 		if (!slackUser) {
-	// 			core.setFailed(`Couldn't find an associated slack ID for user: ${author}`);
-	// 			return;
-	// 		}
+        // 	if (inputs.githubSlackMapping) {
+        // 		const mapping = JSON.parse(inputs.githubSlackMapping);
+        // 		const slackUser = mapping[author];
 
-	// 		sendMessage(
-	// 			inputs.slackUrl,
-	// 			slackUser,
-	// 			message,
-	// 			inputs.botName,
-	// 			inputs.iconEmoji
-	// 		);
+        // 		console.log(`Slacking author: ${author} at slack ID: ${slackUser}`);
 
-	// 	} else if (inputs.slackChannel) {
-	// 		sendMessage(
-	// 			inputs.slackUrl,
-	// 			inputs.slackChannel,
-	// 			message,
-	// 			inputs.botName,
-	// 			inputs.iconEmoji
-	// 		);
-	// 	}
-	// }
+        // 		if (!slackUser) {
+        // 			core.setFailed(`Couldn't find an associated slack ID for user: ${author}`);
+        // 			return;
+        // 		}
+
+        // 		sendMessage(
+        // 			inputs.slackUrl,
+        // 			slackUser,
+        // 			message,
+        // 			inputs.botName,
+        // 			inputs.iconEmoji
+        // 		);
+
+        // 	} else if (inputs.slackChannel) {
+        // 		sendMessage(
+        // 			inputs.slackUrl,
+        // 			inputs.slackChannel,
+        // 			message,
+        // 			inputs.botName,
+        // 			inputs.iconEmoji
+        // 		);
+        // 	}
+        // }
+    } catch(error) {
+        console.log(error);
+    }
 }
 // CONCATENATED MODULE: ./src/changes_requested/index.ts
 var changes_requested_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -15655,8 +15669,6 @@ function main() {
         }
         else if (event === 'pull_request' && action === 'unlabeled') {
             yield pullRequestUnlabeled(changes_requested_github.context, inputs);
-            // review.state === empty
-            // const review = github.context.payload.review;
         }
     });
 }

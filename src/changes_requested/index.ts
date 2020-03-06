@@ -35,13 +35,14 @@ async function main(): Promise<{}> {
 	const event = github.context.eventName;
 	const action = github.context.payload.action;
 
+
 	if (event === 'pull_request' && action === 'submitted') {
+
 		await pullRequestSubmitted(github.context, inputs);
-		
+
 	} else if (event === 'pull_request' && action === 'unlabeled') {
+		
 		await pullRequestUnlabeled(github.context, inputs);
-		// review.state === empty
-		// const review = github.context.payload.review;
 	}
 }
 
@@ -57,10 +58,6 @@ async function main(): Promise<{}> {
 	// });
 
 	////// 3. filter only active requests for change ////// 
-
 	//  parseReviews()
-
 	////// 4. get github ID for negative reviewers ////// 
-
-
 	////// 5. send out slack message with link to this PR ////// 
