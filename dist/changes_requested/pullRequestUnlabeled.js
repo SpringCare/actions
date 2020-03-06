@@ -4712,7 +4712,6 @@ async function pullRequestUnlabeled(context, inputs) {
         const pullUrl = pr.html_url;
 
         console.log('Action ==== unlabeled');
-        console.log('Payload', context.payload)
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
         
@@ -4737,20 +4736,20 @@ async function pullRequestUnlabeled(context, inputs) {
 
                     const slackUser = mapping[reviewers[i]];
 
-                    console.log(`Slacking reviewer: ${reviewer[i]} at slack ID: ${slackUser}`);
+                    console.log(`Slacking reviewer: ${reviewers[i]} at slack ID: ${slackUser}`);
 
                     if (!slackUser) {
-                        pullRequestUnlabeled_core.setFailed(`Couldn't find an associated slack ID for reviewer: ${reviewer[i]}`);
+                        pullRequestUnlabeled_core.setFailed(`Couldn't find an associated slack ID for reviewer: ${reviewers[i]}`);
                         return;
                     }
 
-                    sendMessage(
-                        inputs.slackUrl,
-                        slackUser,
-                        message,
-                        inputs.botName,
-                        inputs.iconEmoji
-                    );
+                    // sendMessage(
+                    //     inputs.slackUrl,
+                    //     slackUser,
+                    //     message,
+                    //     inputs.botName,
+                    //     inputs.iconEmoji
+                    // );
                 }
 
         	} else if (inputs.slackChannel) {
