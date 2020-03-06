@@ -14701,6 +14701,7 @@ function getReviews(inputs, pullNumber) {
     });
 }
 ;
+// POLLING
 
 // CONCATENATED MODULE: ./src/utils/parseReviews.ts
 function parseReviews(reviews = []) {
@@ -14848,6 +14849,11 @@ async function pullRequestUnlabeled(context, inputs) {
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 
         console.log('hello!')
+        console.log(inputs.alertOnRemoved)
+        console.log(label === 'changes requested')
+        console.log(inputs.slackChannel || inputs.githubSlackMapping)
+        console.log(inputs.slackUrl)
+        console.log(deniedReviews.length > 0)
 
         if (
             inputs.alertOnRemoved 

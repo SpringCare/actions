@@ -13,3 +13,5 @@ export async function getReviews(inputs, pullNumber) {
         pull_number: pullNumber,
     });
 };
+
+// POLLING

@@ -482,6 +482,7 @@ function getReviews(inputs, pullNumber) {
     });
 }
 ;
+// POLLING
 
 // CONCATENATED MODULE: ./src/utils/parseReviews.ts
 function parseReviews(reviews = []) {
