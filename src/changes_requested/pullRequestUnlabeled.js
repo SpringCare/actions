@@ -2,6 +2,7 @@ const github = require('@actions/github');
 const core = require('@actions/core');
 
 import { sendMessage } from '../utils/slack';
+import { getReviews } from '../utils/getReviews';
 import { parseReviews } from '../utils/parseReviews';
 
 
@@ -18,15 +19,7 @@ export async function pullRequestUnlabeled(context, inputs) {
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
         
-        const client = new github.GitHub(inputs.token);
-
-        const { data } = await client.pulls.listReviews({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            // eslint-disable-next-line @typescript-eslint/camelcase
-            pull_number: pullNumber,
-        });
-
+        const { data } = getReviews(inputs, pullNumber);
         const activeReviews = parseReviews(data || []);
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 
@@ -43,26 +36,26 @@ export async function pullRequestUnlabeled(context, inputs) {
                 const mapping = JSON.parse(inputs.githubSlackMapping);
                 const reviewers = deniedReviews.map(reviewer => reviewer.user);
 
-                console.log(reviewers)
-                // for (let i = 0; i < reviewers.length; i++) {
+                for (let i = 0; i < reviewers.length; i++) {
 
-                //     const slackUser = mapping[reviewers[i]];
+                    const slackUser = mapping[reviewers[i]];
 
-                //     console.log(`Slacking reviewer: ${reviewer[i]} at slack ID: ${slackUser}`);
+                    console.log(`Slacking reviewer: ${reviewer[i]} at slack ID: ${slackUser}`);
 
-                //     if (!slackUser) {
-                //         core.setFailed(`Couldn't find an associated slack ID for reviewer: ${reviewer[i]}`);
-                //         return;
-                //     }
+                    if (!slackUser) {
+                        core.setFailed(`Couldn't find an associated slack ID for reviewer: ${reviewer[i]}`);
+                        return;
+                    }
 
-                //     sendMessage(
-                //         inputs.slackUrl,
-                //         slackUser,
-                //         message,
-                //         inputs.botName,
-                //         inputs.iconEmoji
-                //     );
-                // }
+                    sendMessage(
+                        inputs.slackUrl,
+                        slackUser,
+                        message,
+                        inputs.botName,
+                        inputs.iconEmoji
+                    );
+                }
+
         	} else if (inputs.slackChannel) {
         		// sendMessage(
         		// 	inputs.slackUrl,

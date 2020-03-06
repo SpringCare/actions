@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(41);
+/******/ 		return __webpack_require__(367);
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -799,140 +799,6 @@ module.exports = opts => {
 	return Object.keys(env).find(x => x.toUpperCase() === 'PATH') || 'Path';
 };
 
-
-/***/ }),
-
-/***/ 41:
-/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-
-// EXTERNAL MODULE: ./node_modules/axios/index.js
-var axios = __webpack_require__(53);
-var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
-
-// CONCATENATED MODULE: ./src/utils/slack.ts
-
-function sendMessage(webhookUrl, channel, message, username = "Spring Health", iconEmoji) {
-    axios_default().post(webhookUrl, {
-        channel,
-        username,
-        icon_emoji: iconEmoji,
-        text: message,
-    });
-}
-
-// CONCATENATED MODULE: ./src/utils/parseReviews.ts
-function parseReviews(reviews = []) {
-    //TODO: Add argument for states to care about
-    // grab the data we care about
-    const parsed = reviews.map(r => ({
-        state: r.state,
-        user: r.user.id,
-        submitted: new Date(r.submitted_at),
-    }));
-    const data = {};
-    // group reviews by review author, and only keep the newest review
-    parsed.forEach((p) => {
-        // we only care about reviews that are approved or denied.
-        if (p.state.toLowerCase() !== 'approved' && p.state.toLowerCase() !== 'changes_requested') {
-            return;
-        }
-        // Check if the new item was submitted AFTER
-        // the already saved review.  If it was, overwrite
-        if (data[p.user]) {
-            const submitted = data[p.user].submitted;
-            data[p.user] = submitted > p.submitted ? data[p.user] : p;
-        }
-        else {
-            data[p.user] = p;
-        }
-    });
-    return Object.keys(data).map(k => data[k]);
-}
-
-// CONCATENATED MODULE: ./src/changes_requested/pullRequestUnlabeled.js
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "pullRequestUnlabeled", function() { return pullRequestUnlabeled; });
-const github = __webpack_require__(469);
-const core = __webpack_require__(393);
-
-
-
-
-
-async function pullRequestUnlabeled(context, inputs) {
-
-    try {
-
-        const pr = context.payload.pull_request;
-        const pullNumber = pr.number;
-        const pullUrl = pr.html_url;
-
-        console.log('Action ==== unlabeled');
-        console.log('Payload', context.payload)
-        console.log('PR number is', pullNumber);
-        console.log('Inputs', inputs);
-        
-        const client = new github.GitHub(inputs.token);
-
-        const { data } = await client.pulls.listReviews({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            // eslint-disable-next-line @typescript-eslint/camelcase
-            pull_number: pullNumber,
-        });
-
-        const activeReviews = parseReviews(data || []);
-        const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
-
-        if (
-            inputs.alertOnRemoved &&
-        	(inputs.slackChannel || inputs.githubSlackMapping)
-            && inputs.slackUrl
-            && deniedReviews.length > 0
-        ) {
-        	const message = `Changes have been made to pull request <${pullUrl}|#${pullNumber}> in \`${github.context.repo.repo}\`. Please review.`;
-
-        	if (inputs.githubSlackMapping) {
-
-                const mapping = JSON.parse(inputs.githubSlackMapping);
-                const reviewers = deniedReviews.map(reviewer => reviewer.user);
-
-                console.log(reviewers)
-                // for (let i = 0; i < reviewers.length; i++) {
-
-                //     const slackUser = mapping[reviewers[i]];
-
-                //     console.log(`Slacking reviewer: ${reviewer[i]} at slack ID: ${slackUser}`);
-
-                //     if (!slackUser) {
-                //         core.setFailed(`Couldn't find an associated slack ID for reviewer: ${reviewer[i]}`);
-                //         return;
-                //     }
-
-                //     sendMessage(
-                //         inputs.slackUrl,
-                //         slackUser,
-                //         message,
-                //         inputs.botName,
-                //         inputs.iconEmoji
-                //     );
-                // }
-        	} else if (inputs.slackChannel) {
-        		// sendMessage(
-        		// 	inputs.slackUrl,
-        		// 	inputs.slackChannel,
-        		// 	message,
-        		// 	inputs.botName,
-        		// 	inputs.iconEmoji
-        		// );
-        	}
-        }
-    } catch(error) {
-        console.log(error);
-    }
-}
 
 /***/ }),
 
@@ -4749,6 +4615,158 @@ module.exports = (flag, argv) => {
 	return pos !== -1 && (terminatorPos === -1 ? true : pos < terminatorPos);
 };
 
+
+/***/ }),
+
+/***/ 367:
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: ./node_modules/axios/index.js
+var axios = __webpack_require__(53);
+var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
+
+// CONCATENATED MODULE: ./src/utils/slack.ts
+
+function sendMessage(webhookUrl, channel, message, username = "Spring Health", iconEmoji) {
+    axios_default().post(webhookUrl, {
+        channel,
+        username,
+        icon_emoji: iconEmoji,
+        text: message,
+    });
+}
+
+// CONCATENATED MODULE: ./src/utils/getReviews.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const core = __webpack_require__(393);
+const github = __webpack_require__(469);
+function getReviews(inputs, pullNumber) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const client = new github.GitHub(inputs.token);
+        return yield client.pulls.listReviews({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            // eslint-disable-next-line @typescript-eslint/camelcase
+            pull_number: pullNumber,
+        });
+    });
+}
+;
+
+// CONCATENATED MODULE: ./src/utils/parseReviews.ts
+function parseReviews(reviews = []) {
+    //TODO: Add argument for states to care about
+    // grab the data we care about
+    const parsed = reviews.map(r => ({
+        state: r.state,
+        user: r.user.id,
+        submitted: new Date(r.submitted_at),
+    }));
+    const data = {};
+    // group reviews by review author, and only keep the newest review
+    parsed.forEach((p) => {
+        // we only care about reviews that are approved or denied.
+        if (p.state.toLowerCase() !== 'approved' && p.state.toLowerCase() !== 'changes_requested') {
+            return;
+        }
+        // Check if the new item was submitted AFTER
+        // the already saved review.  If it was, overwrite
+        if (data[p.user]) {
+            const submitted = data[p.user].submitted;
+            data[p.user] = submitted > p.submitted ? data[p.user] : p;
+        }
+        else {
+            data[p.user] = p;
+        }
+    });
+    return Object.keys(data).map(k => data[k]);
+}
+
+// CONCATENATED MODULE: ./src/changes_requested/pullRequestUnlabeled.js
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "pullRequestUnlabeled", function() { return pullRequestUnlabeled; });
+const pullRequestUnlabeled_github = __webpack_require__(469);
+const pullRequestUnlabeled_core = __webpack_require__(393);
+
+
+
+
+
+
+async function pullRequestUnlabeled(context, inputs) {
+
+    try {
+
+        const pr = context.payload.pull_request;
+        const pullNumber = pr.number;
+        const pullUrl = pr.html_url;
+
+        console.log('Action ==== unlabeled');
+        console.log('Payload', context.payload)
+        console.log('PR number is', pullNumber);
+        console.log('Inputs', inputs);
+        
+        const { data } = getReviews(inputs, pullNumber);
+        const activeReviews = parseReviews(data || []);
+        const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
+
+        if (
+            inputs.alertOnRemoved &&
+        	(inputs.slackChannel || inputs.githubSlackMapping)
+            && inputs.slackUrl
+            && deniedReviews.length > 0
+        ) {
+        	const message = `Changes have been made to pull request <${pullUrl}|#${pullNumber}> in \`${pullRequestUnlabeled_github.context.repo.repo}\`. Please review.`;
+
+        	if (inputs.githubSlackMapping) {
+
+                const mapping = JSON.parse(inputs.githubSlackMapping);
+                const reviewers = deniedReviews.map(reviewer => reviewer.user);
+
+                for (let i = 0; i < reviewers.length; i++) {
+
+                    const slackUser = mapping[reviewers[i]];
+
+                    console.log(`Slacking reviewer: ${reviewer[i]} at slack ID: ${slackUser}`);
+
+                    if (!slackUser) {
+                        pullRequestUnlabeled_core.setFailed(`Couldn't find an associated slack ID for reviewer: ${reviewer[i]}`);
+                        return;
+                    }
+
+                    sendMessage(
+                        inputs.slackUrl,
+                        slackUser,
+                        message,
+                        inputs.botName,
+                        inputs.iconEmoji
+                    );
+                }
+
+        	} else if (inputs.slackChannel) {
+        		// sendMessage(
+        		// 	inputs.slackUrl,
+        		// 	inputs.slackChannel,
+        		// 	message,
+        		// 	inputs.botName,
+        		// 	inputs.iconEmoji
+        		// );
+        	}
+        }
+    } catch(error) {
+        console.log(error);
+    }
+}
 
 /***/ }),
 
