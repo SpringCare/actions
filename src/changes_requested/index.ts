@@ -26,6 +26,7 @@ async function main(): Promise<{}> {
 		githubSlackMapping: core.getInput('github-slack-mapping'),
 	};
 
+	const client = new github.GitHub(inputs.token);
 
 	////// 1. check to see if label was removed ////// 
 	// if event === pull_request && action === submitted

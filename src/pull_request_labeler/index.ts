@@ -25,6 +25,8 @@ async function main() {
 		labelWIP: core.getInput('wip'),
 	};
 
+	const client = new github.GitHub(inputs.token);
+	
 	const pr = github.context.payload.pull_request;
 	if (!pr) {
 		core.setFailed('This action must be run with only "pull_request" or "pull_request_review".');
