@@ -50,23 +50,23 @@ export async function pullRequestUnlabeled(context, inputs) {
                         return;
                     }
 
-                    // sendMessage(
-                    //     inputs.slackUrl,
-                    //     slackUser,
-                    //     message,
-                    //     inputs.botName,
-                    //     inputs.iconEmoji
-                    // );
+                    sendMessage(
+                        inputs.slackUrl,
+                        slackUser,
+                        message,
+                        inputs.botName,
+                        inputs.iconEmoji
+                    );
                 }
 
         	} else if (inputs.slackChannel) {
-        		// sendMessage(
-        		// 	inputs.slackUrl,
-        		// 	inputs.slackChannel,
-        		// 	message,
-        		// 	inputs.botName,
-        		// 	inputs.iconEmoji
-        		// );
+        		sendMessage(
+        			inputs.slackUrl,
+        			inputs.slackChannel,
+        			message,
+        			inputs.botName,
+        			inputs.iconEmoji
+        		);
         	}
         }
     } catch(error) {
