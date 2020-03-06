@@ -10,6 +10,7 @@ export async function pullRequestUnlabeled(context, inputs) {
 
     try {
 
+        const label = context.payload.label.name;
         const pr = context.payload.pull_request;
         const pullNumber = pr.number;
         const pullUrl = pr.html_url;
@@ -23,8 +24,9 @@ export async function pullRequestUnlabeled(context, inputs) {
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 
         if (
-            inputs.alertOnRemoved &&
-        	(inputs.slackChannel || inputs.githubSlackMapping)
+            inputs.alertOnRemoved 
+            && label === 'changes requested'
+            && (inputs.slackChannel || inputs.githubSlackMapping)
             && inputs.slackUrl
             && deniedReviews.length > 0
         ) {
