@@ -11671,7 +11671,7 @@ const core = __webpack_require__(393);
 
 async function pullRequestUnlabeled(context, inputs) {
 
-    console.log('In action ==== pullRequestUnlabeled');
+    console.log('Action ==== pullRequestUnlabeled');
 
     const pr = context.payload.pull_request;
     const review = context.payload.review;
@@ -11681,7 +11681,6 @@ async function pullRequestUnlabeled(context, inputs) {
 	// const state = review.state;
 
     console.log('PR number is', pullNumber);
-	console.log('Config', config);
     console.log('Inputs', inputs);
     console.log('Review', review);
     

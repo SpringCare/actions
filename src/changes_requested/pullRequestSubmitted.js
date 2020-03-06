@@ -8,7 +8,7 @@ import { parseReviews } from '../utils/parseReviews';
 
 export async function pullRequestSubmitted(context, inputs) {
 
-    console.log('In action ==== pullRequestSubmitted');
+    console.log('Action ==== pullRequestSubmitted');
 
     const pr = context.payload.pull_request;
     const review = context.payload.review;
@@ -18,7 +18,6 @@ export async function pullRequestSubmitted(context, inputs) {
 	const state = review.state;
 
     console.log('PR number is', pullNumber);
-	console.log('Config', config);
     console.log('Inputs', inputs);
     
 	const client = new github.GitHub(inputs.token);
