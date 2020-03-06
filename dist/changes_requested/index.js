@@ -4194,9 +4194,8 @@ const verifyConfig = __webpack_require__(359);
 
 
 
-// import { getReviews } from '../utils/getReviews';
-/// CREATE: Pull request submitted
-/// CREATE: Pull request unlabeled
+/// CREATE: Pull request submitted function
+/// CREATE: Pull request unlabeled function
 function main() {
     return changes_requested_awaiter(this, void 0, void 0, function* () {
         // Grab the config variables. Abort if they're unavailable.
@@ -4229,8 +4228,10 @@ function main() {
         const review = changes_requested_github.context.payload.review;
         const event = changes_requested_github.context.eventName;
         const action = changes_requested_github.context.payload.action;
-        console.log('Event -------:', event);
-        console.log('Actions -------:', action);
+        console.log('Event ---------------');
+        console.log(event);
+        console.log('Action ---------------');
+        console.log(action);
         if (!pr) {
             core.setFailed('This action must be run with only "pull_request_review".');
             return;

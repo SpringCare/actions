@@ -8927,7 +8927,6 @@ const pull_request_labeler_github = __webpack_require__(469);
 const verifyConfig = __webpack_require__(359);
 
 
-// import { getReviews } from '../utils/getReviews';
 // Call the main function.
 main();
 function main() {

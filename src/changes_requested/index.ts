@@ -5,9 +5,8 @@ const verifyConfig = require('../utils/verifyConfig');
 import { addLabels, removeLabel } from '../utils/labeler';
 import { sendMessage } from '../utils/slack';
 import { parseReviews } from '../utils/parseReviews';
-// import { getReviews } from '../utils/getReviews';
-/// CREATE: Pull request submitted
-/// CREATE: Pull request unlabeled
+/// CREATE: Pull request submitted function
+/// CREATE: Pull request unlabeled function
 
 
 async function main(): Promise<{}> {
@@ -51,17 +50,16 @@ async function main(): Promise<{}> {
 	const event = github.context.eventName;
 	const action = github.context.payload.action;
 
-	console.log('Event -------:', event);
-	console.log('Actions -------:', action);
+	console.log('Event ---------------');
+	console.log(event);
+	console.log('Action ---------------');
+	console.log(action);
 
 
 	if (!pr) {
 		core.setFailed('This action must be run with only "pull_request_review".');
 		return;
 	}
-
-
-
 
 	const pullNumber = pr.number;
 	const pullUrl = pr.html_url;

@@ -4,8 +4,6 @@ const github = require('@actions/github');
 const verifyConfig = require('../utils/verifyConfig');
 import { addLabels, removeLabel } from '../utils/labeler';
 import { parseReviews } from '../utils/parseReviews';
-// import { getReviews } from '../utils/getReviews';
-
 
 // Call the main function.
 main();
