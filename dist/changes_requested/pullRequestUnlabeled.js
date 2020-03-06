@@ -4718,8 +4718,6 @@ async function pullRequestUnlabeled(context, inputs) {
         console.log('Inputs', inputs);
         console.log(label)
         
-        // console.log(getReviews(inputs, pullNumber));
-
         const client = new pullRequestUnlabeled_github.GitHub(inputs.token);
 
         const { data } = client.pulls.listReviews({
@@ -4730,8 +4728,10 @@ async function pullRequestUnlabeled(context, inputs) {
         });
 
         const activeReviews = parseReviews(data || []);
+        console.log(activeReviews)
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
-
+        console.log(deniedReviews)
+        
         if (
             label === 'changes requested' && 
             (inputs.slackChannel || inputs.githubSlackMapping)
