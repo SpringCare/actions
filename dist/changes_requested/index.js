@@ -2841,7 +2841,11 @@ function main() {
         }
         const event = changes_requested_github.context.eventName;
         const action = changes_requested_github.context.payload.action;
+        console.log('test!');
+        console.log(event);
+        console.log(action);
         if (event === 'pull_request' && action === 'submitted') {
+            console.log('test2!');
             yield pullRequestSubmitted(changes_requested_github.context, inputs);
         }
         else if (event === 'pull_request' && action === 'unlabeled') {

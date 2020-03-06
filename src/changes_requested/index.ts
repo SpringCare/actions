@@ -35,7 +35,12 @@ async function main(): Promise<{}> {
 	const event = github.context.eventName;
 	const action = github.context.payload.action;
 
+	console.log('test!')
+	console.log(event)
+	console.log(action)
+
 	if (event === 'pull_request' && action === 'submitted') {
+		console.log('test2!')
 		await pullRequestSubmitted(github.context, inputs);
 
 	} else if (event === 'pull_request' && action === 'unlabeled') {
