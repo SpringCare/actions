@@ -15542,10 +15542,9 @@ async function pullRequestUnlabeled(context, inputs) {
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
         console.log(label);
+        console.log(pullRequestUnlabeled_github.context)
         
         const client = new pullRequestUnlabeled_github.GitHub(inputs.token);
-        console.log(client)
-        console.log('TEST!!')
 
         const { data } = client.pulls.listReviews({
             owner: pullRequestUnlabeled_github.context.repo.owner,
@@ -15553,8 +15552,6 @@ async function pullRequestUnlabeled(context, inputs) {
             // eslint-disable-next-line @typescript-eslint/camelcase
             pull_number: pullNumber,
         });
-
-        console.log('DATA   ', data)
 
         const activeReviews = parseReviews(data || []);
         console.log(activeReviews)
