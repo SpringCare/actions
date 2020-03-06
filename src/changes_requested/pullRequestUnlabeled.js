@@ -15,9 +15,6 @@ export async function pullRequestUnlabeled(context, inputs) {
         const review = context.payload.review;
         const pullNumber = pr.number;
         const pullUrl = pr.html_url;
-        const author = pr.user.id;
-
-        console.log('Payload ID', author)
 
         console.log('Payload', context.payload)
         // const state = review.state;
@@ -64,42 +61,44 @@ export async function pullRequestUnlabeled(context, inputs) {
         // 	);
         // }
 
-        // if (
-        // 	// state === 'changes_requested' &&
-        // 	(inputs.slackChannel || inputs.githubSlackMapping)
-        // 	&& inputs.slackUrl
-        // ) {
-        // 	const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${github.context.repo.repo}\`.`;
+        if (
+        	// state === 'changes_requested' &&
+        	(inputs.slackChannel || inputs.githubSlackMapping)
+        	&& inputs.slackUrl
+        ) {
+        	const message = `Changes have been made to pull request <${pullUrl}|#${pullNumber}> in \`${github.context.repo.repo}\`. Please review.`;
 
-        // 	if (inputs.githubSlackMapping) {
-        // 		const mapping = JSON.parse(inputs.githubSlackMapping);
-        // 		const slackUser = mapping[author];
+        	if (inputs.githubSlackMapping) {
+        		const mapping = JSON.parse(inputs.githubSlackMapping);
+                // const slackUser = mapping[author];
+                const slackUser = 'UT10UBYAK';
+                const reviewer = '10423673';
 
-        // 		console.log(`Slacking author: ${author} at slack ID: ${slackUser}`);
+        		console.log(`Slacking reviewer: ${reviewer} at slack ID: ${slackUser}`);
 
-        // 		if (!slackUser) {
-        // 			core.setFailed(`Couldn't find an associated slack ID for user: ${author}`);
-        // 			return;
-        // 		}
+        		if (!slackUser) {
+        			core.setFailed(`Couldn't find an associated slack ID for reviewer: ${reviewer}`);
+        			return;
+        		}
 
-        // 		sendMessage(
-        // 			inputs.slackUrl,
-        // 			slackUser,
-        // 			message,
-        // 			inputs.botName,
-        // 			inputs.iconEmoji
-        // 		);
+        		sendMessage(
+        			inputs.slackUrl,
+        			slackUser,
+        			message,
+        			inputs.botName,
+        			inputs.iconEmoji
+        		);
 
-        // 	} else if (inputs.slackChannel) {
-        // 		sendMessage(
-        // 			inputs.slackUrl,
-        // 			inputs.slackChannel,
-        // 			message,
-        // 			inputs.botName,
-        // 			inputs.iconEmoji
-        // 		);
-        // 	}
-        // }
+        	} else if (inputs.slackChannel) {
+        		sendMessage(
+        			inputs.slackUrl,
+        			inputs.slackChannel,
+        			message,
+        			inputs.botName,
+        			inputs.iconEmoji
+        		);
+        	}
+        }
     } catch(error) {
         console.log(error);
     }
