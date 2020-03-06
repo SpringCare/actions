@@ -35,13 +35,10 @@ async function main(): Promise<{}> {
 	const event = github.context.eventName;
 	const action = github.context.payload.action;
 
-
 	if (event === 'pull_request' && action === 'submitted') {
-
 		await pullRequestSubmitted(github.context, inputs);
 
 	} else if (event === 'pull_request' && action === 'unlabeled') {
-		
 		await pullRequestUnlabeled(github.context, inputs);
 	}
 }
