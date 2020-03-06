@@ -26,7 +26,6 @@ async function main() {
 	};
 
 	const client = new github.GitHub(inputs.token);
-
 	const pr = github.context.payload.pull_request;
 	if (!pr) {
 		core.setFailed('This action must be run with only "pull_request" or "pull_request_review".');
@@ -45,8 +44,8 @@ async function main() {
 	}
 	
 	if (inputs.requiredReviews > 0) {
-		const data = getReviews(inputs, pullNumber);
-		const activeReviews = parseReviews(data);
+		const { data } = getReviews(inputs, pullNumber);
+		const activeReviews = parseReviews(data || []);
 		const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
 
 		console.log('active', activeReviews);

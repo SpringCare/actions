@@ -62,6 +62,8 @@ async function main(): Promise<{}> {
 		return;
 	}
 
+	
+
 
 	const pullNumber = pr.number;
 	const pullUrl = pr.html_url;
@@ -72,8 +74,8 @@ async function main(): Promise<{}> {
 	console.log('Config', config);
 	console.log('Inputs', inputs);
 
-    const data = getReviews(inputs, pullNumber);
-	const activeReviews = parseReviews(data);
+    const { data } = getReviews(inputs, pullNumber);
+	const activeReviews = parseReviews(data || []);
 	const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 
 	console.log('denied', deniedReviews.length);
