@@ -4,6 +4,7 @@ const core = require('@actions/core');
 import { addLabels, removeLabel } from '../utils/labeler';
 import { sendMessage } from '../utils/slack';
 import { parseReviews } from '../utils/parseReviews';
+import { getReviews } from '../utils/getReviews';
 
 export async function pullRequestSubmitted(context, inputs) {
 
@@ -20,15 +21,7 @@ export async function pullRequestSubmitted(context, inputs) {
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
 
-        const client = new github.GitHub(inputs.token);
-
-        const { data } = client.pulls.listReviews({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            // eslint-disable-next-line @typescript-eslint/camelcase
-            pull_number: pullNumber,
-        });
-
+        const { data } = getReviews(inputs, pullNumber);
         const activeReviews = parseReviews(data || []);
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
     

@@ -3,7 +3,7 @@ const core = require('@actions/core');
 
 import { sendMessage } from '../utils/slack';
 import { parseReviews } from '../utils/parseReviews';
-
+import { getReviews } from '../utils/getReviews';
 
 export async function pullRequestUnlabeled(context, inputs) {
 
@@ -18,22 +18,12 @@ export async function pullRequestUnlabeled(context, inputs) {
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
 
-        const client = new github.GitHub(inputs.token);
-
-        console.log(github.context.repo.owner)
-        console.log(github.context.repo.repo)
-
-        const { data } = client.pulls.listReviews({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            // eslint-disable-next-line @typescript-eslint/camelcase
-            pull_number: pullNumber,
-        });
-
+        const { data } = getReviews(inputs, pullNumber);
         const activeReviews = parseReviews(data || []);
-        console.log(activeReviews)
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
-        console.log(deniedReviews)
+
+        console.log(activeReviews);
+        console.log(deniedReviews);
 
         if (
             label === 'changes requested' && 
@@ -59,23 +49,23 @@ export async function pullRequestUnlabeled(context, inputs) {
                         return;
                     }
 
-                    // sendMessage(
-                    //     inputs.slackUrl,
-                    //     slackUser,
-                    //     message,
-                    //     inputs.botName,
-                    //     inputs.iconEmoji
-                    // );
+                    sendMessage(
+                        inputs.slackUrl,
+                        slackUser,
+                        message,
+                        inputs.botName,
+                        inputs.iconEmoji
+                    );
                 }
 
         	} else if (inputs.slackChannel) {
-        		// sendMessage(
-        		// 	inputs.slackUrl,
-        		// 	inputs.slackChannel,
-        		// 	message,
-        		// 	inputs.botName,
-        		// 	inputs.iconEmoji
-        		// );
+        		sendMessage(
+        			inputs.slackUrl,
+        			inputs.slackChannel,
+        			message,
+        			inputs.botName,
+        			inputs.iconEmoji
+        		);
         	}
         }
     } catch(error) {
