@@ -824,8 +824,9 @@ function sendMessage(webhookUrl, channel, message, username = "Spring Health", i
 }
 
 // CONCATENATED MODULE: ./src/utils/parseReviews.ts
-function parseReviews(reviews = []) {
+function parseReviews(reviews) {
     //TODO: Add argument for states to care about
+    console.log(reviews);
     // grab the data we care about
     const parsed = reviews.map(r => ({
         state: r.state,
@@ -874,10 +875,7 @@ async function pullRequestUnlabeled(context, inputs) {
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
         console.log(label);
-        // console.log(github.context)
-        console.log(github.context.repo.owner)
-        console.log(github.context.repo.repo)
-        
+
         const client = new github.GitHub(inputs.token);
 
         const { data } = client.pulls.listReviews({
@@ -887,7 +885,7 @@ async function pullRequestUnlabeled(context, inputs) {
             pull_number: pullNumber,
         });
 
-        const activeReviews = parseReviews(data || []);
+        const activeReviews = parseReviews(data);
         console.log(activeReviews)
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
         console.log(deniedReviews)

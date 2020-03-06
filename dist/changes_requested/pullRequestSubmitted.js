@@ -10352,8 +10352,9 @@ function sendMessage(webhookUrl, channel, message, username = "Spring Health", i
 }
 
 // CONCATENATED MODULE: ./src/utils/parseReviews.ts
-function parseReviews(reviews = []) {
+function parseReviews(reviews) {
     //TODO: Add argument for states to care about
+    console.log(reviews);
     // grab the data we care about
     const parsed = reviews.map(r => ({
         state: r.state,

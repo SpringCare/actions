@@ -18,10 +18,7 @@ export async function pullRequestUnlabeled(context, inputs) {
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
         console.log(label);
-        // console.log(github.context)
-        console.log(github.context.repo.owner)
-        console.log(github.context.repo.repo)
-        
+
         const client = new github.GitHub(inputs.token);
 
         const { data } = client.pulls.listReviews({
@@ -31,7 +28,7 @@ export async function pullRequestUnlabeled(context, inputs) {
             pull_number: pullNumber,
         });
 
-        const activeReviews = parseReviews(data || []);
+        const activeReviews = parseReviews(data);
         console.log(activeReviews)
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
         console.log(deniedReviews)

@@ -1,7 +1,6 @@
 // const core = require('@actions/core');
 // const github = require('@actions/github');
 
-
 // export async function getReviews(inputs, pullNumber) {
 
 //     const client = new github.GitHub(inputs.token);
@@ -14,4 +13,3 @@
 //     });
 // };
 
-// POLLING?
