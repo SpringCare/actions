@@ -11679,11 +11679,15 @@ async function pullRequestUnlabeled(context, inputs) {
         const pullNumber = pr.number;
         const pullUrl = pr.html_url;
         const author = pr.user.id;
+
+        console.log('Payload ID', author)
+
+        console.log('Payload', context.payload)
         // const state = review.state;
 
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
-        console.log('Review', review);
+        // console.log('Review', review);
         
         const client = new pullRequestUnlabeled_github.GitHub(inputs.token);
 
@@ -11724,7 +11728,7 @@ async function pullRequestUnlabeled(context, inputs) {
         // }
 
         // if (
-        // 	state === 'changes_requested' &&
+        // 	// state === 'changes_requested' &&
         // 	(inputs.slackChannel || inputs.githubSlackMapping)
         // 	&& inputs.slackUrl
         // ) {
