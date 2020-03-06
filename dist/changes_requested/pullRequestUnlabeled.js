@@ -11669,7 +11669,7 @@ const core = __webpack_require__(393);
 
 
 
-function pullRequestUnlabeled(context, inputs) {
+async function pullRequestUnlabeled(context, inputs) {
 
     console.log('In action ==== pullRequestUnlabeled');
 
@@ -11678,27 +11678,29 @@ function pullRequestUnlabeled(context, inputs) {
     const pullNumber = pr.number;
 	const pullUrl = pr.html_url;
 	const author = pr.user.id;
-	const state = review.state;
+	// const state = review.state;
 
     console.log('PR number is', pullNumber);
 	console.log('Config', config);
     console.log('Inputs', inputs);
-    console.log('State', state);
+    console.log('Review', review);
     
-	// const client = new github.GitHub(inputs.token);
+	const client = new pullRequestUnlabeled_github.GitHub(inputs.token);
 
-	// const { data } = await client.pulls.listReviews({
-	// 	owner: github.context.repo.owner,
-	// 	repo: github.context.repo.repo,
-	// 	// eslint-disable-next-line @typescript-eslint/camelcase
-	// 	pull_number: pullNumber,
-	// });
+	const { data } = await client.pulls.listReviews({
+		owner: pullRequestUnlabeled_github.context.repo.owner,
+		repo: pullRequestUnlabeled_github.context.repo.repo,
+		// eslint-disable-next-line @typescript-eslint/camelcase
+		pull_number: pullNumber,
+	});
 
-	// const activeReviews = parseReviews(data || []);
+	const activeReviews = parseReviews(data || []);
 	// const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 
-	// console.log('denied', deniedReviews.length);
-    // console.log('alert', inputs.labelChangesRequested);
+    console.log('Active Reviews -------------------------------------');
+    console.log(activeReviews);
+	console.log('denied', deniedReviews.length);
+    console.log('alert', inputs.labelChangesRequested);
 
     // if (inputs.labelChangesRequested && state === 'changes_requested') {
 	// 	addLabels(
