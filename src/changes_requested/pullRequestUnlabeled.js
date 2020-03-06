@@ -21,6 +21,7 @@ export async function pullRequestUnlabeled(context, inputs) {
         console.log(label)
         
         const { data } = getReviews(inputs, pullNumber);
+        console.log(getReviews(inputs, pullNumber));
         const activeReviews = parseReviews(data || []);
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
         
@@ -29,6 +30,24 @@ export async function pullRequestUnlabeled(context, inputs) {
         console.log('Denied Reviews ------------------')
         console.log(deniedReviews)
         console.log(deniedReviews.length)
+
+        const client = new github.GitHub(inputs.token);
+
+        const { data } = await client.pulls.listReviews({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            // eslint-disable-next-line @typescript-eslint/camelcase
+            pull_number: pullNumber,
+        });
+
+        const activeReviews2 = parseReviews(data || []);
+        const deniedReviews2 = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
+        
+        console.log('Active Reviews 2------------------')
+        console.log(activeReviews2)
+        console.log('Denied Reviews 2 ------------------')
+        console.log(deniedReviews2)
+        console.log(deniedReviews2.length)
 
         console.log(inputs.alertOnRemoved)
         console.log(label === 'changes requested')
