@@ -4,7 +4,7 @@ const github = require('@actions/github');
 const verifyConfig = require('../utils/verifyConfig');
 import { addLabels, removeLabel } from '../utils/labeler';
 import { parseReviews } from '../utils/parseReviews';
-import { getReviews } from '../utils/getReviews';
+// import { getReviews } from '../utils/getReviews';
 
 
 // Call the main function.
@@ -25,7 +25,6 @@ async function main() {
 		labelWIP: core.getInput('wip'),
 	};
 
-	const client = new github.GitHub(inputs.token);
 	const pr = github.context.payload.pull_request;
 	if (!pr) {
 		core.setFailed('This action must be run with only "pull_request" or "pull_request_review".');
@@ -42,9 +41,17 @@ async function main() {
 		core.setFailed('If set, "required" must be an integer greater than 0');
 		return;
 	}
-	
+
+	const client = new github.GitHub(inputs.token);
+
+	const { data } = await client.pulls.listReviews({
+		owner: github.context.repo.owner,
+		repo: github.context.repo.repo,
+		// eslint-disable-next-line @typescript-eslint/camelcase
+		pull_number: pullNumber,
+	});
+
 	if (inputs.requiredReviews > 0) {
-		const { data } = getReviews(inputs, pullNumber);
 		const activeReviews = parseReviews(data || []);
 		const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
 
