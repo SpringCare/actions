@@ -2662,7 +2662,7 @@ async function pullRequestSubmitted(context, inputs) {
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
 
-        const { data } = getReviews(inputs, pullNumber);
+        const { data } = await getReviews(inputs, pullNumber);
         const activeReviews = parseReviews(data || []);
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
     
@@ -2747,16 +2747,7 @@ async function pullRequestUnlabeled(context, inputs) {
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
 
-        // const { data } = getReviews(inputs, pullNumber);
-        const client = new pullRequestUnlabeled_github.GitHub(inputs.token);
-
-        const { data } = await client.pulls.listReviews({
-            owner: pullRequestUnlabeled_github.context.repo.owner,
-            repo: pullRequestUnlabeled_github.context.repo.repo,
-            // eslint-disable-next-line @typescript-eslint/camelcase
-            pull_number: pullNumber,
-        });
-
+        const { data } = await getReviews(inputs, pullNumber);
         const activeReviews = parseReviews(data || []);
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 

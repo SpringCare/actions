@@ -5710,7 +5710,7 @@ async function pullRequestSubmitted(context, inputs) {
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
 
-        const { data } = getReviews(inputs, pullNumber);
+        const { data } = await getReviews(inputs, pullNumber);
         const activeReviews = parseReviews(data || []);
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
     
