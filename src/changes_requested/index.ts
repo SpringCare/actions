@@ -51,8 +51,8 @@ async function main(): Promise<{}> {
 	const event = github.context.eventName;
 	const action = github.context.payload.action;
 
-	console.log('Event -------:' event)
-	console.log('Actions -------:' action)
+	console.log('Event -------:', event);
+	console.log('Actions -------:', action);
 
 
 	if (!pr) {
