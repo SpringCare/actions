@@ -6,7 +6,7 @@ import { sendMessage } from '../utils/slack';
 import { parseReviews } from '../utils/parseReviews';
 
 
-export function pullRequestSubmitted(context, inputs) {
+export async function pullRequestSubmitted(context, inputs) {
 
     console.log('In action ==== pullRequestSubmitted');
 

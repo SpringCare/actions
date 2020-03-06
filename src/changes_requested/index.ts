@@ -36,10 +36,10 @@ async function main(): Promise<{}> {
 	const action = github.context.payload.action;
 
 	if (event === 'pull_request' && action === 'submitted') {
-		pullRequestSubmitted(github.context, inputs);
+		await pullRequestSubmitted(github.context, inputs);
 		
 	} else if (event === 'pull_request' && action === 'unlabeled') {
-		pullRequestUnlabeled(github.context, inputs);
+		await pullRequestUnlabeled(github.context, inputs);
 		// review.state === empty
 		// const review = github.context.payload.review;
 	}
