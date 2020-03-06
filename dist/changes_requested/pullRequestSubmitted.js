@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(22);
+/******/ 		return __webpack_require__(605);
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -400,218 +400,6 @@ module.exports.sync = spawnSync;
 module.exports._parse = parse;
 module.exports._enoent = enoent;
 
-
-/***/ }),
-
-/***/ 22:
-/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-
-// CONCATENATED MODULE: ./src/utils/labeler.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const github = __webpack_require__(469);
-function addLabels(client, prNumber, labels) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Adding labels:', labels);
-        yield client.issues.addLabels({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            labels: labels
-        });
-    });
-}
-function removeLabel(client, prNumber, label) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Removing label:', label);
-        yield client.issues.removeLabel({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            name: label
-        });
-    });
-}
-
-// EXTERNAL MODULE: ./node_modules/axios/index.js
-var axios = __webpack_require__(53);
-var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
-
-// CONCATENATED MODULE: ./src/utils/slack.ts
-
-function sendMessage(webhookUrl, channel, message, username = "Spring Health", iconEmoji) {
-    axios_default().post(webhookUrl, {
-        channel,
-        username,
-        icon_emoji: iconEmoji,
-        text: message,
-    });
-}
-
-// CONCATENATED MODULE: ./src/utils/getReviews.ts
-var getReviews_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const core = __webpack_require__(393);
-const getReviews_github = __webpack_require__(469);
-function getReviews(inputs, pullNumber) {
-    return getReviews_awaiter(this, void 0, void 0, function* () {
-        const client = new getReviews_github.GitHub(inputs.token);
-        return yield client.pulls.listReviews({
-            owner: getReviews_github.context.repo.owner,
-            repo: getReviews_github.context.repo.repo,
-            // eslint-disable-next-line @typescript-eslint/camelcase
-            pull_number: pullNumber,
-        });
-    });
-}
-;
-// POLLING
-
-// CONCATENATED MODULE: ./src/utils/parseReviews.ts
-function parseReviews(reviews = []) {
-    //TODO: Add argument for states to care about
-    // grab the data we care about
-    const parsed = reviews.map(r => ({
-        state: r.state,
-        user: r.user.id,
-        submitted: new Date(r.submitted_at),
-    }));
-    const data = {};
-    // group reviews by review author, and only keep the newest review
-    parsed.forEach((p) => {
-        // we only care about reviews that are approved or denied.
-        if (p.state.toLowerCase() !== 'approved' && p.state.toLowerCase() !== 'changes_requested') {
-            return;
-        }
-        // Check if the new item was submitted AFTER
-        // the already saved review.  If it was, overwrite
-        if (data[p.user]) {
-            const submitted = data[p.user].submitted;
-            data[p.user] = submitted > p.submitted ? data[p.user] : p;
-        }
-        else {
-            data[p.user] = p;
-        }
-    });
-    return Object.keys(data).map(k => data[k]);
-}
-
-// CONCATENATED MODULE: ./src/changes_requested/pullRequestSubmitted.js
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "pullRequestSubmitted", function() { return pullRequestSubmitted; });
-const pullRequestSubmitted_github = __webpack_require__(469);
-const pullRequestSubmitted_core = __webpack_require__(393);
-
-
-
-
-
-
-
-async function pullRequestSubmitted(context, inputs) {
-
-    try {
-
-        const pr = context.payload.pull_request;
-        const review = context.payload.review;
-        const pullNumber = pr.number;
-        const pullUrl = pr.html_url;
-        const author = pr.user.id;
-        const state = review.state;
-    
-        console.log('Action === submitted');
-        console.log('PR number is', pullNumber);
-        console.log('Inputs', inputs);
-
-                
-        const client = new pullRequestSubmitted_github.GitHub(inputs.token);
-
-        const { data } = client.pulls.listReviews({
-            owner: pullRequestSubmitted_github.context.repo.owner,
-            repo: pullRequestSubmitted_github.context.repo.repo,
-            // eslint-disable-next-line @typescript-eslint/camelcase
-            pull_number: pullNumber,
-        });
-        
-        const activeReviews = parseReviews(data || []);
-        const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
-    
-        console.log('denied', deniedReviews.length);
-        console.log('alert', inputs.labelChangesRequested);
-    
-        if (inputs.labelChangesRequested && state === 'changes_requested') {
-            addLabels(
-                client,
-                pullNumber,
-                ['changes requested']
-            );
-        }
-    
-        if (inputs.labelChangesRequested && deniedReviews.length === 0) {
-            removeLabel(
-                client,
-                pullNumber,
-                'changes%20requested'
-            );
-        }
-    
-        if (
-            state === 'changes_requested' &&
-            (inputs.slackChannel || inputs.githubSlackMapping)
-            && inputs.slackUrl
-        ) {
-            const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${pullRequestSubmitted_github.context.repo.repo}\`.`;
-    
-            if (inputs.githubSlackMapping) {
-                const mapping = JSON.parse(inputs.githubSlackMapping);
-                const slackUser = mapping[author];
-    
-                console.log(`Slacking author: ${author} at slack ID: ${slackUser}`);
-    
-                if (!slackUser) {
-                    pullRequestSubmitted_core.setFailed(`Couldn't find an associated slack ID for user: ${author}`);
-                    return;
-                }
-    
-                sendMessage(
-                    inputs.slackUrl,
-                    slackUser,
-                    message,
-                    inputs.botName,
-                    inputs.iconEmoji
-                );
-    
-            } else if (inputs.slackChannel) {
-                sendMessage(
-                    inputs.slackUrl,
-                    inputs.slackChannel,
-                    message,
-                    inputs.botName,
-                    inputs.iconEmoji
-                );
-            }
-        }
-    } catch(error) {
-        console.log(error);
-    }
-   
-}
 
 /***/ }),
 
@@ -2448,7 +2236,7 @@ function coerce(val) {
 
 var net = __webpack_require__(631);
 var tls = __webpack_require__(16);
-var http = __webpack_require__(605);
+var http = __webpack_require__(876);
 var https = __webpack_require__(211);
 var events = __webpack_require__(614);
 var assert = __webpack_require__(357);
@@ -5889,7 +5677,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var Stream = _interopDefault(__webpack_require__(413));
-var http = _interopDefault(__webpack_require__(605));
+var http = _interopDefault(__webpack_require__(876));
 var Url = _interopDefault(__webpack_require__(835));
 var https = _interopDefault(__webpack_require__(211));
 var zlib = _interopDefault(__webpack_require__(761));
@@ -9490,7 +9278,7 @@ function hasFirstPage (link) {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const url = __webpack_require__(835);
-const http = __webpack_require__(605);
+const http = __webpack_require__(876);
 const https = __webpack_require__(211);
 const pm = __webpack_require__(950);
 let tunnel;
@@ -9881,7 +9669,7 @@ exports.HttpClient = HttpClient;
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 var url = __webpack_require__(835);
-var http = __webpack_require__(605);
+var http = __webpack_require__(876);
 var https = __webpack_require__(211);
 var assert = __webpack_require__(357);
 var Writable = __webpack_require__(413).Writable;
@@ -10509,9 +10297,185 @@ module.exports = function isAbsoluteURL(url) {
 /***/ }),
 
 /***/ 605:
-/***/ (function(module) {
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
 
-module.exports = require("http");
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+// CONCATENATED MODULE: ./src/utils/labeler.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const github = __webpack_require__(469);
+function addLabels(client, prNumber, labels) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Adding labels:', labels);
+        yield client.issues.addLabels({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+            labels: labels
+        });
+    });
+}
+function removeLabel(client, prNumber, label) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Removing label:', label);
+        yield client.issues.removeLabel({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+            name: label
+        });
+    });
+}
+
+// EXTERNAL MODULE: ./node_modules/axios/index.js
+var axios = __webpack_require__(53);
+var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
+
+// CONCATENATED MODULE: ./src/utils/slack.ts
+
+function sendMessage(webhookUrl, channel, message, username = "Spring Health", iconEmoji) {
+    axios_default().post(webhookUrl, {
+        channel,
+        username,
+        icon_emoji: iconEmoji,
+        text: message,
+    });
+}
+
+// CONCATENATED MODULE: ./src/utils/parseReviews.ts
+function parseReviews(reviews = []) {
+    //TODO: Add argument for states to care about
+    // grab the data we care about
+    const parsed = reviews.map(r => ({
+        state: r.state,
+        user: r.user.id,
+        submitted: new Date(r.submitted_at),
+    }));
+    const data = {};
+    // group reviews by review author, and only keep the newest review
+    parsed.forEach((p) => {
+        // we only care about reviews that are approved or denied.
+        if (p.state.toLowerCase() !== 'approved' && p.state.toLowerCase() !== 'changes_requested') {
+            return;
+        }
+        // Check if the new item was submitted AFTER
+        // the already saved review.  If it was, overwrite
+        if (data[p.user]) {
+            const submitted = data[p.user].submitted;
+            data[p.user] = submitted > p.submitted ? data[p.user] : p;
+        }
+        else {
+            data[p.user] = p;
+        }
+    });
+    return Object.keys(data).map(k => data[k]);
+}
+
+// CONCATENATED MODULE: ./src/changes_requested/pullRequestSubmitted.js
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "pullRequestSubmitted", function() { return pullRequestSubmitted; });
+const pullRequestSubmitted_github = __webpack_require__(469);
+const core = __webpack_require__(393);
+
+
+
+
+
+async function pullRequestSubmitted(context, inputs) {
+
+    try {
+
+        const pr = context.payload.pull_request;
+        const review = context.payload.review;
+        const pullNumber = pr.number;
+        const pullUrl = pr.html_url;
+        const author = pr.user.id;
+        const state = review.state;
+    
+        console.log('Action === submitted');
+        console.log('PR number is', pullNumber);
+        console.log('Inputs', inputs);
+
+        const client = new pullRequestSubmitted_github.GitHub(inputs.token);
+
+        const { data } = client.pulls.listReviews({
+            owner: pullRequestSubmitted_github.context.repo.owner,
+            repo: pullRequestSubmitted_github.context.repo.repo,
+            // eslint-disable-next-line @typescript-eslint/camelcase
+            pull_number: pullNumber,
+        });
+
+        const activeReviews = parseReviews(data || []);
+        const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
+    
+        console.log('denied', deniedReviews.length);
+        console.log('alert', inputs.labelChangesRequested);
+    
+        if (inputs.labelChangesRequested && state === 'changes_requested') {
+            addLabels(
+                client,
+                pullNumber,
+                ['changes requested']
+            );
+        }
+    
+        if (inputs.labelChangesRequested && deniedReviews.length === 0) {
+            removeLabel(
+                client,
+                pullNumber,
+                'changes%20requested'
+            );
+        }
+    
+        if (
+            state === 'changes_requested' &&
+            (inputs.slackChannel || inputs.githubSlackMapping)
+            && inputs.slackUrl
+        ) {
+            const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${pullRequestSubmitted_github.context.repo.repo}\`.`;
+    
+            if (inputs.githubSlackMapping) {
+                const mapping = JSON.parse(inputs.githubSlackMapping);
+                const slackUser = mapping[author];
+    
+                console.log(`Slacking author: ${author} at slack ID: ${slackUser}`);
+    
+                if (!slackUser) {
+                    core.setFailed(`Couldn't find an associated slack ID for user: ${author}`);
+                    return;
+                }
+    
+                sendMessage(
+                    inputs.slackUrl,
+                    slackUser,
+                    message,
+                    inputs.botName,
+                    inputs.iconEmoji
+                );
+    
+            } else if (inputs.slackChannel) {
+                sendMessage(
+                    inputs.slackUrl,
+                    inputs.slackChannel,
+                    message,
+                    inputs.botName,
+                    inputs.iconEmoji
+                );
+            }
+        }
+    } catch(error) {
+        console.log(error);
+    }
+   
+}
 
 /***/ }),
 
@@ -10833,7 +10797,7 @@ var utils = __webpack_require__(35);
 var settle = __webpack_require__(564);
 var buildFullPath = __webpack_require__(960);
 var buildURL = __webpack_require__(133);
-var http = __webpack_require__(605);
+var http = __webpack_require__(876);
 var https = __webpack_require__(211);
 var httpFollow = __webpack_require__(549).http;
 var httpsFollow = __webpack_require__(549).https;
@@ -13486,6 +13450,13 @@ module.exports = function (str) {
 /***/ (function(module) {
 
 module.exports = require("tty");
+
+/***/ }),
+
+/***/ 876:
+/***/ (function(module) {
+
+module.exports = require("http");
 
 /***/ }),
 

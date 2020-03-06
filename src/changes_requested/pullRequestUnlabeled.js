@@ -2,7 +2,6 @@ const github = require('@actions/github');
 const core = require('@actions/core');
 
 import { sendMessage } from '../utils/slack';
-import { getReviews } from '../utils/getReviews';
 import { parseReviews } from '../utils/parseReviews';
 
 
@@ -33,7 +32,7 @@ export async function pullRequestUnlabeled(context, inputs) {
         console.log(activeReviews)
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
         console.log(deniedReviews)
-        
+
         if (
             label === 'changes requested' && 
             (inputs.slackChannel || inputs.githubSlackMapping)

@@ -42,19 +42,3 @@ async function main(): Promise<{}> {
 		await pullRequestUnlabeled(github.context, inputs);
 	}
 }
-
-
-
-	////// 1. check to see if label was removed ////// 
-	////// 2. get all reviews ////// 
-
-	// const { data } = await client.pulls.listReviews({
-	// 	owner: github.context.repo.owner,
-	// 	repo: github.context.repo.repo,
-	// 	pull_number: pullNumber,
-	// });
-
-	////// 3. filter only active requests for change ////// 
-	//  parseReviews()
-	////// 4. get github ID for negative reviewers ////// 
-	////// 5. send out slack message with link to this PR ////// 
