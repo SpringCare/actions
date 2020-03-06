@@ -4721,8 +4721,13 @@ async function pullRequestUnlabeled(context, inputs) {
         const { data } = getReviews(inputs, pullNumber);
         const activeReviews = parseReviews(data || []);
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
+        
+        console.log('Active Reviews ------------------')
+        console.log(activeReviews)
+        console.log('Denied Reviews ------------------')
+        console.log(deniedReviews)
+        console.log(deniedReviews.length)
 
-        console.log('hello!')
         console.log(inputs.alertOnRemoved)
         console.log(label === 'changes requested')
         console.log(inputs.slackChannel || inputs.githubSlackMapping)
@@ -4730,11 +4735,9 @@ async function pullRequestUnlabeled(context, inputs) {
         console.log(deniedReviews.length > 0)
 
         if (
-            inputs.alertOnRemoved 
-            && label === 'changes requested'
-            && (inputs.slackChannel || inputs.githubSlackMapping)
+            label === 'changes requested' && 
+            (inputs.slackChannel || inputs.githubSlackMapping)
             && inputs.slackUrl
-            && deniedReviews.length > 0
         ) {
         	const message = `Changes have been made to pull request <${pullUrl}|#${pullNumber}> in \`${pullRequestUnlabeled_github.context.repo.repo}\`. Please review.`;
 
