@@ -4715,10 +4715,13 @@ async function pullRequestUnlabeled(context, inputs) {
         console.log('Action ==== unlabeled');
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
+        console.log(label)
         
         const { data } = getReviews(inputs, pullNumber);
         const activeReviews = parseReviews(data || []);
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
+
+        console.log('hello!')
 
         if (
             inputs.alertOnRemoved 
