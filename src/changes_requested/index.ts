@@ -1,6 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const core = require('@actions/core');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const github = require('@actions/github');
 
 import { changesRequested } from './changesRequested';

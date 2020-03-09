@@ -1,4 +1,4 @@
-export function parseReviews(reviews = []): Array<{state: string, user: string}> {
+export function parseReviews(reviews = []): Array<{state: string; user: string}> {
 	//TODO: Add argument for states to care about
 
 	// grab the data we care about

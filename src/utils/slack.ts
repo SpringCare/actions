@@ -11,7 +11,6 @@ export function sendMessage(
 	axios.post(webhookUrl, {
 		channel,
 		username,
-		// eslint-disable-next-line @typescript-eslint/camelcase
 		icon_emoji: iconEmoji,
 		text: message,
 	});

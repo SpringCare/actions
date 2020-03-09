@@ -1,10 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const core = require('@actions/core');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const github = require('@actions/github');
 
 import { addLabels, removeLabel } from '../utils/labeler';
 import { parseReviews } from '../utils/parseReviews';
+import { getReviews } from '../utils/getReviews';
 
 
 async function main(): Promise<void> {
@@ -36,14 +35,7 @@ async function main(): Promise<void> {
 		return;
 	}
 
-	const client = new github.GitHub(inputs.token);
-
-	const { data } = await client.pulls.listReviews({
-		owner: github.context.repo.owner,
-		repo: github.context.repo.repo,
-		// eslint-disable-next-line @typescript-eslint/camelcase
-		pull_number: pullNumber,
-	});
+	const { data } = await getReviews(inputs.token, pullNumber);
 
 	if (inputs.requiredReviews > 0) {
 		const activeReviews = parseReviews(data || []);
