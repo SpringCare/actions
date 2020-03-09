@@ -5696,10 +5696,8 @@ const core = __webpack_require__(393);
 
 
 async function pullRequestSubmitted(context, inputs) {
-    console.log('test222!')
-    try {
 
-        console.log('test333!')
+    try {
 
         const pr = context.payload.pull_request;
         const review = context.payload.review;
@@ -5708,7 +5706,7 @@ async function pullRequestSubmitted(context, inputs) {
         const author = pr.user.id;
         const state = review.state;
     
-        console.log('Action === submitted');
+        console.log('Action: submitted');
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
 
@@ -5718,6 +5716,8 @@ async function pullRequestSubmitted(context, inputs) {
     
         console.log('denied', deniedReviews.length);
         console.log('alert', inputs.labelChangesRequested);
+
+        const client = new pullRequestSubmitted_github.GitHub(inputs.token);
     
         if (inputs.labelChangesRequested && state === 'changes_requested') {
             addLabels(

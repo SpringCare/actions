@@ -7,10 +7,8 @@ import { parseReviews } from '../utils/parseReviews';
 import { getReviews } from '../utils/getReviews';
 
 export async function pullRequestSubmitted(context, inputs) {
-    console.log('test222!')
-    try {
 
-        console.log('test333!')
+    try {
 
         const pr = context.payload.pull_request;
         const review = context.payload.review;
@@ -19,7 +17,7 @@ export async function pullRequestSubmitted(context, inputs) {
         const author = pr.user.id;
         const state = review.state;
     
-        console.log('Action === submitted');
+        console.log('Action: submitted');
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
 
@@ -29,6 +27,8 @@ export async function pullRequestSubmitted(context, inputs) {
     
         console.log('denied', deniedReviews.length);
         console.log('alert', inputs.labelChangesRequested);
+
+        const client = new github.GitHub(inputs.token);
     
         if (inputs.labelChangesRequested && state === 'changes_requested') {
             addLabels(
