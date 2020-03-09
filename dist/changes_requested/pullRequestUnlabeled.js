@@ -3249,9 +3249,9 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
     });
 };
 const github = __webpack_require__(469);
-function getReviews(inputs, pullNumber) {
+function getReviews(token, pullNumber) {
     return __awaiter(this, void 0, void 0, function* () {
-        const client = new github.GitHub(inputs.token);
+        const client = new github.GitHub(token);
         return yield client.pulls.listReviews({
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
@@ -3283,7 +3283,7 @@ async function pullRequestUnlabeled(context, inputs) {
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
 
-        const { data } = await getReviews(inputs, pullNumber);
+        const { data } = await getReviews(inputs.token, pullNumber);
         const activeReviews = parseReviews(data || []);
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 

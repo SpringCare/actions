@@ -17,7 +17,7 @@ export async function pullRequestUnlabeled(context, inputs) {
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
 
-        const { data } = await getReviews(inputs, pullNumber);
+        const { data } = await getReviews(inputs.token, pullNumber);
         const activeReviews = parseReviews(data || []);
         const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 

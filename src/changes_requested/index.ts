@@ -2,7 +2,7 @@ const github = require('@actions/github');
 const core = require('@actions/core');
 
 const verifyConfig = require('../utils/verifyConfig');
-import { pullRequestSubmitted } from './pullRequestSubmitted.js';
+import { changesRequested } from './changesRequested.js';
 import { pullRequestUnlabeled } from './pullRequestUnlabeled.js';
 
 
@@ -39,7 +39,7 @@ async function main(): Promise<{}> {
 	console.log(action);
 
 	if (event === 'pull_request_review' && action === 'submitted') {
-		await pullRequestSubmitted(github.context, inputs);
+		await changesRequested(github.context, inputs);
 
 	} else if (event === 'pull_request' && action === 'unlabeled') {
 		await pullRequestUnlabeled(github.context, inputs);
