@@ -13,8 +13,8 @@ export async function getReviews(token, pullNumber): Promise<{}> {
 			pull_number: pullNumber,
 		});
 
-	} catch(error) {
-		console.log(error);
-	}
+	} catch (e) {
+        console.error(e);
+    } 	
 }
 
