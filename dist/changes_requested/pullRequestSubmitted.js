@@ -5696,8 +5696,10 @@ const core = __webpack_require__(393);
 
 
 async function pullRequestSubmitted(context, inputs) {
-
+    console.log('test222!')
     try {
+
+        console.log('test333!')
 
         const pr = context.payload.pull_request;
         const review = context.payload.review;

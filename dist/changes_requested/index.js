@@ -2648,8 +2648,10 @@ const core = __webpack_require__(393);
 
 
 async function pullRequestSubmitted(context, inputs) {
-
+    console.log('test222!')
     try {
+
+        console.log('test333!')
 
         const pr = context.payload.pull_request;
         const review = context.payload.review;
@@ -2845,7 +2847,6 @@ function main() {
         console.log(event);
         console.log(action);
         if (event === 'pull_request_review' && action === 'submitted') {
-            console.log('test2!');
             yield pullRequestSubmitted(changes_requested_github.context, inputs);
         }
         else if (event === 'pull_request' && action === 'unlabeled') {
