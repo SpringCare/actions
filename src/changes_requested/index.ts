@@ -34,7 +34,7 @@ async function main(): Promise<{}> {
 
 	const event = github.context.eventName;
 	const action = github.context.payload.action;
-	
+
 	console.log(event);
 	console.log(action);
 

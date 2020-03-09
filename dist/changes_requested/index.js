@@ -2658,7 +2658,6 @@ async function pullRequestSubmitted(context, inputs) {
         const author = pr.user.id;
         const state = review.state;
     
-        console.log('Action: submitted');
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
 
@@ -2745,7 +2744,6 @@ async function pullRequestUnlabeled(context, inputs) {
         const pullNumber = pr.number;
         const pullUrl = pr.html_url;
 
-        console.log('Action: unlabeled');
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
 

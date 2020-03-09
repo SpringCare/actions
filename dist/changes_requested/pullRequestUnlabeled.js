@@ -3280,7 +3280,6 @@ async function pullRequestUnlabeled(context, inputs) {
         const pullNumber = pr.number;
         const pullUrl = pr.html_url;
 
-        console.log('Action: unlabeled');
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
 

@@ -24,7 +24,9 @@
 ```yml
 name: Spring Health Changes Requested
 
-on: [pull_request_review]
+on:
+  pull_request_review:
+    types: [submitted]
 
 jobs:
   ChangesRequested:
@@ -42,7 +44,9 @@ jobs:
 ```yml
 name: Spring Health Changes Requested
 
-on: [pull_request_review]
+on:
+  pull_request_review:
+    types: [submitted]
 
 jobs:
   ChangesRequested:
@@ -60,10 +64,13 @@ jobs:
 ```
 
 **Send Message to PR Author & Label**
+
 ```yml
 name: Spring Health Changes Requested
 
-on: [pull_request_review]
+on:
+  pull_request_review:
+    types: [submitted]
 
 jobs:
   ChangesRequested:
@@ -75,6 +82,30 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
         label-on-changes-requested: true
+        bot-name: 'Good Bot'
+        icon_emoji: ':dog:'
+        github-slack-mapping: '{"123":"U123ABC","456":"U456ABC"}'
+```
+
+**Send Message to PR Reviewer when Requested Changes Label is Removed**
+
+```yml
+name: Spring Health Changes Requested
+
+on:
+  pull_request:
+    types: [unlabeled]
+
+jobs:
+  ChangesRequested:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: 'SpringCare/actions/dist/changes_requested@master'
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        alert-on-label-removed: true
         bot-name: 'Good Bot'
         icon_emoji: ':dog:'
         github-slack-mapping: '{"123":"U123ABC","456":"U456ABC"}'
