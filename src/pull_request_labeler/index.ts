@@ -35,6 +35,7 @@ async function main(): Promise<void> {
 		return;
 	}
 
+	const client = new github.GitHub(inputs.token);
 	const { data } = await getReviews(inputs.token, pullNumber);
 
 	if (inputs.requiredReviews > 0) {
