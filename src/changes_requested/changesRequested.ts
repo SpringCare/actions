@@ -22,7 +22,7 @@ export async function changesRequested(context, inputs): Promise<void> {
 		console.log('PR number is', pullNumber);
 		console.log('Inputs', inputs);
 
-		const { data } = await getReviews(inputs.token, pullNumber): Promise<{}>;
+		const { data } = await getReviews(inputs.token, pullNumber);
 		const activeReviews = parseReviews(data || []);
 		const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
     
