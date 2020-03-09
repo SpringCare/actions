@@ -39,7 +39,7 @@ async function main(): Promise<{}> {
 	console.log(event)
 	console.log(action)
 
-	if (event === 'pull_request' && action === 'submitted') {
+	if (event === 'pull_request_review' && action === 'submitted') {
 		console.log('test2!')
 		await pullRequestSubmitted(github.context, inputs);
 
