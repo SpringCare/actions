@@ -1,17 +1,10 @@
-const github = require('@actions/github');
-const core = require('@actions/core');
+import * as core from '@actions/core';
+import * as github from '@actions/github';
+import { changesRequested } from './changesRequested';
+import { pullRequestUnlabeled } from './pullRequestUnlabeled';
 
-const verifyConfig = require('../utils/verifyConfig');
-import { changesRequested } from './changesRequested.js';
-import { pullRequestUnlabeled } from './pullRequestUnlabeled.js';
-
-
-// Call the main function.
-main();
 
 async function main(): Promise<{}> {
-	// Grab the config variables. Abort if they're unavailable.
-	const config = verifyConfig();
 
 	// Get a few inputs from the GitHub event.
 	const inputs = {
@@ -46,3 +39,5 @@ async function main(): Promise<{}> {
 	}
 }
 
+// Call the main function.
+main();

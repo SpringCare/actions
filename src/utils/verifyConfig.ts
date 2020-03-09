@@ -1,6 +1,6 @@
-const core = require('@actions/core');
+import * as core from '@actions/core';
 
-module.exports = function() {
+module.exports = function(): {} {
 	const repo = process.env.GITHUB_REPOSITORY,
 		ref = process.env.GITHUB_REF;
 
@@ -10,6 +10,7 @@ module.exports = function() {
 		);
 		return;
 	}
+
 	if (!ref) {
 		core.setFailed(
 			'GITHUB_REF missing, must be set to the repository\'s default branch'

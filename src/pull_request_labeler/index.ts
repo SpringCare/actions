@@ -1,16 +1,9 @@
-const core = require('@actions/core');
-const github = require('@actions/github');
-
-const verifyConfig = require('../utils/verifyConfig');
+import * as core from '@actions/core';
+import * as github from '@actions/github';
 import { addLabels, removeLabel } from '../utils/labeler';
 import { parseReviews } from '../utils/parseReviews';
 
-// Call the main function.
-main();
-
-async function main() {
-	// Grab the config variables. Abort if they're unavailable.
-	const config = verifyConfig();
+async function main(): Promise<{}> {
 
 	// Get a few inputs from the GitHub event.
 	const inputs: {
@@ -32,7 +25,6 @@ async function main() {
 	const draftPR = pr.draft;
 
 	console.log('PR number is', pullNumber);
-	console.log('Config', config);
 	console.log('Inputs', inputs);
 
 	if (inputs.requiredReviews && !(inputs.requiredReviews > 0)) {
@@ -99,3 +91,6 @@ async function main() {
 
 	}
 }
+
+// Call the main function.
+main();

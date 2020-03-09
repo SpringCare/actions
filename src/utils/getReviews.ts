@@ -1,14 +1,14 @@
-const github = require('@actions/github');
+import * as github from '@actions/github';
 
-export async function getReviews(inputs, pullNumber) {
+export async function getReviews(token, pullNumber): Promise<{}> {
 
-    const client = new github.GitHub(inputs.token);
+	const client = new github.GitHub(token);
 
-    return await client.pulls.listReviews({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        // eslint-disable-next-line @typescript-eslint/camelcase
-        pull_number: pullNumber,
-    });
-};
+	return await client.pulls.listReviews({
+		owner: github.context.repo.owner,
+		repo: github.context.repo.repo,
+		// eslint-disable-next-line @typescript-eslint/camelcase
+		pull_number: pullNumber,
+	});
+}
 

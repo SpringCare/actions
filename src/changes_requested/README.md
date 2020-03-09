@@ -8,7 +8,7 @@
 ### Configuration Options
 1. Must be run `on: [pull_request_review, pull_request]`
 1. Toggle on / off the label (`label-on-changes-requested: boolean`)
-1. Toggle on / off the label (`alert-on-label-removed: boolean`)
+1. Sets to true when label removed (`alert-on-label-removed: boolean`)
 1. Send a slack message to the PR author:
    - **Required** Must provide `slack-webhook-url` in your Repo's secrets
    - EITHER:

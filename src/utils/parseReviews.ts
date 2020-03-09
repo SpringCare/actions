@@ -1,4 +1,4 @@
-export function parseReviews(reviews = []) {
+export function parseReviews(reviews = []): {} {
 	//TODO: Add argument for states to care about
 
 	// grab the data we care about

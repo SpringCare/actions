@@ -4,13 +4,14 @@ export function sendMessage(
 	webhookUrl: string,
 	channel: string,
 	message: string,
-	username: string = "Spring Health",
+	username = 'Spring Health',
 	iconEmoji?: string,
-	) {
+): void {
 
 	axios.post(webhookUrl, {
 		channel,
 		username,
+		// eslint-disable-next-line @typescript-eslint/camelcase
 		icon_emoji: iconEmoji,
 		text: message,
 	});
