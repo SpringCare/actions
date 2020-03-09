@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const github = require('@actions/github');
 
-export async function getReviews(token, pullNumber): Promise<{}> {
+export async function getReviews(token, pullNumber): Promise<any> {
 
 	const client = new github.GitHub(token);
 

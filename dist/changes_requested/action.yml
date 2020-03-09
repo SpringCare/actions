@@ -1,0 +1,25 @@
+name: Changes Requested
+description: "A GitHub Action to handle when PRs get changes requested"
+inputs:
+  repo-token:
+    description: 'The GITHUB_TOKEN secret'
+  slack-webhook-url:
+    description: 'OPTIONAL, only for slack features. The SLACK_WEBHOOK_URL secret, required if sending slack messages'
+  label-on-changes-requested:
+    description: 'Boolean. Toggles on / off the PR labeling.'
+  alert-on-label-removed:
+    description: 'Boolean. Toggles on / off sending slack message to reviewers.'
+  bot-name:
+    description: 'The name that the bot should use when posting to slack'
+  icon_emoji:
+    description: 'The emoji the slack bot will use as its avatar'
+  slack-channel:
+    description: 'Required if not using `github-slack-mapping`. The channel in which to report that changes were requested.'
+  github-slack-mapping:
+    description: "Required if not using `slack-channel`. A JSON encoded string with of { <github-user-id>: <slack-user-id> } for all members of your org."
+branding:
+  icon: "git-pull-request"
+  color: green
+runs:
+  using: "node12"
+  main: "index.js"
