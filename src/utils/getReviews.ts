@@ -1,4 +1,5 @@
-import * as github from '@actions/github';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const github = require('@actions/github');
 
 export async function getReviews(token, pullNumber): Promise<{}> {
 

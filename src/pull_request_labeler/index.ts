@@ -1,9 +1,13 @@
-import * as core from '@actions/core';
-import * as github from '@actions/github';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const core = require('@actions/core');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const github = require('@actions/github');
+
 import { addLabels, removeLabel } from '../utils/labeler';
 import { parseReviews } from '../utils/parseReviews';
 
-async function main(): Promise<{}> {
+
+async function main(): Promise<void> {
 
 	// Get a few inputs from the GitHub event.
 	const inputs: {

@@ -1,10 +1,13 @@
-import * as core from '@actions/core';
-import * as github from '@actions/github';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const core = require('@actions/core');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const github = require('@actions/github');
+
 import { sendMessage } from '../utils/slack';
 import { parseReviews } from '../utils/parseReviews';
 import { getReviews } from '../utils/getReviews';
 
-export async function pullRequestUnlabeled(context, inputs): Promise<{}> {
+export async function pullRequestUnlabeled(context, inputs): Promise<void> {
 
 	try {
 

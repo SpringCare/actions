@@ -1,4 +1,5 @@
-import * as core from '@actions/core';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const core = require('@actions/core');
 
 module.exports = function(): {} {
 	const repo = process.env.GITHUB_REPOSITORY,

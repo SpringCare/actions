@@ -1,5 +1,8 @@
-import * as core from '@actions/core';
-import * as github from '@actions/github';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const core = require('@actions/core');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const github = require('@actions/github');
+
 import { changesRequested } from './changesRequested';
 import { pullRequestUnlabeled } from './pullRequestUnlabeled';
 
