@@ -17,7 +17,6 @@ export async function pullRequestUnlabeled(context, inputs): Promise<void> {
 
 		console.log('PR number is', pullNumber);
 		console.log('Inputs', inputs);
-		console.log(token);
 
 		const { data } = await getReviews(token, pullNumber);
 		const activeReviews = parseReviews(data || []);
