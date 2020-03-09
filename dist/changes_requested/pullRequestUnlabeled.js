@@ -3249,9 +3249,9 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
     });
 };
 const github = __webpack_require__(469);
-function getReviews(token, pullNumber) {
+function getReviews(inputs, pullNumber) {
     return __awaiter(this, void 0, void 0, function* () {
-        const client = new github.GitHub(token);
+        const client = new github.GitHub(inputs.token);
         return yield client.pulls.listReviews({
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,

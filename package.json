@@ -5,6 +5,9 @@
   "main": "index.js",
   "author": "Kyle Mendes",
   "license": "ISC",
+  "scripts": {
+    "lint": "eslint ./src --ext='.ts,.js'"
+  },
   "dependencies": {
     "@actions/core": "^1.2.2",
     "@actions/github": "^2.1.0",

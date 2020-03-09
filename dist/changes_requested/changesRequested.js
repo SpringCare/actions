@@ -966,9 +966,9 @@ var getReviews_awaiter = (undefined && undefined.__awaiter) || function (thisArg
     });
 };
 const getReviews_github = __webpack_require__(469);
-function getReviews(token, pullNumber) {
+function getReviews(inputs, pullNumber) {
     return getReviews_awaiter(this, void 0, void 0, function* () {
-        const client = new getReviews_github.GitHub(token);
+        const client = new getReviews_github.GitHub(inputs.token);
         return yield client.pulls.listReviews({
             owner: getReviews_github.context.repo.owner,
             repo: getReviews_github.context.repo.repo,
