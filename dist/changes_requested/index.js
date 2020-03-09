@@ -11358,6 +11358,7 @@ var getReviews_awaiter = (undefined && undefined.__awaiter) || function (thisArg
 const getReviews_github = __webpack_require__(469);
 function getReviews(token, pullNumber) {
     return getReviews_awaiter(this, void 0, void 0, function* () {
+        console.log(token);
         const client = new getReviews_github.GitHub(token);
         return yield client.pulls.listReviews({
             owner: getReviews_github.context.repo.owner,
@@ -11392,9 +11393,11 @@ function changesRequested(context, inputs) {
             const pullUrl = pr.html_url;
             const author = pr.user.id;
             const state = review.state;
+            const token = inputs.token;
             console.log('PR number is', pullNumber);
             console.log('Inputs', inputs);
-            const { data } = yield getReviews(inputs.token, pullNumber);
+            console.log(token);
+            const { data } = yield getReviews(token, pullNumber);
             const activeReviews = parseReviews(data || []);
             const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
             console.log('denied', deniedReviews.length);
@@ -11453,9 +11456,11 @@ function pullRequestUnlabeled(context, inputs) {
             const pr = context.payload.pull_request;
             const pullNumber = pr.number;
             const pullUrl = pr.html_url;
+            const token = inputs.token;
             console.log('PR number is', pullNumber);
             console.log('Inputs', inputs);
-            const { data } = yield getReviews(inputs.token, pullNumber);
+            console.log(token);
+            const { data } = yield getReviews(token, pullNumber);
             const activeReviews = parseReviews(data || []);
             const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
             console.log(activeReviews);

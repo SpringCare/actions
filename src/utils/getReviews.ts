@@ -1,7 +1,7 @@
 const github = require('@actions/github');
 
-export async function getReviews(token, pullNumber): Promise<{data: []}> {
-
+export async function getReviews(token: string, pullNumber: string): Promise<{data: []}> {
+    console.log(token);
 	const client = new github.GitHub(token);
 
 	return await client.pulls.listReviews({

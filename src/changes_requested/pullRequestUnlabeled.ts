@@ -13,11 +13,13 @@ export async function pullRequestUnlabeled(context, inputs): Promise<void> {
 		const pr = context.payload.pull_request;
 		const pullNumber = pr.number;
 		const pullUrl = pr.html_url;
+		const token = inputs.token;
 
 		console.log('PR number is', pullNumber);
 		console.log('Inputs', inputs);
+		console.log(token);
 
-		const { data } = await getReviews(inputs.token, pullNumber);
+		const { data } = await getReviews(token, pullNumber);
 		const activeReviews = parseReviews(data || []);
 		const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
 

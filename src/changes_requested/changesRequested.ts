@@ -16,11 +16,13 @@ export async function changesRequested(context, inputs): Promise<void> {
 		const pullUrl = pr.html_url;
 		const author = pr.user.id;
 		const state = review.state;
+		const token = inputs.token;
     
 		console.log('PR number is', pullNumber);
 		console.log('Inputs', inputs);
+		console.log(token)
 
-		const { data } = await getReviews(inputs.token, pullNumber);
+		const { data } = await getReviews(token, pullNumber);
 		const activeReviews = parseReviews(data || []);
 		const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
     
