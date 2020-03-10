@@ -3,9 +3,9 @@ export function parseReviews(reviews = []): Array<{state: string; user: string}>
 
 	// grab the data we care about
 	const parsed = reviews.map(r => ({
-		state: r.state,
-		user: r.user.id,
-		submitted: new Date(r.submitted_at),
+		state     : r.state,
+		user      : r.user.id,
+		submitted : new Date(r.submitted_at),
 	}));
 
 	const data = {};

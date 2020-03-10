@@ -9,14 +9,14 @@ async function main(): Promise<{}> {
 
 	// Get a few inputs from the GitHub event.
 	const inputs = {
-		token: core.getInput('repo-token', { required: true }),
-		labelChangesRequested: core.getInput('label-on-changes-requested'),
-		alertOnRemoved: core.getInput('alert-on-label-removed'),
-		slackUrl: core.getInput('slack-webhook-url'),
-		slackChannel: core.getInput('slack-channel'),
-		botName: core.getInput('bot-name'),
-		iconEmoji: core.getInput('icon_emoji'),
-		githubSlackMapping: core.getInput('github-slack-mapping'),
+		token                 : core.getInput('repo-token', { required: true }),
+		labelChangesRequested : core.getInput('label-on-changes-requested'),
+		alertOnRemoved        : core.getInput('alert-on-label-removed'),
+		slackUrl              : core.getInput('slack-webhook-url'),
+		slackChannel          : core.getInput('slack-channel'),
+		botName               : core.getInput('bot-name'),
+		iconEmoji             : core.getInput('icon_emoji'),
+		githubSlackMapping    : core.getInput('github-slack-mapping'),
 	};
 
 	const pr = github.context.payload.pull_request;

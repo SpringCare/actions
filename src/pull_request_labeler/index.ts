@@ -14,9 +14,9 @@ async function main(): Promise<void> {
 		requiredReviews: number;
 		labelWIP: boolean;
 	} = {
-		token: core.getInput('repo-token', { required: true }),
-		requiredReviews: core.getInput('required'),
-		labelWIP: core.getInput('wip'),
+		token           : core.getInput('repo-token', { required: true }),
+		requiredReviews : core.getInput('required'),
+		labelWIP        : core.getInput('wip'),
 	};
 
 	const pr = github.context.payload.pull_request;

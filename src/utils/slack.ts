@@ -11,7 +11,7 @@ export function sendMessage(
 	axios.post(webhookUrl, {
 		channel,
 		username,
-		icon_emoji: iconEmoji,
-		text: message,
+		icon_emoji : iconEmoji,
+		text       : message,
 	});
 }

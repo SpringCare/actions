@@ -17,19 +17,19 @@ export async function changesRequested(context, inputs): Promise<void> {
 		const author = pr.user.id;
 		const state = review.state;
 		const token = inputs.token;
-    
+
 		console.log('PR number is', pullNumber);
 		console.log('Inputs', inputs);
 
 		const { data } = await getReviews(token, pullNumber);
 		const activeReviews = parseReviews(data || []);
 		const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
-    
+
 		console.log('denied', deniedReviews.length);
 		console.log('alert', inputs.labelChangesRequested);
 
 		const client = new github.GitHub(inputs.token);
-    
+
 		if (inputs.labelChangesRequested && state === 'changes_requested') {
 			addLabels(
 				client,
@@ -37,7 +37,7 @@ export async function changesRequested(context, inputs): Promise<void> {
 				['changes requested']
 			);
 		}
-    
+
 		if (inputs.labelChangesRequested && deniedReviews.length === 0) {
 			removeLabel(
 				client,
@@ -45,25 +45,25 @@ export async function changesRequested(context, inputs): Promise<void> {
 				'changes%20requested'
 			);
 		}
-    
+
 		if (
 			state === 'changes_requested' &&
-            (inputs.slackChannel || inputs.githubSlackMapping)
-            && inputs.slackUrl
+			(inputs.slackChannel || inputs.githubSlackMapping) &&
+			inputs.slackUrl
 		) {
 			const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${github.context.repo.repo}\`.`;
-    
+
 			if (inputs.githubSlackMapping) {
 				const mapping = JSON.parse(inputs.githubSlackMapping);
 				const slackUser = mapping[author];
-    
+
 				console.log(`Slacking author: ${author} at slack ID: ${slackUser}`);
-    
+
 				if (!slackUser) {
 					core.setFailed(`Couldn't find an associated slack ID for user: ${author}`);
 					return;
 				}
-    
+
 				sendMessage(
 					inputs.slackUrl,
 					slackUser,
@@ -71,7 +71,7 @@ export async function changesRequested(context, inputs): Promise<void> {
 					inputs.botName,
 					inputs.iconEmoji
 				);
-    
+
 			} else if (inputs.slackChannel) {
 				sendMessage(
 					inputs.slackUrl,
@@ -85,5 +85,5 @@ export async function changesRequested(context, inputs): Promise<void> {
 	} catch(error) {
 		console.log(error);
 	}
-   
+
 }

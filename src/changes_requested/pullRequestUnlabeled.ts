@@ -26,10 +26,10 @@ export async function pullRequestUnlabeled(context, inputs): Promise<void> {
 		console.log(deniedReviews);
 
 		if (
-			label === 'changes requested' && 
-            (inputs.slackChannel || inputs.githubSlackMapping)
-            && inputs.slackUrl
-            && deniedReviews.length > 0
+			label === 'changes requested' &&
+			(inputs.slackChannel || inputs.githubSlackMapping) &&
+			inputs.slackUrl &&
+			deniedReviews.length > 0
 		) {
 			const message = `Changes have been made to pull request <${pullUrl}|#${pullNumber}> in \`${github.context.repo.repo}\`. Please review.`;
 

@@ -11408,8 +11408,8 @@ function changesRequested(context, inputs) {
                 removeLabel(client, pullNumber, 'changes%20requested');
             }
             if (state === 'changes_requested' &&
-                (inputs.slackChannel || inputs.githubSlackMapping)
-                && inputs.slackUrl) {
+                (inputs.slackChannel || inputs.githubSlackMapping) &&
+                inputs.slackUrl) {
                 const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${changesRequested_github.context.repo.repo}\`.`;
                 if (inputs.githubSlackMapping) {
                     const mapping = JSON.parse(inputs.githubSlackMapping);
@@ -11463,9 +11463,9 @@ function pullRequestUnlabeled(context, inputs) {
             console.log(activeReviews);
             console.log(deniedReviews);
             if (label === 'changes requested' &&
-                (inputs.slackChannel || inputs.githubSlackMapping)
-                && inputs.slackUrl
-                && deniedReviews.length > 0) {
+                (inputs.slackChannel || inputs.githubSlackMapping) &&
+                inputs.slackUrl &&
+                deniedReviews.length > 0) {
                 const message = `Changes have been made to pull request <${pullUrl}|#${pullNumber}> in \`${pullRequestUnlabeled_github.context.repo.repo}\`. Please review.`;
                 if (inputs.githubSlackMapping) {
                     const mapping = JSON.parse(inputs.githubSlackMapping);
