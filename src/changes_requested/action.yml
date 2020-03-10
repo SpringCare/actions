@@ -7,6 +7,8 @@ inputs:
     description: 'OPTIONAL, only for slack features. The SLACK_WEBHOOK_URL secret, required if sending slack messages'
   label-on-changes-requested:
     description: 'Boolean. Toggles on / off the PR labeling.'
+  alert-on-label-removed:
+    description: 'Boolean. Toggles on / off sending slack message to reviewers.'
   bot-name:
     description: 'The name that the bot should use when posting to slack'
   icon_emoji:

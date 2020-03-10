@@ -4,14 +4,14 @@ export function sendMessage(
 	webhookUrl: string,
 	channel: string,
 	message: string,
-	username: string = "Spring Health",
+	username = 'Spring Health',
 	iconEmoji?: string,
-	) {
+): void {
 
 	axios.post(webhookUrl, {
 		channel,
 		username,
-		icon_emoji: iconEmoji,
-		text: message,
+		icon_emoji : iconEmoji,
+		text       : message,
 	});
 }

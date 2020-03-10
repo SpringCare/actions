@@ -2,11 +2,13 @@
 
 ### Features
 1. Adds a label when changes are requested on a PR (`label-on-changes-requested` = true)
+1. Slacks reviewer when label (`changes requested`) has been removed.
 1. Can optionally send a slack message to the author of the PR when a change is requested.
 
 ### Configuration Options
-1. Must be run `on: [pull_request_review]`
+1. Must be run `on: [pull_request_review, pull_request]`
 1. Toggle on / off the label (`label-on-changes-requested: boolean`)
+1. Sets to true when label removed (`alert-on-label-removed: boolean`)
 1. Send a slack message to the PR author:
    - **Required** Must provide `slack-webhook-url` in your Repo's secrets
    - EITHER:
@@ -22,7 +24,9 @@
 ```yml
 name: Spring Health Changes Requested
 
-on: [pull_request_review]
+on:
+  pull_request_review:
+    types: [submitted]
 
 jobs:
   ChangesRequested:
@@ -40,7 +44,9 @@ jobs:
 ```yml
 name: Spring Health Changes Requested
 
-on: [pull_request_review]
+on:
+  pull_request_review:
+    types: [submitted]
 
 jobs:
   ChangesRequested:
@@ -58,10 +64,13 @@ jobs:
 ```
 
 **Send Message to PR Author & Label**
+
 ```yml
 name: Spring Health Changes Requested
 
-on: [pull_request_review]
+on:
+  pull_request_review:
+    types: [submitted]
 
 jobs:
   ChangesRequested:
@@ -73,6 +82,30 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
         label-on-changes-requested: true
+        bot-name: 'Good Bot'
+        icon_emoji: ':dog:'
+        github-slack-mapping: '{"123":"U123ABC","456":"U456ABC"}'
+```
+
+**Send Message to PR Reviewer when Requested Changes Label is Removed**
+
+```yml
+name: Spring Health Changes Requested
+
+on:
+  pull_request:
+    types: [unlabeled]
+
+jobs:
+  ChangesRequested:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: 'SpringCare/actions/dist/changes_requested@master'
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        alert-on-label-removed: true
         bot-name: 'Good Bot'
         icon_emoji: ':dog:'
         github-slack-mapping: '{"123":"U123ABC","456":"U456ABC"}'

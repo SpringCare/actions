@@ -1,47 +1,12 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-const verifyConfig = require('../utils/verifyConfig');
 import { addLabels, removeLabel } from '../utils/labeler';
+import { parseReviews } from '../utils/parseReviews';
+import { getReviews } from '../utils/getReviews';
 
-// Call the main function.
-main();
 
-function parseReviews(reviews = []) {
-	//TODO: Add argument for states to care about
-
-	// grab the data we care about
-	const parsed = reviews.map(r => ({
-		state: r.state,
-		user: r.user.id,
-		submitted: new Date(r.submitted_at),
-	}));
-
-	const data = {};
-
-	// group reviews by review author, and only keep the newest review
-	parsed.forEach((p) => {
-		// we only care about reviews that are approved or denied.
-		if (p.state.toLowerCase() !== 'approved' && p.state.toLowerCase() !== 'changes_requested') {
-			return;
-		}
-
-		// Check if the new item was submitted AFTER
-		// the already saved review.  If it was, overwrite
-		if (data[p.user]) {
-			const submitted = data[p.user].submitted;
-			data[p.user] = submitted > p.submitted ? data[p.user] : p;
-		} else {
-			data[p.user] = p;
-		}
-	});
-
-	return Object.keys(data).map(k => data[k]);
-}
-
-async function main() {
-	// Grab the config variables. Abort if they're unavailable.
-	const config = verifyConfig();
+async function main(): Promise<void> {
 
 	// Get a few inputs from the GitHub event.
 	const inputs: {
@@ -49,9 +14,9 @@ async function main() {
 		requiredReviews: number;
 		labelWIP: boolean;
 	} = {
-		token: core.getInput('repo-token', { required: true }),
-		requiredReviews: core.getInput('required'),
-		labelWIP: core.getInput('wip'),
+		token           : core.getInput('repo-token', { required: true }),
+		requiredReviews : core.getInput('required'),
+		labelWIP        : core.getInput('wip'),
 	};
 
 	const pr = github.context.payload.pull_request;
@@ -63,7 +28,6 @@ async function main() {
 	const draftPR = pr.draft;
 
 	console.log('PR number is', pullNumber);
-	console.log('Config', config);
 	console.log('Inputs', inputs);
 
 	if (inputs.requiredReviews && !(inputs.requiredReviews > 0)) {
@@ -72,12 +36,7 @@ async function main() {
 	}
 
 	const client = new github.GitHub(inputs.token);
-
-	const { data } = await client.pulls.listReviews({
-		owner: github.context.repo.owner,
-		repo: github.context.repo.repo,
-		pull_number: pullNumber,
-	});
+	const { data } = await getReviews(inputs.token, pullNumber);
 
 	if (inputs.requiredReviews > 0) {
 		const activeReviews = parseReviews(data || []);
@@ -129,3 +88,6 @@ async function main() {
 
 	}
 }
+
+// Call the main function.
+main();
