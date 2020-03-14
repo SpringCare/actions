@@ -1,7 +1,7 @@
 const github = require('@actions/github');
 
 function main(): void {
-	const targetBranch = github.context.context.ref;
+	const targetBranch = github.context.ref;
 	const description = github.context.payload.pull_request.body;
 
 	console.log('target branch: ', targetBranch);

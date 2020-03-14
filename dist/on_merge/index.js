@@ -2498,7 +2498,7 @@ function parseOptions(options, log, hook) {
 
 const github = __webpack_require__(469);
 function main() {
-    const targetBranch = github.context.context.ref;
+    const targetBranch = github.context.ref;
     const description = github.context.payload.pull_request.body;
     console.log('target branch: ', targetBranch);
     console.log('body text: ', description);
