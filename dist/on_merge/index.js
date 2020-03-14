@@ -2498,8 +2498,16 @@ function parseOptions(options, log, hook) {
 
 const github = __webpack_require__(469);
 function main() {
-    const context = github.context;
-    console.log(context);
+    const baseRef = github.base_ref;
+    const description = github.context.payload.pull_request.body;
+    const ref = github.ref;
+    const headRef = github.head_ref;
+    const workflow = github.workflow;
+    console.log('baseRef: ', baseRef);
+    console.log('body text: ', description);
+    console.log('ref: ', ref);
+    console.log('headRef: ', headRef);
+    console.log(workflow);
 }
 // Call the main function.
 main();
