@@ -2502,9 +2502,9 @@ function main() {
     const text = github.context.payload.pull_request.body;
     console.log('target branch: ', targetBranch);
     console.log('body text: ', text);
-    const urlRegex = /(https?:\/\/pivotaltracker[^\s]+)/g;
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
     const urls = text.match(urlRegex);
-    console.log(urls);
+    console.log('urls: ', urls);
     // pivotalTrackerCall(url);
 }
 // Call the main function.

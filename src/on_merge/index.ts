@@ -8,10 +8,10 @@ function main(): void {
 	console.log('body text: ', text);
 
 
-	const urlRegex = /(https?:\/\/pivotaltracker[^\s]+)/g;
+	const urlRegex = /(https?:\/\/[^\s]+)/g;
 	const urls = text.match(urlRegex);
 
-	console.log(urls);
+	console.log('urls: ', urls);
 
 
 	// pivotalTrackerCall(url);
