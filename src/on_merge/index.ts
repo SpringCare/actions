@@ -14,8 +14,7 @@ async function pivotalTracker(webhookUrl: string, pivotalKey: string): Promise<v
 			},
 		});
 
-		console.log(story);
-		console.log(story['story_type']);
+		console.log(story.data.story_type);
 
 		// story.story_type
 		// // const newState = storyType === 'chore' ? 'accepted' : 'finished';

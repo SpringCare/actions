@@ -5381,8 +5381,7 @@ function pivotalTracker(webhookUrl, pivotalKey) {
                     'X-TrackerToken': pivotalKey,
                 },
             });
-            console.log(story);
-            console.log(story['story_type']);
+            console.log(story.data.story_type);
             // story.story_type
             // // const newState = storyType === 'chore' ? 'accepted' : 'finished';
             // await axios.put(webhookUrl, {current_state: newState}, {
