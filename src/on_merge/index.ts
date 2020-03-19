@@ -14,17 +14,16 @@ async function pivotalTracker(webhookUrl: string, pivotalKey: string): Promise<v
 			},
 		});
 
-		console.log(story.data.story_type);
+		console.log('StoryType  ', story.data.story_type);
 
-		// story.story_type
-		// // const newState = storyType === 'chore' ? 'accepted' : 'finished';
+		const newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
 
-		// await axios.put(webhookUrl, {current_state: newState}, {
-		// 	headers: {
-		// 		'Content-Type'   : 'application/json',
-		// 		'X-TrackerToken' : pivotalKey,
-		// 	},
-		// });
+		await axios.put(webhookUrl, {current_state: newState}, {
+			headers: {
+				'Content-Type'   : 'application/json',
+				'X-TrackerToken' : pivotalKey,
+			},
+		});
 
 	} catch(error) {
 		console.log('ERROR: ', error);

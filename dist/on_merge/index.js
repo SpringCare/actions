@@ -5381,15 +5381,14 @@ function pivotalTracker(webhookUrl, pivotalKey) {
                     'X-TrackerToken': pivotalKey,
                 },
             });
-            console.log(story.data.story_type);
-            // story.story_type
-            // // const newState = storyType === 'chore' ? 'accepted' : 'finished';
-            // await axios.put(webhookUrl, {current_state: newState}, {
-            // 	headers: {
-            // 		'Content-Type'   : 'application/json',
-            // 		'X-TrackerToken' : pivotalKey,
-            // 	},
-            // });
+            console.log('StoryType  ', story.data.story_type);
+            const newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
+            yield axios__WEBPACK_IMPORTED_MODULE_0___default().put(webhookUrl, { current_state: newState }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-TrackerToken': pivotalKey,
+                },
+            });
         }
         catch (error) {
             console.log('ERROR: ', error);
