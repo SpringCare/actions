@@ -1,8 +1,6 @@
 name: On Merge
 description: "A GitHub Action to update a Pivotal Tracker ticket status"
 inputs:
-  repo-token:
-    description: 'The GITHUB_TOKEN secret'
   pivotal-api-key:
     description: 'The PIVOTAL_API_KEY secret'
 branding:
