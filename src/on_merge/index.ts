@@ -7,7 +7,7 @@ async function pivotalTracker(webhookUrl: string, pivotalKey: string): Promise<v
 
 	// Determine story_type (chore, bug, feature)
 	try {
-		const story = await axios.get(webhookUrl, {
+		let story = await axios.get(webhookUrl, {
 			headers: {
 				'Content-Type'   : 'application/json',
 				'X-TrackerToken' : pivotalKey,
@@ -20,14 +20,14 @@ async function pivotalTracker(webhookUrl: string, pivotalKey: string): Promise<v
 
 		console.log('NewState  ', newState);
 
-		const value = await axios.put(webhookUrl, {current_state: newState}, {
+		let value = await axios.put(webhookUrl, {current_state: newState}, {
 			headers: {
 				'Content-Type'   : 'application/json',
 				'X-TrackerToken' : pivotalKey,
 			},
 		});
 
-		console.log('Value  ', value);
+		console.log('Value  ------   ', value);
 
 	} catch(error) {
 		console.log('ERROR: ', error);

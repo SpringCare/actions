@@ -5375,7 +5375,7 @@ function pivotalTracker(webhookUrl, pivotalKey) {
     return __awaiter(this, void 0, void 0, function* () {
         // Determine story_type (chore, bug, feature)
         try {
-            const story = yield axios__WEBPACK_IMPORTED_MODULE_0___default().get(webhookUrl, {
+            let story = yield axios__WEBPACK_IMPORTED_MODULE_0___default().get(webhookUrl, {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-TrackerToken': pivotalKey,
@@ -5384,13 +5384,13 @@ function pivotalTracker(webhookUrl, pivotalKey) {
             console.log('StoryType  ', story.data.story_type);
             let newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
             console.log('NewState  ', newState);
-            const value = yield axios__WEBPACK_IMPORTED_MODULE_0___default().put(webhookUrl, { current_state: newState }, {
+            let value = yield axios__WEBPACK_IMPORTED_MODULE_0___default().put(webhookUrl, { current_state: newState }, {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-TrackerToken': pivotalKey,
                 },
             });
-            console.log('Value  ', value);
+            console.log('Value  ------   ', value);
         }
         catch (error) {
             console.log('ERROR: ', error);
