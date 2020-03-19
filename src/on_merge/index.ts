@@ -18,7 +18,9 @@ async function pivotalTracker(webhookUrl: string, pivotalKey: string): Promise<v
 
 		const newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
 
-		await axios.put(webhookUrl, {current_state: newState}, {
+		console.log('NewState  ', newState);
+
+		axios.put(webhookUrl, {current_state: newState}, {
 			headers: {
 				'Content-Type'   : 'application/json',
 				'X-TrackerToken' : pivotalKey,

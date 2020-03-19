@@ -5383,7 +5383,8 @@ function pivotalTracker(webhookUrl, pivotalKey) {
             });
             console.log('StoryType  ', story.data.story_type);
             const newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
-            yield axios__WEBPACK_IMPORTED_MODULE_0___default().put(webhookUrl, { current_state: newState }, {
+            console.log('NewState  ', newState);
+            axios__WEBPACK_IMPORTED_MODULE_0___default().put(webhookUrl, { current_state: newState }, {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-TrackerToken': pivotalKey,
