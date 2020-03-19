@@ -20,7 +20,7 @@ async function pivotalTracker(webhookUrl: string, pivotalKey: string): Promise<v
 
 		console.log('NewState  ', newState);
 
-		axios.put(webhookUrl, {current_state: newState}, {
+		await axios.put(webhookUrl, {current_state: newState}, {
 			headers: {
 				'Content-Type'   : 'application/json',
 				'X-TrackerToken' : pivotalKey,
