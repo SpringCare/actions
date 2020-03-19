@@ -16,11 +16,11 @@ on:
     types: [closed]
 
 jobs:
-  Pull request merged:
+  OnMerge:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: 'SpringCare/actions/dist/on_merge@feature/gh-action-pivotal-tracker'
+    - uses: 'SpringCare/actions/dist/on_merge@master'
+      with:
+        pivotal-api-key: ${{ secrets.PIVOTAL_API_KEY }}
       if: github.event.pull_request.merged == true
-      run: echo merged
 ```

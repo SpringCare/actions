@@ -5374,7 +5374,7 @@ const github = __webpack_require__(469);
 function pivotalTracker(webhookUrl, pivotalKey) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield axios__WEBPACK_IMPORTED_MODULE_0___default().put(webhookUrl, { workflow: 'finish' }, {
+            yield axios__WEBPACK_IMPORTED_MODULE_0___default().put(webhookUrl, { current_state: 'finished' }, {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-TrackerToken': pivotalKey,
@@ -5408,14 +5408,6 @@ function main() {
 }
 // Call the main function.
 main();
-// 1. Get target branch (staging || master)
-// 2. Determine target PT workflow change (finish || deliver)
-// 3. Parse link from PR body (PT Ticket ###)
-// 4. Setup PT Connection
-// a. Update PT Ticket ### with new workflow (finish || deliver)
-// PUT /projects/2428649/stories/{story_id}
-// current_state -> accepted, delivered, finished
-// axios
 
 
 /***/ }),
