@@ -16,16 +16,18 @@ async function pivotalTracker(webhookUrl: string, pivotalKey: string): Promise<v
 
 		console.log('StoryType  ', story.data.story_type);
 
-		const newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
+		let newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
 
 		console.log('NewState  ', newState);
 
-		await axios.put(webhookUrl, {current_state: newState}, {
+		const value = await axios.put(webhookUrl, {current_state: newState}, {
 			headers: {
 				'Content-Type'   : 'application/json',
 				'X-TrackerToken' : pivotalKey,
 			},
 		});
+
+		console.log('Value  ', value);
 
 	} catch(error) {
 		console.log('ERROR: ', error);
