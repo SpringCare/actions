@@ -12,7 +12,7 @@ async function pivotalTracker(webhookUrl: string, pivotalKey: string): Promise<v
 			},
 		});
 	} catch(error) {
-		console.log(error);
+		console.log('ERROR: ', error);
 	}
 }
 
