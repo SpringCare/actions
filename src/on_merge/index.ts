@@ -27,7 +27,7 @@ async function main(): Promise<void>{
 
 		console.log('storyId: ', storyId);
 
-		pivotalTracker(url, webhookUrl);
+		pivotalTracker(webhookUrl);
 	});
 }
 
