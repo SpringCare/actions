@@ -1,40 +1,15 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-import axios from 'axios';
-
-async function pivotalTracker(webhookUrl: string, pivotalKey: string): Promise<void> {
-
-	// Determine story_type (chore, bug, feature)
-	try {
-		let story = await axios.get(webhookUrl, {
-			headers: {
-				'Content-Type'   : 'application/json',
-				'X-TrackerToken' : pivotalKey,
-			},
-		});
-
-		let newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
-
-		await axios.put(webhookUrl, {current_state: newState}, {
-			headers: {
-				'Content-Type'   : 'application/json',
-				'X-TrackerToken' : pivotalKey,
-			},
-		});
-
-	} catch(error) {
-		console.log('ERROR: ', error);
-	}
-}
+import { pivotalTracker } from '../utils/pivotalTracker';
 
 async function main(): Promise<void> {
+
 	const targetBranch = github.context.ref;
 	const text = github.context.payload.pull_request.body;
 	const pivotalKey = core.getInput('pivotal-api-key');
 
-	console.log('target branch: ', targetBranch);
-	console.log('body text: ', text);
+	console.log('Target branch: ', targetBranch);
 
 	if ((targetBranch === 'staging') && (text !== null)) {
 

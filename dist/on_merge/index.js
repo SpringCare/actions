@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(296);
+/******/ 		return __webpack_require__(380);
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -5352,72 +5352,6 @@ function parseOptions(options, log, hook) {
 
 /***/ }),
 
-/***/ 296:
-/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(53);
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const core = __webpack_require__(470);
-const github = __webpack_require__(469);
-
-function pivotalTracker(webhookUrl, pivotalKey) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Determine story_type (chore, bug, feature)
-        try {
-            let story = yield axios__WEBPACK_IMPORTED_MODULE_0___default().get(webhookUrl, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-TrackerToken': pivotalKey,
-                },
-            });
-            let newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
-            yield axios__WEBPACK_IMPORTED_MODULE_0___default().put(webhookUrl, { current_state: newState }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-TrackerToken': pivotalKey,
-                },
-            });
-        }
-        catch (error) {
-            console.log('ERROR: ', error);
-        }
-    });
-}
-function main() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const targetBranch = github.context.ref;
-        const text = github.context.payload.pull_request.body;
-        const pivotalKey = core.getInput('pivotal-api-key');
-        console.log('target branch: ', targetBranch);
-        console.log('body text: ', text);
-        if ((targetBranch === 'staging') && (text !== null)) {
-            const regex = /(https?:\/\/[^\s]+)/g;
-            const parsedUrls = text.match(regex);
-            yield parsedUrls.forEach((url) => {
-                const storyId = url.split('/').slice(-1)[0];
-                const webhookUrl = `https://www.pivotaltracker.com/services/v5/projects/2428649/stories/${storyId}`;
-                pivotalTracker(webhookUrl, pivotalKey);
-            });
-        }
-    });
-}
-// Call the main function.
-main();
-
-
-/***/ }),
-
 /***/ 297:
 /***/ (function(module) {
 
@@ -6284,6 +6218,88 @@ function octokitDebug(octokit) {
       });
   });
 }
+
+
+/***/ }),
+
+/***/ 380:
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: ./node_modules/axios/index.js
+var axios = __webpack_require__(53);
+var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
+
+// CONCATENATED MODULE: ./src/utils/pivotalTracker.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+function pivotalTracker(webhookUrl, pivotalKey) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // Determine story_type (chore, bug, feature)
+            const story = yield axios_default().get(webhookUrl, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-TrackerToken': pivotalKey,
+                },
+            });
+            const newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
+            // Update state of ticket
+            yield axios_default().put(webhookUrl, { current_state: newState }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-TrackerToken': pivotalKey,
+                },
+            });
+        }
+        catch (error) {
+            console.log('ERROR: ', error);
+        }
+    });
+}
+
+// CONCATENATED MODULE: ./src/on_merge/index.ts
+var on_merge_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const core = __webpack_require__(470);
+const github = __webpack_require__(469);
+
+function main() {
+    return on_merge_awaiter(this, void 0, void 0, function* () {
+        const targetBranch = github.context.ref;
+        const text = github.context.payload.pull_request.body;
+        const pivotalKey = core.getInput('pivotal-api-key');
+        console.log('Target branch: ', targetBranch);
+        if ((targetBranch === 'staging') && (text !== null)) {
+            const regex = /(https?:\/\/[^\s]+)/g;
+            const parsedUrls = text.match(regex);
+            yield parsedUrls.forEach((url) => {
+                const storyId = url.split('/').slice(-1)[0];
+                const webhookUrl = `https://www.pivotaltracker.com/services/v5/projects/2428649/stories/${storyId}`;
+                pivotalTracker(webhookUrl, pivotalKey);
+            });
+        }
+    });
+}
+// Call the main function.
+main();
 
 
 /***/ }),
@@ -15400,6 +15416,36 @@ function onceStrict (fn) {
 /******/ 		};
 /******/ 	}();
 /******/ 	
+/******/ 	/* webpack/runtime/define property getter */
+/******/ 	!function() {
+/******/ 		// define getter function for harmony exports
+/******/ 		var hasOwnProperty = Object.prototype.hasOwnProperty;
+/******/ 		__webpack_require__.d = function(exports, name, getter) {
+/******/ 			if(!hasOwnProperty.call(exports, name)) {
+/******/ 				Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 			}
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/create fake namespace object */
+/******/ 	!function() {
+/******/ 		// create a fake namespace object
+/******/ 		// mode & 1: value is a module id, require it
+/******/ 		// mode & 2: merge all properties of value into the ns
+/******/ 		// mode & 4: return value when already ns object
+/******/ 		// mode & 8|1: behave like require
+/******/ 		__webpack_require__.t = function(value, mode) {
+/******/ 			if(mode & 1) value = this(value);
+/******/ 			if(mode & 8) return value;
+/******/ 			if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 			var ns = Object.create(null);
+/******/ 			__webpack_require__.r(ns);
+/******/ 			Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 			if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 			return ns;
+/******/ 		};
+/******/ 	}();
+/******/ 	
 /******/ 	/* webpack/runtime/compat get default export */
 /******/ 	!function() {
 /******/ 		// getDefaultExport function for compatibility with non-harmony modules
@@ -15409,17 +15455,6 @@ function onceStrict (fn) {
 /******/ 				function getModuleExports() { return module; };
 /******/ 			__webpack_require__.d(getter, 'a', getter);
 /******/ 			return getter;
-/******/ 		};
-/******/ 	}();
-/******/ 	
-/******/ 	/* webpack/runtime/define property getter */
-/******/ 	!function() {
-/******/ 		// define getter function for harmony exports
-/******/ 		var hasOwnProperty = Object.prototype.hasOwnProperty;
-/******/ 		__webpack_require__.d = function(exports, name, getter) {
-/******/ 			if(!hasOwnProperty.call(exports, name)) {
-/******/ 				Object.defineProperty(exports, name, { enumerable: true, get: getter });
-/******/ 			}
 /******/ 		};
 /******/ 	}();
 /******/ 	
