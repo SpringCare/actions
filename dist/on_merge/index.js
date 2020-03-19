@@ -5373,13 +5373,24 @@ const github = __webpack_require__(469);
 
 function pivotalTracker(webhookUrl, pivotalKey) {
     return __awaiter(this, void 0, void 0, function* () {
+        // Determine story_type (chore, bug, feature)
         try {
-            yield axios__WEBPACK_IMPORTED_MODULE_0___default().put(webhookUrl, { current_state: 'finished' }, {
+            const story = yield axios__WEBPACK_IMPORTED_MODULE_0___default().get(webhookUrl, {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-TrackerToken': pivotalKey,
                 },
             });
+            console.log(story);
+            console.log(story['story_type']);
+            // story.story_type
+            // // const newState = storyType === 'chore' ? 'accepted' : 'finished';
+            // await axios.put(webhookUrl, {current_state: newState}, {
+            // 	headers: {
+            // 		'Content-Type'   : 'application/json',
+            // 		'X-TrackerToken' : pivotalKey,
+            // 	},
+            // });
         }
         catch (error) {
             console.log('ERROR: ', error);

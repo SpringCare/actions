@@ -4,13 +4,29 @@ const github = require('@actions/github');
 import axios from 'axios';
 
 async function pivotalTracker(webhookUrl: string, pivotalKey: string): Promise<void> {
+
+	// Determine story_type (chore, bug, feature)
 	try {
-		await axios.put(webhookUrl, {current_state: 'finished'}, {
+		const story = await axios.get(webhookUrl, {
 			headers: {
 				'Content-Type'   : 'application/json',
 				'X-TrackerToken' : pivotalKey,
 			},
 		});
+
+		console.log(story);
+		console.log(story['story_type']);
+
+		// story.story_type
+		// // const newState = storyType === 'chore' ? 'accepted' : 'finished';
+
+		// await axios.put(webhookUrl, {current_state: newState}, {
+		// 	headers: {
+		// 		'Content-Type'   : 'application/json',
+		// 		'X-TrackerToken' : pivotalKey,
+		// 	},
+		// });
+
 	} catch(error) {
 		console.log('ERROR: ', error);
 	}
