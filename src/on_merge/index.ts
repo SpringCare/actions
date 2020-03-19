@@ -1,34 +1,46 @@
+const core = require('@actions/core');
 const github = require('@actions/github');
+
 import axios from 'axios';
 
-function pivotalTracker(webhookUrl: string): void {
-	axios.put(webhookUrl, {
-		workflow: 'finish',
-	});
+async function pivotalTracker(webhookUrl: string, pivotalKey: string): Promise<void> {
+	try {
+		await axios.put(webhookUrl, { workflow: 'finish' }, {
+			headers: {
+				'Content-Type'   : 'application/json',
+				'X-TrackerToken' : pivotalKey,
+			},
+		});
+	} catch(error) {
+		console.log(error);
+	}
 }
-
 
 async function main(): Promise<void>{
 	const targetBranch = github.context.ref;
 	const text = github.context.payload.pull_request.body;
+	const pivotalKey = core.getInput('pivotal-api-key');
 
 	console.log('target branch: ', targetBranch);
 	console.log('body text: ', text);
 
+	if ((targetBranch === 'staging') && (text !== null)) {
 
-	const urlRegex = /(https?:\/\/[^\s]+)/g;
-	const urls = text.match(urlRegex);
+		const regex = /(https?:\/\/[^\s]+)/g;
+		const parsedUrls = text.match(regex);
 
-	console.log('urls: ', urls);
+		console.log('urls: ', parsedUrls);
 
-	urls.forEach((url: string) => {
-		const storyId = url.split('/').slice(-1)[0];
-		const webhookUrl = `https://www.pivotaltracker.com/services/v5/projects/2428649/stories/${storyId}`;
+		await parsedUrls.forEach((url: string) => {
 
-		console.log('storyId: ', storyId);
+			const storyId = url.split('/').slice(-1)[0];
+			const webhookUrl = `https://www.pivotaltracker.com/services/v5/projects/2428649/stories/${storyId}`;
 
-		pivotalTracker(webhookUrl);
-	});
+			console.log('storyId: ', storyId);
+
+			pivotalTracker(webhookUrl, pivotalKey);
+		});
+	}
 }
 
 
