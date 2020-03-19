@@ -1,6 +1,14 @@
 const github = require('@actions/github');
+import axios from 'axios';
 
-function main(): void {
+function pivotalTracker(webhookUrl: string): void {
+	axios.put(webhookUrl, {
+		workflow: 'finish',
+	});
+}
+
+
+async function main(): Promise<void>{
 	const targetBranch = github.context.ref;
 	const text = github.context.payload.pull_request.body;
 
@@ -13,18 +21,19 @@ function main(): void {
 
 	console.log('urls: ', urls);
 
+	urls.forEach((url: string) => {
+		const storyId = url.split('/').slice(-1)[0];
+		const webhookUrl = `https://www.pivotaltracker.com/services/v5/projects/2428649/stories/${storyId}`;
 
-	// pivotalTrackerCall(url);
+		console.log('storyId: ', storyId);
 
+		pivotalTracker(url, webhookUrl);
+	});
 }
+
 
 // Call the main function.
 main();
-
-
-// function pivotalTrackerCall(url) {
-// 	console.log(url);
-// }
 
 
 // 1. Get target branch (staging || master)
