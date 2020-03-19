@@ -5381,16 +5381,13 @@ function pivotalTracker(webhookUrl, pivotalKey) {
                     'X-TrackerToken': pivotalKey,
                 },
             });
-            console.log('StoryType  ', story.data.story_type);
             let newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
-            console.log('NewState  ', newState);
-            let value = yield axios__WEBPACK_IMPORTED_MODULE_0___default().put(webhookUrl, { current_state: newState }, {
+            yield axios__WEBPACK_IMPORTED_MODULE_0___default().put(webhookUrl, { current_state: newState }, {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-TrackerToken': pivotalKey,
                 },
             });
-            console.log('Value  ------   ', value);
         }
         catch (error) {
             console.log('ERROR: ', error);
@@ -5407,11 +5404,9 @@ function main() {
         if ((targetBranch === 'staging') && (text !== null)) {
             const regex = /(https?:\/\/[^\s]+)/g;
             const parsedUrls = text.match(regex);
-            console.log('urls: ', parsedUrls);
             yield parsedUrls.forEach((url) => {
                 const storyId = url.split('/').slice(-1)[0];
                 const webhookUrl = `https://www.pivotaltracker.com/services/v5/projects/2428649/stories/${storyId}`;
-                console.log('storyId: ', storyId);
                 pivotalTracker(webhookUrl, pivotalKey);
             });
         }

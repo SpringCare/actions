@@ -14,20 +14,14 @@ async function pivotalTracker(webhookUrl: string, pivotalKey: string): Promise<v
 			},
 		});
 
-		console.log('StoryType  ', story.data.story_type);
-
 		let newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
 
-		console.log('NewState  ', newState);
-
-		let value = await axios.put(webhookUrl, {current_state: newState}, {
+		await axios.put(webhookUrl, {current_state: newState}, {
 			headers: {
 				'Content-Type'   : 'application/json',
 				'X-TrackerToken' : pivotalKey,
 			},
 		});
-
-		console.log('Value  ------   ', value);
 
 	} catch(error) {
 		console.log('ERROR: ', error);
@@ -47,14 +41,10 @@ async function main(): Promise<void> {
 		const regex = /(https?:\/\/[^\s]+)/g;
 		const parsedUrls = text.match(regex);
 
-		console.log('urls: ', parsedUrls);
-
 		await parsedUrls.forEach((url: string) => {
 
 			const storyId = url.split('/').slice(-1)[0];
 			const webhookUrl = `https://www.pivotaltracker.com/services/v5/projects/2428649/stories/${storyId}`;
-
-			console.log('storyId: ', storyId);
 
 			pivotalTracker(webhookUrl, pivotalKey);
 		});
