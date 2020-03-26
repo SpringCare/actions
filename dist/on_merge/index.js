@@ -6245,22 +6245,18 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 function pivotalTracker(webhookUrl, pivotalKey) {
     return __awaiter(this, void 0, void 0, function* () {
+        const headers = {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-TrackerToken': pivotalKey,
+            },
+        };
         try {
             // Determine story_type (chore, bug, feature)
-            const story = yield axios_default().get(webhookUrl, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-TrackerToken': pivotalKey,
-                },
-            });
+            const story = yield axios_default().get(webhookUrl, headers);
             const newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
             // Update state of ticket
-            yield axios_default().put(webhookUrl, { current_state: newState }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-TrackerToken': pivotalKey,
-                },
-            });
+            yield axios_default().put(webhookUrl, { current_state: newState }, headers);
         }
         catch (error) {
             console.log('ERROR: ', error);
