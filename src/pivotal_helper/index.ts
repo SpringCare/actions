@@ -24,10 +24,15 @@ async function main(): Promise<void> {
 			const storyId = url.split('/').slice(-1)[0];
 
 			const storyUrl = `${baseUrl}/stories/${storyId}`;
-			const data = getProjectId(storyUrl, pivotalKey);
-			console.log(data);
 
-			const webhookUrl = `${baseUrl}/projects/${data}/stories/${storyId}`;
+			const story = async (): Promise<any> => {
+				await getProjectId(storyUrl, pivotalKey);
+			}
+
+			console.log(story);
+			console.log(story.data);
+
+			const webhookUrl = `${baseUrl}/projects/${story.data.project_id}/stories/${storyId}`;
 			console.log(webhookUrl);
 			setState(webhookUrl, pivotalKey);
 		});
