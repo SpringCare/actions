@@ -4117,6 +4117,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 function setState(storyId, pivotalKey) {
     return __awaiter(this, void 0, void 0, function* () {
+        const baseUrl = 'https://www.pivotaltracker.com/services/v5';
         const headers = {
             headers: {
                 'Content-Type': 'application/json',
@@ -4124,7 +4125,6 @@ function setState(storyId, pivotalKey) {
             },
         };
         try {
-            const baseUrl = 'https://www.pivotaltracker.com/services/v5';
             const storyUrl = `${baseUrl}/stories/${storyId}`;
             // Fetch project_id of a specific story
             const story = yield axios_default().get(storyUrl, headers);
@@ -4167,7 +4167,7 @@ function main() {
             console.log(parsedUrls);
             yield parsedUrls.forEach((url) => {
                 const storyId = url.split('/').slice(-1)[0];
-                setState(pivotalKey, storyId);
+                setState(storyId, pivotalKey);
             });
         }
     });

@@ -21,7 +21,7 @@ async function main(): Promise<void> {
 		await parsedUrls.forEach((url: string) => {
 
 			const storyId = url.split('/').slice(-1)[0];
-			setState(pivotalKey, storyId);
+			setState(storyId, pivotalKey);
 		});
 	}
 }
