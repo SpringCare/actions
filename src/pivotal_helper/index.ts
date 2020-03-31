@@ -20,12 +20,13 @@ async function main(): Promise<void> {
 
 		await parsedUrls.forEach((url: string) => {
 
+			const baseUrl = 'https://www.pivotaltracker.com/services/v5';
 			const storyId = url.split('/').slice(-1)[0];
 
-			const storyUrl = `https://www.pivotaltracker.com/services/v5/stories/${storyId}`;
+			const storyUrl = `${baseUrl}/stories/${storyId}`;
 			const projectId = getProjectId(storyUrl, pivotalKey);
 
-			const webhookUrl = `https://www.pivotaltracker.com/services/v5/projects/${projectId}/stories/${storyId}`;
+			const webhookUrl = `${baseUrl}/projects/${projectId}/stories/${storyId}`;
 			console.log(webhookUrl);
 			setState(webhookUrl, pivotalKey);
 		});
