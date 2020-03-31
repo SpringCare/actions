@@ -4156,7 +4156,7 @@ function main() {
         const pivotalKey = core.getInput('pivotal-api-key');
         console.log('Target branch: ', targetBranch);
         if ((targetBranch === 'staging') && (text !== null)) {
-            const regex = /((http|https):\/\/www.pivotaltracker.com\/.*)/g;
+            const regex = /((http|https):\/\/www.pivotaltracker.com\/story\/show\/[1-9]\d{6,})/g;
             const parsedUrls = text.match(regex);
             console.log(parsedUrls);
             yield parsedUrls.forEach((url) => {
