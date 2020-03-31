@@ -24,9 +24,10 @@ async function main(): Promise<void> {
 			const storyId = url.split('/').slice(-1)[0];
 
 			const storyUrl = `${baseUrl}/stories/${storyId}`;
-			const projectId = getProjectId(storyUrl, pivotalKey);
+			const data = getProjectId(storyUrl, pivotalKey);
+			console.log(data);
 
-			const webhookUrl = `${baseUrl}/projects/${projectId}/stories/${storyId}`;
+			const webhookUrl = `${baseUrl}/projects/${data}/stories/${storyId}`;
 			console.log(webhookUrl);
 			setState(webhookUrl, pivotalKey);
 		});
