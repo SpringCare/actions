@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(380);
+/******/ 		return __webpack_require__(156);
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -4094,6 +4094,84 @@ function paginatePlugin(octokit) {
 
 /***/ }),
 
+/***/ 156:
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: ./node_modules/axios/index.js
+var axios = __webpack_require__(53);
+var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
+
+// CONCATENATED MODULE: ./src/utils/pivotalTracker.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+function setState(webhookUrl, pivotalKey) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const headers = {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-TrackerToken': pivotalKey,
+            },
+        };
+        try {
+            // Determine story_type (chore, bug, feature)
+            const story = yield axios_default().get(webhookUrl, headers);
+            const newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
+            // Update state of ticket
+            yield axios_default().put(webhookUrl, { current_state: newState }, headers);
+        }
+        catch (error) {
+            console.log('ERROR: ', error);
+        }
+    });
+}
+
+// CONCATENATED MODULE: ./src/pivotal_helper/index.ts
+var pivotal_helper_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const core = __webpack_require__(470);
+const github = __webpack_require__(469);
+
+function main() {
+    return pivotal_helper_awaiter(this, void 0, void 0, function* () {
+        const targetBranch = github.context.ref;
+        const text = github.context.payload.pull_request.body;
+        const pivotalKey = core.getInput('pivotal-api-key');
+        console.log('Target branch: ', targetBranch);
+        if ((targetBranch === 'staging') && (text !== null)) {
+            const regex = /((http|https):\/\/www.pivotaltracker.com)/g;
+            const parsedUrls = text.match(regex);
+            yield parsedUrls.forEach((url) => {
+                const storyId = url.split('/').slice(-1)[0];
+                const webhookUrl = `https://www.pivotaltracker.com/services/v5/projects/2428649/stories/${storyId}`;
+                setState(webhookUrl, pivotalKey);
+            });
+        }
+    });
+}
+// Call the main function.
+main();
+
+
+/***/ }),
+
 /***/ 168:
 /***/ (function(module) {
 
@@ -6218,84 +6296,6 @@ function octokitDebug(octokit) {
       });
   });
 }
-
-
-/***/ }),
-
-/***/ 380:
-/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-
-// EXTERNAL MODULE: ./node_modules/axios/index.js
-var axios = __webpack_require__(53);
-var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
-
-// CONCATENATED MODULE: ./src/utils/pivotalTracker.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-function pivotalTracker(webhookUrl, pivotalKey) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const headers = {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-TrackerToken': pivotalKey,
-            },
-        };
-        try {
-            // Determine story_type (chore, bug, feature)
-            const story = yield axios_default().get(webhookUrl, headers);
-            const newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
-            // Update state of ticket
-            yield axios_default().put(webhookUrl, { current_state: newState }, headers);
-        }
-        catch (error) {
-            console.log('ERROR: ', error);
-        }
-    });
-}
-
-// CONCATENATED MODULE: ./src/on_merge/index.ts
-var on_merge_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const core = __webpack_require__(470);
-const github = __webpack_require__(469);
-
-function main() {
-    return on_merge_awaiter(this, void 0, void 0, function* () {
-        const targetBranch = github.context.ref;
-        const text = github.context.payload.pull_request.body;
-        const pivotalKey = core.getInput('pivotal-api-key');
-        console.log('Target branch: ', targetBranch);
-        if ((targetBranch === 'staging') && (text !== null)) {
-            const regex = /(https?:\/\/[^\s]+)/g;
-            const parsedUrls = text.match(regex);
-            yield parsedUrls.forEach((url) => {
-                const storyId = url.split('/').slice(-1)[0];
-                const webhookUrl = `https://www.pivotaltracker.com/services/v5/projects/2428649/stories/${storyId}`;
-                pivotalTracker(webhookUrl, pivotalKey);
-            });
-        }
-    });
-}
-// Call the main function.
-main();
 
 
 /***/ }),

@@ -1,4 +1,4 @@
-name: On Merge
+name: Pivotal Helper
 description: "A GitHub Action to update a Pivotal Tracker ticket status"
 inputs:
   pivotal-api-key:

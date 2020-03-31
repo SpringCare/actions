@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export async function pivotalTracker(webhookUrl: string, pivotalKey: string): Promise<void> {
+export async function setState(webhookUrl: string, pivotalKey: string): Promise<void> {
 
 	const headers = {
 		headers: {
