@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export async function setState(webhookUrl: string, pivotalKey: string): Promise<void> {
+export async function setState(storyId: string, pivotalKey: string): Promise<void> {
 
 	const headers = {
 		headers: {
@@ -10,10 +10,19 @@ export async function setState(webhookUrl: string, pivotalKey: string): Promise<
 	};
 
 	try {
-		// Determine story_type (chore, bug, feature)
-		const story = await axios.get(webhookUrl, headers);
 
-		const newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
+		const baseUrl = 'https://www.pivotaltracker.com/services/v5';
+
+		const storyUrl = `${baseUrl}/stories/${storyId}`;
+		// Fetch project_id of a specific story
+		const story = await axios.get(storyUrl, headers);
+		console.log(story);
+
+		const webhookUrl = `${baseUrl}/projects/${story.data.project_id}/stories/${storyId}`;
+		// Determine story_type (chore, bug, feature)
+		const response = await axios.get(webhookUrl, headers);
+
+		const newState = response.data.story_type === 'chore' ? 'accepted' : 'finished';
 		// Update state of ticket
 		await axios.put(
 			webhookUrl,
@@ -24,24 +33,4 @@ export async function setState(webhookUrl: string, pivotalKey: string): Promise<
 	} catch(error) {
 		console.log('ERROR: ', error);
 	}
-}
-
-export async function getProjectId(storyUrl: string, pivotalKey: string): Promise<{project_id: number}> {
-
-	try {
-		const { project_id } = await axios.get(storyUrl, {
-			headers: {
-				'Content-Type'   : 'application/json',
-				'X-TrackerToken' : pivotalKey,
-			},
-		});
-
-		console.log(project_id)
-
-		return project_id;
-		
-	} catch(error) {
-		console.log('ERROR: ', error);
-	}
-
 }

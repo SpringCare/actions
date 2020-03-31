@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-import { setState, getProjectId } from '../utils/pivotalTracker';
+import { setState } from '../utils/pivotalTracker';
 
 async function main(): Promise<void> {
 
@@ -20,17 +20,8 @@ async function main(): Promise<void> {
 
 		await parsedUrls.forEach((url: string) => {
 
-			const baseUrl = 'https://www.pivotaltracker.com/services/v5';
 			const storyId = url.split('/').slice(-1)[0];
-			const storyUrl = `${baseUrl}/stories/${storyId}`;
-
-			const project_id = getProjectId(storyUrl, pivotalKey);
-		
-			console.log(project_id);
-
-			const webhookUrl = `${baseUrl}/projects/${project_id}/stories/${storyId}`;
-			console.log(webhookUrl);
-			setState(webhookUrl, pivotalKey);
+			setState(pivotalKey, storyId);
 		});
 	}
 }

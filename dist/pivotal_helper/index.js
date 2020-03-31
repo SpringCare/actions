@@ -4115,7 +4115,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
     });
 };
 
-function setState(webhookUrl, pivotalKey) {
+function setState(storyId, pivotalKey) {
     return __awaiter(this, void 0, void 0, function* () {
         const headers = {
             headers: {
@@ -4124,28 +4124,17 @@ function setState(webhookUrl, pivotalKey) {
             },
         };
         try {
+            const baseUrl = 'https://www.pivotaltracker.com/services/v5';
+            const storyUrl = `${baseUrl}/stories/${storyId}`;
+            // Fetch project_id of a specific story
+            const story = yield axios_default().get(storyUrl, headers);
+            console.log(story);
+            const webhookUrl = `${baseUrl}/projects/${story.data.project_id}/stories/${storyId}`;
             // Determine story_type (chore, bug, feature)
-            const story = yield axios_default().get(webhookUrl, headers);
-            const newState = story.data.story_type === 'chore' ? 'accepted' : 'finished';
+            const response = yield axios_default().get(webhookUrl, headers);
+            const newState = response.data.story_type === 'chore' ? 'accepted' : 'finished';
             // Update state of ticket
             yield axios_default().put(webhookUrl, { current_state: newState }, headers);
-        }
-        catch (error) {
-            console.log('ERROR: ', error);
-        }
-    });
-}
-function getProjectId(storyUrl, pivotalKey) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const { project_id } = yield axios_default().get(storyUrl, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-TrackerToken': pivotalKey,
-                },
-            });
-            console.log(project_id);
-            return project_id;
         }
         catch (error) {
             console.log('ERROR: ', error);
@@ -4177,14 +4166,8 @@ function main() {
             const parsedUrls = text.match(regex);
             console.log(parsedUrls);
             yield parsedUrls.forEach((url) => {
-                const baseUrl = 'https://www.pivotaltracker.com/services/v5';
                 const storyId = url.split('/').slice(-1)[0];
-                const storyUrl = `${baseUrl}/stories/${storyId}`;
-                const project_id = getProjectId(storyUrl, pivotalKey);
-                console.log(project_id);
-                const webhookUrl = `${baseUrl}/projects/${project_id}/stories/${storyId}`;
-                console.log(webhookUrl);
-                setState(webhookUrl, pivotalKey);
+                setState(pivotalKey, storyId);
             });
         }
     });
