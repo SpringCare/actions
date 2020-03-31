@@ -36,6 +36,8 @@ export async function getProjectId(storyUrl: string, pivotalKey: string): Promis
 			},
 		});
 
+		console.log(project_id)
+
 		return project_id;
 		
 	} catch(error) {

@@ -4144,6 +4144,7 @@ function getProjectId(storyUrl, pivotalKey) {
                     'X-TrackerToken': pivotalKey,
                 },
             });
+            console.log(project_id);
             return project_id;
         }
         catch (error) {
