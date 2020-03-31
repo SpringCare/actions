@@ -13,7 +13,7 @@ async function main(): Promise<void> {
 
 	if ((targetBranch === 'staging') && (text !== null)) {
 
-		const regex = /((http|https):\/\/www.pivotaltracker.com)/g;
+		const regex = /((http|https):\/\/www.pivotaltracker.com\/.*)/g;
 		const parsedUrls = text.match(regex);
 
 		console.log(parsedUrls);
