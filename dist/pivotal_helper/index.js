@@ -4135,6 +4135,22 @@ function setState(webhookUrl, pivotalKey) {
         }
     });
 }
+function getProjectId(webhookUrl, pivotalKey) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const story = yield axios_default().get(webhookUrl, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-TrackerToken': pivotalKey,
+                },
+            });
+            return story.data.project_id;
+        }
+        catch (error) {
+            console.log('ERROR: ', error);
+        }
+    });
+}
 
 // CONCATENATED MODULE: ./src/pivotal_helper/index.ts
 var pivotal_helper_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -4161,7 +4177,10 @@ function main() {
             console.log(parsedUrls);
             yield parsedUrls.forEach((url) => {
                 const storyId = url.split('/').slice(-1)[0];
-                const webhookUrl = `https://www.pivotaltracker.com/services/v5/projects/2428649/stories/${storyId}`;
+                const storyUrl = `https://www.pivotaltracker.com/services/v5/stories/${storyId}`;
+                const projectId = getProjectId(storyUrl, pivotalKey);
+                const webhookUrl = `https://www.pivotaltracker.com/services/v5/projects/${projectId}/stories/${storyId}`;
+                console.log(webhookUrl);
                 setState(webhookUrl, pivotalKey);
             });
         }

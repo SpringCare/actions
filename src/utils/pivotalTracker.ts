@@ -25,3 +25,21 @@ export async function setState(webhookUrl: string, pivotalKey: string): Promise<
 		console.log('ERROR: ', error);
 	}
 }
+
+export async function getProjectId(webhookUrl: string, pivotalKey: string): Promise<number> {
+
+	try {
+		const story = await axios.get(webhookUrl, {
+			headers: {
+				'Content-Type'   : 'application/json',
+				'X-TrackerToken' : pivotalKey,
+			},
+		});
+
+		return story.data.project_id;
+
+	} catch(error) {
+		console.log('ERROR: ', error);
+	}
+
+}
