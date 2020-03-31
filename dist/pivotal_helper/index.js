@@ -4158,6 +4158,7 @@ function main() {
         if ((targetBranch === 'staging') && (text !== null)) {
             const regex = /((http|https):\/\/www.pivotaltracker.com)/g;
             const parsedUrls = text.match(regex);
+            console.log(parsedUrls);
             yield parsedUrls.forEach((url) => {
                 const storyId = url.split('/').slice(-1)[0];
                 const webhookUrl = `https://www.pivotaltracker.com/services/v5/projects/2428649/stories/${storyId}`;

@@ -16,6 +16,8 @@ async function main(): Promise<void> {
 		const regex = /((http|https):\/\/www.pivotaltracker.com)/g;
 		const parsedUrls = text.match(regex);
 
+		console.log(parsedUrls);
+
 		await parsedUrls.forEach((url: string) => {
 
 			const storyId = url.split('/').slice(-1)[0];
