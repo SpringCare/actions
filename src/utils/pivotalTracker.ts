@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 export async function setState(storyId: string, pivotalKey: string): Promise<void> {
-	
+
 	const baseUrl = 'https://www.pivotaltracker.com/services/v5';
-	
+
 	const headers = {
 		headers: {
 			'Content-Type'   : 'application/json',

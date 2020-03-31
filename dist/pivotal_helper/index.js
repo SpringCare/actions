@@ -4163,7 +4163,6 @@ function main() {
         if ((targetBranch === 'staging') && (text !== null)) {
             const regex = /((http|https):\/\/www.pivotaltracker.com\/story\/show\/[1-9]\d{6,})/g;
             const parsedUrls = text.match(regex);
-            console.log(parsedUrls);
             yield parsedUrls.forEach((url) => {
                 const storyId = url.split('/').slice(-1)[0];
                 setState(storyId, pivotalKey);
