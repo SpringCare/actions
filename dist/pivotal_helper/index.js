@@ -4128,7 +4128,6 @@ function setState(storyId, pivotalKey) {
             const storyUrl = `${baseUrl}/stories/${storyId}`;
             // Fetch project_id of a specific story
             const story = yield axios_default().get(storyUrl, headers);
-            console.log(story);
             const webhookUrl = `${baseUrl}/projects/${story.data.project_id}/stories/${storyId}`;
             // Determine story_type (chore, bug, feature)
             const response = yield axios_default().get(webhookUrl, headers);
