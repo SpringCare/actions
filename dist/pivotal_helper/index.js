@@ -4138,12 +4138,13 @@ function setState(webhookUrl, pivotalKey) {
 function getProjectId(storyUrl, pivotalKey) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            return yield axios_default().get(storyUrl, {
+            const { project_id } = yield axios_default().get(storyUrl, {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-TrackerToken': pivotalKey,
                 },
             });
+            return project_id;
         }
         catch (error) {
             console.log('ERROR: ', error);
@@ -4178,11 +4179,9 @@ function main() {
                 const baseUrl = 'https://www.pivotaltracker.com/services/v5';
                 const storyId = url.split('/').slice(-1)[0];
                 const storyUrl = `${baseUrl}/stories/${storyId}`;
-                const data = () => pivotal_helper_awaiter(this, void 0, void 0, function* () {
-                    yield getProjectId(storyUrl, pivotalKey);
-                });
-                console.log(data);
-                const webhookUrl = `${baseUrl}/projects/${data}/stories/${storyId}`;
+                const project_id = getProjectId(storyUrl, pivotalKey);
+                console.log(project_id);
+                const webhookUrl = `${baseUrl}/projects/${project_id}/stories/${storyId}`;
                 console.log(webhookUrl);
                 setState(webhookUrl, pivotalKey);
             });
