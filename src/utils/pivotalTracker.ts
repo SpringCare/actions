@@ -26,10 +26,10 @@ export async function setState(webhookUrl: string, pivotalKey: string): Promise<
 	}
 }
 
-export async function getProjectId(webhookUrl: string, pivotalKey: string): Promise<{}> {
+export async function getProjectId(storyUrl: string, pivotalKey: string): Promise<{project_id: number}> {
 
 	try {
-		return await axios.get(webhookUrl, {
+		return await axios.get(storyUrl, {
 			headers: {
 				'Content-Type'   : 'application/json',
 				'X-TrackerToken' : pivotalKey,

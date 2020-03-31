@@ -15,7 +15,7 @@ on:
     types: [closed]
 
 jobs:
-  OnMerge:
+  Pivotal Helper:
     runs-on: ubuntu-latest
     steps:
     - uses: 'SpringCare/actions/dist/pivotal_helper@master'
