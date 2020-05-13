@@ -3,7 +3,7 @@ name: Spring Pull Request Metrics
 on: [pull_request]
 
 jobs:
-  labelPRs:
+  PullRequestMetrics:
     runs-on: ubuntu-latest
 
     steps:
