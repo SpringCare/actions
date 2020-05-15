@@ -7,7 +7,7 @@ import { getReviews } from '../utils/getReviews';
 
 async function main(): Promise<void> {
 
-	console.log('admin', admin)
+	console.log('admin', admin);
 
 	// Get a few inputs from the GitHub event.
 	const inputs: {
@@ -22,7 +22,7 @@ async function main(): Promise<void> {
 
 	admin.initializeApp({
 		credential  : admin.credential.cert(inputs.firebaseSecret),
-		databaseURL : inputs.firebaseURL
+		databaseURL : inputs.firebaseURL,
 	});
 
 	const db = admin.firestore();

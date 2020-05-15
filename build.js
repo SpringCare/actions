@@ -58,7 +58,7 @@ getBuildFiles('./src').forEach((file) => {
 	const output = './dist/' + jsFile;
 	console.log(`building ${file} to ${output}`);
 
-	ncc(`./src/${file}`, { externals: ['firebase-admin']}).then(({ code }) => {
+	ncc(`./src/${file}`).then(({ code }) => {
 		let dir = jsFile.split('/');
 		dir.pop(); // remove the file name, leaving just parent dirs
 		dir = dir.join('/');
