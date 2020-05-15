@@ -24,7 +24,11 @@ async function main(): Promise<void> {
 
 	const db = admin.firestore();
 
+	console.log('payload', github.context.payload);
+
 	const pr = github.context.payload.pull_request;
+	const repo = github.context.payload.repository.full_name;
+
 	if (!pr) {
 		core.setFailed('This action must be run with only "pull_request"');
 		return;
@@ -43,7 +47,6 @@ async function main(): Promise<void> {
 
 	const author = pr.user;
 	const { state, body, opened_at, merged_at, closed_at } = pr;
-	const repo = github.context.payload.repository.full_name;
 
 	console.log('PR number is', pullNumber);
 	console.log('Inputs', inputs);
