@@ -25,6 +25,7 @@ async function main(): Promise<void> {
 	const db = admin.firestore();
 
 	console.log('payload', github.context.payload);
+	console.log('payload', github.context.payload.repository);
 
 	const pr = github.context.payload.pull_request;
 	if (!pr) {
