@@ -21,7 +21,7 @@ async function main(): Promise<void> {
 	};
 
 	admin.initializeApp({
-		credential  : admin.credential.cert(inputs.firebaseSecret),
+		credential  : admin.credential.cert(JSON.parse(inputs.firebaseSecret)),
 		databaseURL : inputs.firebaseURL,
 	});
 
