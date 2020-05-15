@@ -43,7 +43,7 @@ async function main(): Promise<void> {
 
 	const author = pr.user;
 	const { state, body, opened_at, merged_at, closed_at } = pr;
-	const repo = github.context.repository.full_name;
+	const repo = github.context.payload.repository.full_name;
 
 	console.log('PR number is', pullNumber);
 	console.log('Inputs', inputs);
