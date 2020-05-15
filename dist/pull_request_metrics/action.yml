@@ -1,0 +1,15 @@
+name: Pull Request Metrics
+description: "A GitHub Action to collect metrics on your Pull Requests.  Stores the metrix in Firebase."
+inputs:
+  repo-token:
+    description: 'The GITHUB_TOKEN secret'
+  firebase-secret:
+    description: 'The Firebase service account credential (json)'
+  firebase-url:
+    description: "The url of your firebase database"
+branding:
+  icon: "git-pull-request"
+  color: green
+runs:
+  using: "node12"
+  main: "index.js"
