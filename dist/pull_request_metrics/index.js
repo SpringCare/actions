@@ -477,6 +477,9 @@ const admin = __webpack_require__(54);
 
 function main() {
     return pull_request_metrics_awaiter(this, void 0, void 0, function* () {
+
+        console.log('admin', admin);
+
         // Get a few inputs from the GitHub event.
         const inputs = {
             token: core.getInput('repo-token', { required: true }),

@@ -6,7 +6,10 @@ import { parseReviews } from '../utils/parseReviews';
 import { getReviews } from '../utils/getReviews';
 
 async function main(): Promise<void> {
-	// Get a few inputs from the GitHub event.
+
+	console.log('admin', admin);
+
+  // Get a few inputs from the GitHub event.
 	const inputs: {
 		token: string;
 		firebaseSecret: string;
@@ -16,7 +19,6 @@ async function main(): Promise<void> {
 		firebaseSecret : core.getInput('firebase-secret'),
 		firebaseURL    : core.getInput('firebase-url'),
 	};
-
 
 	admin.initializeApp({
 		credential  : admin.credential.cert(inputs.firebaseSecret),
