@@ -45,7 +45,6 @@ async function main(): Promise<void> {
 	const activeReviews = parseReviews(data || []);
 	const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
 
-	console.log('payload', github.context.payload);
 
 	const author = pr.user;
 	const { state, body, opened_at, merged_at, closed_at } = pr;
