@@ -24,7 +24,6 @@ async function main(): Promise<void> {
 
 	const db = admin.firestore();
 
-	console.log('full_name', github.context.payload.repository.full_name);
 	console.log('payload', github.context.payload);
 
 	const pr = github.context.payload.pull_request;
