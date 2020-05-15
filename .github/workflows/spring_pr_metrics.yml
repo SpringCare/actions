@@ -1,0 +1,14 @@
+name: Spring Pull Request Metrics
+
+on: [pull_request]
+
+jobs:
+  PullRequestMetrics:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: SpringCare/actions/dist/pull_request_metrics@master
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        firebase-secret: ${{ secrets.FIREBASE_SECRET }}
+        firebsae-url: ${{ secrets.FIREBASE_URL }}
