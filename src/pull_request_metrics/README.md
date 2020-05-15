@@ -24,4 +24,6 @@ jobs:
         firebase-url: "url"
 ```
 
-We **strongly** recommend that `firebase-secret` is set as a secret for public repositories using `${{ secrets.FIREBASE_CONFIG}}`.  This is the file for the `firebase-admin` in `Settings -> Serivce Accounts`  Make sure to `JSON.stringify` the file before pasting it into github.
+We **strongly** recommend that `firebase-secret` is set as a secret for public repositories using `${{ secrets.FIREBASE_CONFIG}}`.  This is the auth key for your REST requests to your real-time-database.  Keep it secret. Keep it safe.
+
+The `firebase-url` is the url to your database.  Something like `[my-app].firebaseio.com`

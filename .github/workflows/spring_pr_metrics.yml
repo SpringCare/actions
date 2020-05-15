@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: SpringCare/actions/dist/pull_request_metrics@master
+    - uses: SpringCare/actions/dist/pull_request_metrics@feature/fixing-metrics
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         firebase-secret: ${{ secrets.FIREBASE_SECRET }}

@@ -4,9 +4,9 @@ inputs:
   repo-token:
     description: 'The GITHUB_TOKEN secret'
   firebase-secret:
-    description: 'The Firebase service account credential (json)'
+    description: 'The Firebase auth key for your real-time-database'
   firebase-url:
-    description: "The url of your firebase database"
+    description: "The url of your firebase real-time-database"
 branding:
   icon: "git-pull-request"
   color: green

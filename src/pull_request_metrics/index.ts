@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const admin = require('firebase-admin');
+
+import axios from 'axios';
 
 import { parseReviews } from '../utils/parseReviews';
 import { getReviews } from '../utils/getReviews';
@@ -16,13 +17,6 @@ async function main(): Promise<void> {
 		firebaseSecret : core.getInput('firebase-secret'),
 		firebaseURL    : core.getInput('firebase-url'),
 	};
-
-	admin.initializeApp({
-		credential  : admin.credential.cert(JSON.parse(inputs.firebaseSecret)),
-		databaseURL : inputs.firebaseURL,
-	});
-
-	const db = admin.firestore();
 
 	console.log('payload', github.context.payload);
 
@@ -51,9 +45,7 @@ async function main(): Promise<void> {
 	console.log('PR number is', pullNumber);
 	console.log('Inputs', inputs);
 
-	const docRef = db.collection(repo);
-
-	docRef.set({
+	axios.put(`${inputs.firebaseURL}/github/pull-request-closed/${repo}/${pullNumber}.json?auth=${inputs.firebaseSecret}`, {
 		author: {
 			id   : author.id,
 			name : author.login,
