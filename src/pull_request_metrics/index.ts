@@ -6,9 +6,6 @@ import { parseReviews } from '../utils/parseReviews';
 import { getReviews } from '../utils/getReviews';
 
 async function main(): Promise<void> {
-
-	console.log('admin', admin);
-
 	// Get a few inputs from the GitHub event.
 	const inputs: {
 		token: string;
