@@ -502,7 +502,7 @@ function main() {
         const activeReviews = parseReviews(data || []);
         const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
         const author = pr.user;
-        const { state, body, opened_at, merged_at, closed_at } = pr;
+        const { state, body, created_at, merged_at, closed_at } = pr;
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
         axios_default().put(`${inputs.firebaseURL}/github/pull-request-closed/${repo}/${pullNumber}.json?auth=${inputs.firebaseSecret}`, {
@@ -512,7 +512,7 @@ function main() {
             },
             body,
             state,
-            opened_at,
+            created_at,
             merged_at,
             closed_at,
             approvers: approvedReviews.length,
