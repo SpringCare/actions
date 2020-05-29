@@ -6,7 +6,8 @@
   "author": "Kyle Mendes",
   "license": "ISC",
   "scripts": {
-    "lint": "eslint ./src --ext='.ts,.js'"
+    "lint": "eslint ./src --ext='.ts,.js'",
+    "build": "node build.js"
   },
   "dependencies": {
     "@actions/core": "^1.2.2",

@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(156);
+/******/ 		return __webpack_require__(729);
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -4090,88 +4090,6 @@ function paginatePlugin(octokit) {
   octokit.paginate = paginate.bind(null, octokit);
   octokit.paginate.iterator = iterator.bind(null, octokit);
 }
-
-
-/***/ }),
-
-/***/ 156:
-/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-
-// EXTERNAL MODULE: ./node_modules/axios/index.js
-var axios = __webpack_require__(53);
-var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
-
-// CONCATENATED MODULE: ./src/utils/pivotalTracker.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-function setState(storyId, pivotalKey) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const baseUrl = 'https://www.pivotaltracker.com/services/v5';
-        const headers = {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-TrackerToken': pivotalKey,
-            },
-        };
-        try {
-            const storyUrl = `${baseUrl}/stories/${storyId}`;
-            // Fetch project_id of a specific story
-            const story = yield axios_default().get(storyUrl, headers);
-            const webhookUrl = `${baseUrl}/projects/${story.data.project_id}/stories/${storyId}`;
-            // Determine story_type (chore, bug, feature)
-            const response = yield axios_default().get(webhookUrl, headers);
-            const newState = response.data.story_type === 'chore' ? 'accepted' : 'finished';
-            // Update state of ticket
-            yield axios_default().put(webhookUrl, { current_state: newState }, headers);
-        }
-        catch (error) {
-            console.log('ERROR: ', error);
-        }
-    });
-}
-
-// CONCATENATED MODULE: ./src/pivotal_helper/index.ts
-var pivotal_helper_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const core = __webpack_require__(470);
-const github = __webpack_require__(469);
-
-function main() {
-    return pivotal_helper_awaiter(this, void 0, void 0, function* () {
-        const targetBranch = github.context.ref;
-        const text = github.context.payload.pull_request.body;
-        const pivotalKey = core.getInput('pivotal-api-key');
-        console.log('Target branch: ', targetBranch);
-        if ((targetBranch === 'staging') && (text !== null)) {
-            const regex = /((http|https):\/\/www.pivotaltracker.com\/story\/show\/[1-9]\d{6,})/g;
-            const parsedUrls = text.match(regex);
-            yield parsedUrls.forEach((url) => {
-                const storyId = url.split('/').slice(-1)[0];
-                setState(storyId, pivotalKey);
-            });
-        }
-    });
-}
-// Call the main function.
-main();
 
 
 /***/ }),
@@ -11254,6 +11172,137 @@ module.exports = function bind(fn, thisArg) {
     return fn.apply(thisArg, args);
   };
 };
+
+
+/***/ }),
+
+/***/ 729:
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+// CONCATENATED MODULE: ./src/utils/labeler.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const github = __webpack_require__(469);
+function addLabels(client, prNumber, labels) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Adding labels:', labels);
+        yield client.issues.addLabels({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+            labels: labels
+        });
+    });
+}
+function removeLabel(client, prNumber, label) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Removing label:', label);
+        yield client.issues.removeLabel({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+            name: label
+        });
+    });
+}
+
+// EXTERNAL MODULE: ./node_modules/axios/index.js
+var axios = __webpack_require__(53);
+var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
+
+// CONCATENATED MODULE: ./src/utils/pivotalTracker.ts
+var pivotalTracker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+function setState(storyId, pivotalKey) {
+    return pivotalTracker_awaiter(this, void 0, void 0, function* () {
+        const baseUrl = 'https://www.pivotaltracker.com/services/v5';
+        const headers = {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-TrackerToken': pivotalKey,
+            },
+        };
+        try {
+            const storyUrl = `${baseUrl}/stories/${storyId}`;
+            // Fetch project_id of a specific story
+            const story = yield axios_default().get(storyUrl, headers);
+            const webhookUrl = `${baseUrl}/projects/${story.data.project_id}/stories/${storyId}`;
+            // Determine story_type (chore, bug, feature)
+            const response = yield axios_default().get(webhookUrl, headers);
+            const newState = response.data.story_type === 'chore' ? 'accepted' : 'finished';
+            // Update state of ticket
+            yield axios_default().put(webhookUrl, { current_state: newState }, headers);
+        }
+        catch (error) {
+            console.log('ERROR: ', error);
+        }
+    });
+}
+
+// CONCATENATED MODULE: ./src/pivotal_helper/index.ts
+var pivotal_helper_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const core = __webpack_require__(470);
+const pivotal_helper_github = __webpack_require__(469);
+
+
+function main() {
+    return pivotal_helper_awaiter(this, void 0, void 0, function* () {
+        try {
+            const targetBranch = pivotal_helper_github.context.ref;
+            const pr = pivotal_helper_github.context.payload.pull_request;
+            const pullNumber = pr.number;
+            const text = pivotal_helper_github.context.payload.pull_request.body;
+            const pivotalKey = core.getInput('pivotal-api-key');
+            const repoToken = core.getInput('repo-token', { required: true });
+            const client = new pivotal_helper_github.GitHub(repoToken);
+            console.log('Target branch: ', targetBranch);
+            if ((targetBranch === 'staging') && (text !== null)) {
+                const regex = /((http|https):\/\/www.pivotaltracker.com\/story\/show\/[1-9]\d{6,})/g;
+                const parsedUrls = text.match(regex) || [];
+                // Adds label when PT url is not found in the PR description.
+                if (!parsedUrls || parsedUrls.length === 0) {
+                    addLabels(client, pullNumber, ['no-ticket']);
+                }
+                yield parsedUrls.forEach((url) => {
+                    const storyId = url.split('/').slice(-1)[0];
+                    setState(storyId, pivotalKey);
+                });
+            }
+        }
+        catch (error) {
+            console.log('ERROR: ', error);
+        }
+    });
+}
+// Call the main function.
+main();
 
 
 /***/ }),
