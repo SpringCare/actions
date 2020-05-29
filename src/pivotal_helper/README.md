@@ -20,6 +20,7 @@ jobs:
     steps:
     - uses: 'SpringCare/actions/dist/pivotal_helper@master'
       with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
         pivotal-api-key: ${{ secrets.PIVOTAL_API_KEY }}
       if: github.event.pull_request.merged == true
 ```
