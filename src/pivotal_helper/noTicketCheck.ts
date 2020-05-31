@@ -2,7 +2,8 @@ const github = require('@actions/github');
 
 import { addLabels } from '../utils/labeler';
 
-export async function updateTicketState(context, inputs): Promise<void> {
+export async function noTicketCheck(context, inputs): Promise<void> {
+
 	try {
 		const pr = context.payload.pull_request;
 		const text = pr.body;
