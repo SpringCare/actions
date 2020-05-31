@@ -15,7 +15,7 @@ export async function updateTicketState(context, inputs): Promise<void> {
 
 			parsedUrls.forEach((url: string) => {
 				const storyId = url.split('/').slice(-1)[0];
-				await setState(storyId, pivotalKey);
+				setState(storyId, pivotalKey);
 			});
 		}
 	} catch(error) {

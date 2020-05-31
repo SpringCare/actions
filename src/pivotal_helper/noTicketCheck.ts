@@ -17,7 +17,7 @@ export async function noTicketCheck(context, inputs): Promise<void> {
 		if (!parsedUrls || parsedUrls.length === 0) {
 			// Adds label when PT url is not found in the PR description.
 			if (!parsedUrls || parsedUrls.length === 0) {
-				await addLabels(
+				addLabels(
 					client,
 					pullNumber,
 					['no-ticket']
