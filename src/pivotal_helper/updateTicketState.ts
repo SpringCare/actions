@@ -1,10 +1,9 @@
 import { setState } from '../utils/pivotalTracker';
 
-export async function updateTicketState(context, inputs): Promise<void> {
+export async function updateTicketState(context, pivotalKey): Promise<void> {
 	try {
 		const targetBranch = context.ref;
 		const text = context.payload.pull_request.body;
-		const pivotalKey = inputs.pivotalKey;
 
 		console.log('Target branch: ', targetBranch);
 

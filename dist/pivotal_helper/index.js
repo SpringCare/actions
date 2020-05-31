@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(779);
+/******/ 		return __webpack_require__(505);
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -6025,7 +6025,7 @@ function authenticationRequestError(state, error, options) {
 
 var utils = __webpack_require__(35);
 var bind = __webpack_require__(727);
-var Axios = __webpack_require__(874);
+var Axios = __webpack_require__(779);
 var mergeConfig = __webpack_require__(825);
 var defaults = __webpack_require__(774);
 
@@ -9128,6 +9128,115 @@ module.exports = resolveCommand;
 
 /***/ }),
 
+/***/ 505:
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: ./node_modules/axios/index.js
+var axios = __webpack_require__(53);
+var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
+
+// CONCATENATED MODULE: ./src/utils/pivotalTracker.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+function setState(storyId, pivotalKey) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const baseUrl = 'https://www.pivotaltracker.com/services/v5';
+        const headers = {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-TrackerToken': pivotalKey,
+            },
+        };
+        try {
+            const storyUrl = `${baseUrl}/stories/${storyId}`;
+            // Fetch project_id of a specific story
+            const story = yield axios_default().get(storyUrl, headers);
+            const webhookUrl = `${baseUrl}/projects/${story.data.project_id}/stories/${storyId}`;
+            // Determine story_type (chore, bug, feature)
+            const response = yield axios_default().get(webhookUrl, headers);
+            const newState = response.data.story_type === 'chore' ? 'accepted' : 'finished';
+            // Update state of ticket
+            yield axios_default().put(webhookUrl, { current_state: newState }, headers);
+        }
+        catch (error) {
+            console.log('ERROR: ', error);
+        }
+    });
+}
+
+// CONCATENATED MODULE: ./src/pivotal_helper/updateTicketState.ts
+var updateTicketState_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+function updateTicketState(context, pivotalKey) {
+    return updateTicketState_awaiter(this, void 0, void 0, function* () {
+        try {
+            const targetBranch = context.ref;
+            const text = context.payload.pull_request.body;
+            console.log('Target branch: ', targetBranch);
+            if ((targetBranch === 'staging') && (text !== null)) {
+                const regex = /((http|https):\/\/www.pivotaltracker.com\/story\/show\/[1-9]\d{6,})/g;
+                const parsedUrls = text.match(regex) || [];
+                parsedUrls.forEach((url) => {
+                    const storyId = url.split('/').slice(-1)[0];
+                    setState(storyId, pivotalKey);
+                });
+            }
+        }
+        catch (error) {
+            console.log('ERROR: ', error);
+        }
+    });
+}
+
+// CONCATENATED MODULE: ./src/pivotal_helper/index.ts
+var pivotal_helper_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const core = __webpack_require__(470);
+const github = __webpack_require__(469);
+
+function main() {
+    return pivotal_helper_awaiter(this, void 0, void 0, function* () {
+        const pivotalKey = core.getInput('pivotal-api-key');
+        const pr = github.context.payload.pull_request;
+        if (!pr) {
+            core.setFailed('This action must be run with only "pull_request".');
+            return;
+        }
+        yield updateTicketState(github.context, pivotalKey);
+    });
+}
+// Call the main function.
+main();
+
+
+/***/ }),
+
 /***/ 510:
 /***/ (function(module) {
 
@@ -11590,195 +11699,103 @@ function getFirstPage (octokit, link, headers) {
 /***/ }),
 
 /***/ 779:
-/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
 "use strict";
-__webpack_require__.r(__webpack_exports__);
 
-// CONCATENATED MODULE: ./src/utils/labeler.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const github = __webpack_require__(469);
-function addLabels(client, prNumber, labels) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Adding labels:', labels);
-        yield client.issues.addLabels({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            labels: labels
-        });
-    });
-}
-function removeLabel(client, prNumber, label) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Removing label:', label);
-        yield client.issues.removeLabel({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            name: label
-        });
-    });
+
+var utils = __webpack_require__(35);
+var buildURL = __webpack_require__(133);
+var InterceptorManager = __webpack_require__(283);
+var dispatchRequest = __webpack_require__(946);
+var mergeConfig = __webpack_require__(825);
+
+/**
+ * Create a new instance of Axios
+ *
+ * @param {Object} instanceConfig The default config for the instance
+ */
+function Axios(instanceConfig) {
+  this.defaults = instanceConfig;
+  this.interceptors = {
+    request: new InterceptorManager(),
+    response: new InterceptorManager()
+  };
 }
 
-// CONCATENATED MODULE: ./src/pivotal_helper/noTicketCheck.ts
-var noTicketCheck_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const noTicketCheck_github = __webpack_require__(469);
+/**
+ * Dispatch a request
+ *
+ * @param {Object} config The config specific for this request (merged with this.defaults)
+ */
+Axios.prototype.request = function request(config) {
+  /*eslint no-param-reassign:0*/
+  // Allow for axios('example/url'[, config]) a la fetch API
+  if (typeof config === 'string') {
+    config = arguments[1] || {};
+    config.url = arguments[0];
+  } else {
+    config = config || {};
+  }
 
-function noTicketCheck(context, inputs) {
-    return noTicketCheck_awaiter(this, void 0, void 0, function* () {
-        try {
-            const pr = context.payload.pull_request;
-            const text = pr.body;
-            const pullNumber = pr.number;
-            const token = inputs.token;
-            const client = new noTicketCheck_github.GitHub(token);
-            const regex = /((http|https):\/\/www.pivotaltracker.com\/story\/show\/[1-9]\d{6,})/g;
-            const parsedUrls = text.match(regex) || [];
-            if (!parsedUrls || parsedUrls.length === 0) {
-                // Adds label when PT url is not found in the PR description.
-                if (!parsedUrls || parsedUrls.length === 0) {
-                    addLabels(client, pullNumber, ['no-ticket']);
-                }
-            }
-        }
-        catch (error) {
-            console.log(error);
-        }
-    });
-}
+  config = mergeConfig(this.defaults, config);
 
-// EXTERNAL MODULE: ./node_modules/axios/index.js
-var axios = __webpack_require__(53);
-var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
+  // Set config.method
+  if (config.method) {
+    config.method = config.method.toLowerCase();
+  } else if (this.defaults.method) {
+    config.method = this.defaults.method.toLowerCase();
+  } else {
+    config.method = 'get';
+  }
 
-// CONCATENATED MODULE: ./src/utils/pivotalTracker.ts
-var pivotalTracker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
+  // Hook up interceptors middleware
+  var chain = [dispatchRequest, undefined];
+  var promise = Promise.resolve(config);
+
+  this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
+    chain.unshift(interceptor.fulfilled, interceptor.rejected);
+  });
+
+  this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
+    chain.push(interceptor.fulfilled, interceptor.rejected);
+  });
+
+  while (chain.length) {
+    promise = promise.then(chain.shift(), chain.shift());
+  }
+
+  return promise;
 };
 
-function setState(storyId, pivotalKey) {
-    return pivotalTracker_awaiter(this, void 0, void 0, function* () {
-        const baseUrl = 'https://www.pivotaltracker.com/services/v5';
-        const headers = {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-TrackerToken': pivotalKey,
-            },
-        };
-        try {
-            const storyUrl = `${baseUrl}/stories/${storyId}`;
-            // Fetch project_id of a specific story
-            const story = yield axios_default().get(storyUrl, headers);
-            const webhookUrl = `${baseUrl}/projects/${story.data.project_id}/stories/${storyId}`;
-            // Determine story_type (chore, bug, feature)
-            const response = yield axios_default().get(webhookUrl, headers);
-            const newState = response.data.story_type === 'chore' ? 'accepted' : 'finished';
-            // Update state of ticket
-            yield axios_default().put(webhookUrl, { current_state: newState }, headers);
-        }
-        catch (error) {
-            console.log('ERROR: ', error);
-        }
-    });
-}
-
-// CONCATENATED MODULE: ./src/pivotal_helper/updateTicketState.ts
-var updateTicketState_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
+Axios.prototype.getUri = function getUri(config) {
+  config = mergeConfig(this.defaults, config);
+  return buildURL(config.url, config.params, config.paramsSerializer).replace(/^\?/, '');
 };
 
-function updateTicketState(context, inputs) {
-    return updateTicketState_awaiter(this, void 0, void 0, function* () {
-        try {
-            const targetBranch = context.ref;
-            const text = context.payload.pull_request.body;
-            const pivotalKey = inputs.pivotalKey;
-            console.log('Target branch: ', targetBranch);
-            if ((targetBranch === 'staging') && (text !== null)) {
-                const regex = /((http|https):\/\/www.pivotaltracker.com\/story\/show\/[1-9]\d{6,})/g;
-                const parsedUrls = text.match(regex) || [];
-                parsedUrls.forEach((url) => {
-                    const storyId = url.split('/').slice(-1)[0];
-                    setState(storyId, pivotalKey);
-                });
-            }
-        }
-        catch (error) {
-            console.log('ERROR: ', error);
-        }
-    });
-}
+// Provide aliases for supported request methods
+utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
+  /*eslint func-names:0*/
+  Axios.prototype[method] = function(url, config) {
+    return this.request(utils.merge(config || {}, {
+      method: method,
+      url: url
+    }));
+  };
+});
 
-// CONCATENATED MODULE: ./src/pivotal_helper/index.ts
-var pivotal_helper_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const core = __webpack_require__(470);
-const pivotal_helper_github = __webpack_require__(469);
+utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
+  /*eslint func-names:0*/
+  Axios.prototype[method] = function(url, data, config) {
+    return this.request(utils.merge(config || {}, {
+      method: method,
+      url: url,
+      data: data
+    }));
+  };
+});
 
-
-function main() {
-    return pivotal_helper_awaiter(this, void 0, void 0, function* () {
-        // Get a few inputs from the GitHub event.
-        const inputs = {
-            token: core.getInput('repo-token', { required: true }),
-            pivotalKey: core.getInput('pivotal-api-key'),
-        };
-        const pr = pivotal_helper_github.context.payload.pull_request;
-        if (!pr) {
-            core.setFailed('This action must be run with only "pull_request".');
-            return;
-        }
-        const event = pivotal_helper_github.context.eventName;
-        const action = pivotal_helper_github.context.payload.action;
-        console.log(event);
-        console.log(action);
-        if (event === 'pull_request' && action === 'opened') {
-            yield noTicketCheck(pivotal_helper_github.context, inputs);
-        }
-        else if (event === 'pull_request' && action === 'closed') {
-            yield updateTicketState(pivotal_helper_github.context, inputs);
-        }
-    });
-}
-// Call the main function.
-main();
+module.exports = Axios;
 
 
 /***/ }),
@@ -13366,108 +13383,6 @@ module.exports = function (str) {
 /***/ (function(module) {
 
 module.exports = require("tty");
-
-/***/ }),
-
-/***/ 874:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-
-var utils = __webpack_require__(35);
-var buildURL = __webpack_require__(133);
-var InterceptorManager = __webpack_require__(283);
-var dispatchRequest = __webpack_require__(946);
-var mergeConfig = __webpack_require__(825);
-
-/**
- * Create a new instance of Axios
- *
- * @param {Object} instanceConfig The default config for the instance
- */
-function Axios(instanceConfig) {
-  this.defaults = instanceConfig;
-  this.interceptors = {
-    request: new InterceptorManager(),
-    response: new InterceptorManager()
-  };
-}
-
-/**
- * Dispatch a request
- *
- * @param {Object} config The config specific for this request (merged with this.defaults)
- */
-Axios.prototype.request = function request(config) {
-  /*eslint no-param-reassign:0*/
-  // Allow for axios('example/url'[, config]) a la fetch API
-  if (typeof config === 'string') {
-    config = arguments[1] || {};
-    config.url = arguments[0];
-  } else {
-    config = config || {};
-  }
-
-  config = mergeConfig(this.defaults, config);
-
-  // Set config.method
-  if (config.method) {
-    config.method = config.method.toLowerCase();
-  } else if (this.defaults.method) {
-    config.method = this.defaults.method.toLowerCase();
-  } else {
-    config.method = 'get';
-  }
-
-  // Hook up interceptors middleware
-  var chain = [dispatchRequest, undefined];
-  var promise = Promise.resolve(config);
-
-  this.interceptors.request.forEach(function unshiftRequestInterceptors(interceptor) {
-    chain.unshift(interceptor.fulfilled, interceptor.rejected);
-  });
-
-  this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
-    chain.push(interceptor.fulfilled, interceptor.rejected);
-  });
-
-  while (chain.length) {
-    promise = promise.then(chain.shift(), chain.shift());
-  }
-
-  return promise;
-};
-
-Axios.prototype.getUri = function getUri(config) {
-  config = mergeConfig(this.defaults, config);
-  return buildURL(config.url, config.params, config.paramsSerializer).replace(/^\?/, '');
-};
-
-// Provide aliases for supported request methods
-utils.forEach(['delete', 'get', 'head', 'options'], function forEachMethodNoData(method) {
-  /*eslint func-names:0*/
-  Axios.prototype[method] = function(url, config) {
-    return this.request(utils.merge(config || {}, {
-      method: method,
-      url: url
-    }));
-  };
-});
-
-utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
-  /*eslint func-names:0*/
-  Axios.prototype[method] = function(url, data, config) {
-    return this.request(utils.merge(config || {}, {
-      method: method,
-      url: url,
-      data: data
-    }));
-  };
-});
-
-module.exports = Axios;
-
 
 /***/ }),
 

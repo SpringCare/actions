@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(592);
+/******/ 		return __webpack_require__(23);
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -399,6 +399,86 @@ module.exports.sync = spawnSync;
 
 module.exports._parse = parse;
 module.exports._enoent = enoent;
+
+
+/***/ }),
+
+/***/ 23:
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+// CONCATENATED MODULE: ./src/utils/labeler.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const github = __webpack_require__(469);
+function addLabels(client, prNumber, labels) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Adding labels:', labels);
+        yield client.issues.addLabels({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+            labels: labels
+        });
+    });
+}
+function removeLabel(client, prNumber, label) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Removing label:', label);
+        yield client.issues.removeLabel({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+            name: label
+        });
+    });
+}
+
+// CONCATENATED MODULE: ./src/pull_request_labeler/noTicketCheck.ts
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "noTicketCheck", function() { return noTicketCheck; });
+var noTicketCheck_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const noTicketCheck_github = __webpack_require__(469);
+
+function noTicketCheck(context, inputs) {
+    return noTicketCheck_awaiter(this, void 0, void 0, function* () {
+        try {
+            const pr = context.payload.pull_request;
+            const text = pr.body;
+            const pullNumber = pr.number;
+            const token = inputs.token;
+            const client = new noTicketCheck_github.GitHub(token);
+            const regex = /((http|https):\/\/www.pivotaltracker.com\/story\/show\/[1-9]\d{6,})/g;
+            const parsedUrls = text.match(regex) || [];
+            if (!parsedUrls || parsedUrls.length === 0) {
+                // Adds label when PT url is not found in the PR description.
+                if (!parsedUrls || parsedUrls.length === 0) {
+                    addLabels(client, pullNumber, ['no-ticket']);
+                }
+            }
+        }
+        catch (error) {
+            console.log(error);
+        }
+    });
+}
 
 
 /***/ }),
@@ -7810,86 +7890,6 @@ function octokitRestApiEndpoints(octokit) {
   ROUTES.pullRequests = ROUTES.pulls;
 
   octokit.registerEndpoints(ROUTES);
-}
-
-
-/***/ }),
-
-/***/ 592:
-/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-
-// CONCATENATED MODULE: ./src/utils/labeler.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const github = __webpack_require__(469);
-function addLabels(client, prNumber, labels) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Adding labels:', labels);
-        yield client.issues.addLabels({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            labels: labels
-        });
-    });
-}
-function removeLabel(client, prNumber, label) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Removing label:', label);
-        yield client.issues.removeLabel({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            name: label
-        });
-    });
-}
-
-// CONCATENATED MODULE: ./src/pivotal_helper/noTicketCheck.ts
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "noTicketCheck", function() { return noTicketCheck; });
-var noTicketCheck_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const noTicketCheck_github = __webpack_require__(469);
-
-function noTicketCheck(context, inputs) {
-    return noTicketCheck_awaiter(this, void 0, void 0, function* () {
-        try {
-            const pr = context.payload.pull_request;
-            const text = pr.body;
-            const pullNumber = pr.number;
-            const token = inputs.token;
-            const client = new noTicketCheck_github.GitHub(token);
-            const regex = /((http|https):\/\/www.pivotaltracker.com\/story\/show\/[1-9]\d{6,})/g;
-            const parsedUrls = text.match(regex) || [];
-            if (!parsedUrls || parsedUrls.length === 0) {
-                // Adds label when PT url is not found in the PR description.
-                if (!parsedUrls || parsedUrls.length === 0) {
-                    addLabels(client, pullNumber, ['no-ticket']);
-                }
-            }
-        }
-        catch (error) {
-            console.log(error);
-        }
-    });
 }
 
 

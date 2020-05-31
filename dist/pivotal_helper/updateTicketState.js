@@ -3456,12 +3456,11 @@ var updateTicketState_awaiter = (undefined && undefined.__awaiter) || function (
     });
 };
 
-function updateTicketState(context, inputs) {
+function updateTicketState(context, pivotalKey) {
     return updateTicketState_awaiter(this, void 0, void 0, function* () {
         try {
             const targetBranch = context.ref;
             const text = context.payload.pull_request.body;
-            const pivotalKey = inputs.pivotalKey;
             console.log('Target branch: ', targetBranch);
             if ((targetBranch === 'staging') && (text !== null)) {
                 const regex = /((http|https):\/\/www.pivotaltracker.com\/story\/show\/[1-9]\d{6,})/g;
