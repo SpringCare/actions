@@ -4,6 +4,7 @@ const github = require('@actions/github');
 import { addLabels, removeLabel } from '../utils/labeler';
 import { parseReviews } from '../utils/parseReviews';
 import { getReviews } from '../utils/getReviews';
+import { noTicketCheck } from '../utils/pivotalTracker';
 
 
 async function main(): Promise<void> {
@@ -85,8 +86,9 @@ async function main(): Promise<void> {
 			pullNumber,
 			'WIP'
 		);
-
 	}
+
+	await noTicketCheck(github.context, inputs);
 }
 
 // Call the main function.

@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(505);
+/******/ 		return __webpack_require__(427);
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -6713,48 +6713,169 @@ module.exports = require("stream");
 /***/ }),
 
 /***/ 427:
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
 
-// Older verions of Node.js might not have `util.getSystemErrorName()`.
-// In that case, fall back to a deprecated internal.
-const util = __webpack_require__(669);
+// EXTERNAL MODULE: ./node_modules/axios/index.js
+var axios = __webpack_require__(53);
+var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
 
-let uv;
-
-if (typeof util.getSystemErrorName === 'function') {
-	module.exports = util.getSystemErrorName;
-} else {
-	try {
-		uv = process.binding('uv');
-
-		if (typeof uv.errname !== 'function') {
-			throw new TypeError('uv.errname is not a function');
-		}
-	} catch (err) {
-		console.error('execa/lib/errname: unable to establish process.binding(\'uv\')', err);
-		uv = null;
-	}
-
-	module.exports = code => errname(uv, code);
+// CONCATENATED MODULE: ./src/utils/labeler.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const github = __webpack_require__(469);
+function addLabels(client, prNumber, labels) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Adding labels:', labels);
+        yield client.issues.addLabels({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+            labels: labels
+        });
+    });
+}
+function removeLabel(client, prNumber, label) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Removing label:', label);
+        yield client.issues.removeLabel({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+            name: label
+        });
+    });
 }
 
-// Used for testing the fallback behavior
-module.exports.__test__ = errname;
+// CONCATENATED MODULE: ./src/utils/pivotalTracker.ts
+var pivotalTracker_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const pivotalTracker_github = __webpack_require__(469);
 
-function errname(uv, code) {
-	if (uv) {
-		return uv.errname(code);
-	}
 
-	if (!(code < 0)) {
-		throw new Error('err >= 0');
-	}
-
-	return `Unknown system error ${code}`;
+function setState(storyId, pivotalKey) {
+    return pivotalTracker_awaiter(this, void 0, void 0, function* () {
+        const baseUrl = 'https://www.pivotaltracker.com/services/v5';
+        const headers = {
+            headers: {
+                'Content-Type': 'application/json',
+                'X-TrackerToken': pivotalKey,
+            },
+        };
+        try {
+            const storyUrl = `${baseUrl}/stories/${storyId}`;
+            // Fetch project_id of a specific story
+            const story = yield axios_default().get(storyUrl, headers);
+            const webhookUrl = `${baseUrl}/projects/${story.data.project_id}/stories/${storyId}`;
+            // Determine story_type (chore, bug, feature)
+            const response = yield axios_default().get(webhookUrl, headers);
+            const newState = response.data.story_type === 'chore' ? 'accepted' : 'finished';
+            // Update state of ticket
+            yield axios_default().put(webhookUrl, { current_state: newState }, headers);
+        }
+        catch (error) {
+            console.log('ERROR: ', error);
+        }
+    });
+}
+function noTicketCheck(context, inputs) {
+    return pivotalTracker_awaiter(this, void 0, void 0, function* () {
+        try {
+            const pr = context.payload.pull_request;
+            const text = pr.body;
+            const pullNumber = pr.number;
+            const token = inputs.token;
+            const client = new pivotalTracker_github.GitHub(token);
+            const regex = /((http|https):\/\/www.pivotaltracker.com\/story\/show\/[1-9]\d{6,})/g;
+            const parsedUrls = text.match(regex) || [];
+            if (!parsedUrls || parsedUrls.length === 0) {
+                // Adds label when PT url is not found in the PR description.
+                if (!parsedUrls || parsedUrls.length === 0) {
+                    addLabels(client, pullNumber, ['no-ticket']);
+                }
+            }
+        }
+        catch (error) {
+            console.log(error);
+        }
+    });
 }
 
+// CONCATENATED MODULE: ./src/pivotal_helper/updateTicketState.ts
+var updateTicketState_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+function updateTicketState(context, pivotalKey) {
+    return updateTicketState_awaiter(this, void 0, void 0, function* () {
+        try {
+            const targetBranch = context.ref;
+            const text = context.payload.pull_request.body;
+            console.log('Target branch: ', targetBranch);
+            if ((targetBranch === 'staging') && (text !== null)) {
+                const regex = /((http|https):\/\/www.pivotaltracker.com\/story\/show\/[1-9]\d{6,})/g;
+                const parsedUrls = text.match(regex) || [];
+                parsedUrls.forEach((url) => {
+                    const storyId = url.split('/').slice(-1)[0];
+                    setState(storyId, pivotalKey);
+                });
+            }
+        }
+        catch (error) {
+            console.log('ERROR: ', error);
+        }
+    });
+}
+
+// CONCATENATED MODULE: ./src/pivotal_helper/index.ts
+var pivotal_helper_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const core = __webpack_require__(470);
+const pivotal_helper_github = __webpack_require__(469);
+
+function main() {
+    return pivotal_helper_awaiter(this, void 0, void 0, function* () {
+        const pivotalKey = core.getInput('pivotal-api-key');
+        const pr = pivotal_helper_github.context.payload.pull_request;
+        if (!pr) {
+            core.setFailed('This action must be run with only "pull_request".');
+            return;
+        }
+        yield updateTicketState(pivotal_helper_github.context, pivotalKey);
+    });
+}
+// Call the main function.
+main();
 
 
 /***/ }),
@@ -9128,115 +9249,6 @@ module.exports = resolveCommand;
 
 /***/ }),
 
-/***/ 505:
-/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-
-// EXTERNAL MODULE: ./node_modules/axios/index.js
-var axios = __webpack_require__(53);
-var axios_default = /*#__PURE__*/__webpack_require__.n(axios);
-
-// CONCATENATED MODULE: ./src/utils/pivotalTracker.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-function setState(storyId, pivotalKey) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const baseUrl = 'https://www.pivotaltracker.com/services/v5';
-        const headers = {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-TrackerToken': pivotalKey,
-            },
-        };
-        try {
-            const storyUrl = `${baseUrl}/stories/${storyId}`;
-            // Fetch project_id of a specific story
-            const story = yield axios_default().get(storyUrl, headers);
-            const webhookUrl = `${baseUrl}/projects/${story.data.project_id}/stories/${storyId}`;
-            // Determine story_type (chore, bug, feature)
-            const response = yield axios_default().get(webhookUrl, headers);
-            const newState = response.data.story_type === 'chore' ? 'accepted' : 'finished';
-            // Update state of ticket
-            yield axios_default().put(webhookUrl, { current_state: newState }, headers);
-        }
-        catch (error) {
-            console.log('ERROR: ', error);
-        }
-    });
-}
-
-// CONCATENATED MODULE: ./src/pivotal_helper/updateTicketState.ts
-var updateTicketState_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-function updateTicketState(context, pivotalKey) {
-    return updateTicketState_awaiter(this, void 0, void 0, function* () {
-        try {
-            const targetBranch = context.ref;
-            const text = context.payload.pull_request.body;
-            console.log('Target branch: ', targetBranch);
-            if ((targetBranch === 'staging') && (text !== null)) {
-                const regex = /((http|https):\/\/www.pivotaltracker.com\/story\/show\/[1-9]\d{6,})/g;
-                const parsedUrls = text.match(regex) || [];
-                parsedUrls.forEach((url) => {
-                    const storyId = url.split('/').slice(-1)[0];
-                    setState(storyId, pivotalKey);
-                });
-            }
-        }
-        catch (error) {
-            console.log('ERROR: ', error);
-        }
-    });
-}
-
-// CONCATENATED MODULE: ./src/pivotal_helper/index.ts
-var pivotal_helper_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const core = __webpack_require__(470);
-const github = __webpack_require__(469);
-
-function main() {
-    return pivotal_helper_awaiter(this, void 0, void 0, function* () {
-        const pivotalKey = core.getInput('pivotal-api-key');
-        const pr = github.context.payload.pull_request;
-        if (!pr) {
-            core.setFailed('This action must be run with only "pull_request".');
-            return;
-        }
-        yield updateTicketState(github.context, pivotalKey);
-    });
-}
-// Call the main function.
-main();
-
-
-/***/ }),
-
 /***/ 510:
 /***/ (function(module) {
 
@@ -11358,6 +11370,53 @@ function sync (path, options) {
     }
   }
 }
+
+
+/***/ }),
+
+/***/ 745:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+// Older verions of Node.js might not have `util.getSystemErrorName()`.
+// In that case, fall back to a deprecated internal.
+const util = __webpack_require__(669);
+
+let uv;
+
+if (typeof util.getSystemErrorName === 'function') {
+	module.exports = util.getSystemErrorName;
+} else {
+	try {
+		uv = process.binding('uv');
+
+		if (typeof uv.errname !== 'function') {
+			throw new TypeError('uv.errname is not a function');
+		}
+	} catch (err) {
+		console.error('execa/lib/errname: unable to establish process.binding(\'uv\')', err);
+		uv = null;
+	}
+
+	module.exports = code => errname(uv, code);
+}
+
+// Used for testing the fallback behavior
+module.exports.__test__ = errname;
+
+function errname(uv, code) {
+	if (uv) {
+		return uv.errname(code);
+	}
+
+	if (!(code < 0)) {
+		throw new Error('err >= 0');
+	}
+
+	return `Unknown system error ${code}`;
+}
+
 
 
 /***/ }),
@@ -14937,7 +14996,7 @@ const isStream = __webpack_require__(323);
 const _getStream = __webpack_require__(145);
 const pFinally = __webpack_require__(697);
 const onExit = __webpack_require__(260);
-const errname = __webpack_require__(427);
+const errname = __webpack_require__(745);
 const stdio = __webpack_require__(168);
 
 const TEN_MEGABYTES = 1000 * 1000 * 10;
