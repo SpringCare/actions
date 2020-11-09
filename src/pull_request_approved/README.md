@@ -1,4 +1,4 @@
-# Spring Health Changes Requested Action
+# Spring Health Pull Request Approved Action
 
 ### Features
 1. Slacks PR author when a PR has been approved
