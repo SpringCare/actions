@@ -1,0 +1,16 @@
+name: Spring Pull Request Reviewed
+
+on: [pull_request_review]
+
+jobs:
+  labelPRs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: '../dist/changes_requested'
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        slack-channel: '#dev'
+        bot-name: 'Professor Oak'
+        icon_emoji: ':oak'
