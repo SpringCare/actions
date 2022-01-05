@@ -7,6 +7,8 @@ inputs:
     description: 'The number of Reviews required to allow a PR'
   wip:
     description: 'Whether to label WIP PRs automatically'
+  target-branch:
+    description: 'The branch for which the label needs to be added'
 branding:
   icon: "git-pull-request"
   color: green
