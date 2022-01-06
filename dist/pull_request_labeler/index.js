@@ -11344,27 +11344,76 @@ const pull_request_labeler_github = __webpack_require__(469);
 
 
 
+const handleReviewCountLabel = (inputs, client, pullNumber) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
+    if (inputs.requiredReviews && !(inputs.requiredReviews > 0)) {
+        core.setFailed('If set, "required" must be an integer greater than 0');
+        return;
+    }
+    const { data } = yield getReviews(inputs.token, pullNumber);
+    if (inputs.requiredReviews > 0) {
+        const activeReviews = parseReviews(data || []);
+        const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
+        console.log('active', activeReviews);
+        let reviewCount = approvedReviews.length;
+        if (reviewCount > inputs.requiredReviews) {
+            reviewCount = inputs.requiredReviews;
+        }
+        const toAdd = `${reviewCount} of ${inputs.requiredReviews}`;
+        // Loop through the current labels and remove any existing "x of y" labels
+        for (let i = 0; i <= inputs.requiredReviews; i++) {
+            // When removing, we need to escape special characters
+            const loopCount = `${i}%20of%20${inputs.requiredReviews}`;
+            // Don't remove the one we're trying to add, just in case a race condition happens on the server
+            if (i !== reviewCount) {
+                removeLabel(client, pullNumber, loopCount);
+            }
+        }
+        addLabels(client, pullNumber, [toAdd]);
+    }
+});
+const handleWIPLabel = (inputs, client, pr) => {
+    const draftPR = pr.draft;
+    const pullNumber = pr.number;
+    if (inputs.labelWIP && draftPR) {
+        addLabels(client, pullNumber, ['WIP']);
+    }
+    else if (inputs.labelWIP && !draftPR) {
+        removeLabel(client, pullNumber, 'WIP');
+    }
+};
 const getBranchCommits = (url, targetBranch, octokit) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
-    const branchCommitsResponse = yield octokit.request(`GET ${url}?sha=${targetBranch}`);
-    const formattedCommits = branchCommitsResponse.data.map((c) => {
-        return {
-            sha: c.sha,
-            author: c.commit.author.name,
-        };
-    });
-    console.log(`${targetBranch} commits: `, formattedCommits, '\n');
-    return branchCommitsResponse.data;
+    try {
+        const branchCommitsResponse = yield octokit.request(`GET ${url}?sha=${targetBranch}`);
+        const formattedCommits = branchCommitsResponse.data.map((c) => {
+            return {
+                sha: c.sha,
+                author: c.commit.author.name,
+            };
+        });
+        console.log(`${targetBranch} commits: `, formattedCommits, '\n');
+        return branchCommitsResponse.data;
+    }
+    catch (error) {
+        console.error('Branch commit request failed: ', error.status);
+        process.exit(1);
+    }
 });
 const getCommitsForPR = (url, octokit) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
-    const prCommitsResponse = yield octokit.request(`GET ${url}`);
-    const formattedCommits = prCommitsResponse.data.map((c) => {
-        return {
-            sha: c.sha,
-            author: c.commit.author.name,
-        };
-    });
-    console.log('PR commits: ', formattedCommits, '\n');
-    return prCommitsResponse.data;
+    try {
+        const prCommitsResponse = yield octokit.request(`GET ${url}`);
+        const formattedCommits = prCommitsResponse.data.map((c) => {
+            return {
+                sha: c.sha,
+                author: c.commit.author.name,
+            };
+        });
+        console.log('PR commits: ', formattedCommits, '\n');
+        return prCommitsResponse.data;
+    }
+    catch (error) {
+        console.error('PR commit request failed: ', error.status);
+        process.exit(1);
+    }
 });
 const shouldShowBranchLabel = (prCommits, branchCommits) => {
     return prCommits.some((prCommit) => branchCommits.some((branchCommit) => branchCommit.sha === prCommit.sha ||
@@ -11373,6 +11422,22 @@ const shouldShowBranchLabel = (prCommits, branchCommits) => {
                 .map((parent) => parent.sha)
                 .includes(prCommit.sha))));
 };
+const handleBranchLabel = (inputs, client, pr) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
+    const octokit = new dist_node.Octokit({ auth: inputs.token });
+    const prCommits = yield getCommitsForPR(pr.commits_url, octokit);
+    const commitsUrl = pr.base.repo.commits_url.split('{/')[0];
+    const branchCommits = yield getBranchCommits(commitsUrl, inputs.branch, octokit);
+    const pullNumber = pr.number;
+    const prLabels = pr.labels.map((label) => label.name);
+    const showBranchLabel = shouldShowBranchLabel(prCommits, branchCommits);
+    const label = `Changes in ${inputs.branch}`;
+    if (!showBranchLabel && prLabels.includes(label)) {
+        removeLabel(client, pullNumber, label);
+    }
+    if (showBranchLabel) {
+        addLabels(client, pullNumber, [label]);
+    }
+});
 function main() {
     return pull_request_labeler_awaiter(this, void 0, void 0, function* () {
         // Get a few inputs from the GitHub event.
@@ -11380,7 +11445,7 @@ function main() {
             token: core.getInput('repo-token', { required: true }),
             requiredReviews: core.getInput('required'),
             labelWIP: core.getInput('wip'),
-            branch: core.getInput('target-branch', { required: true }),
+            branch: core.getInput('target-branch'),
         };
         const pr = pull_request_labeler_github.context.payload.pull_request;
         if (!pr) {
@@ -11388,54 +11453,12 @@ function main() {
             return;
         }
         const pullNumber = pr.number;
-        const draftPR = pr.draft;
         console.log('PR number is', pullNumber);
         console.log('Inputs', inputs);
-        if (inputs.requiredReviews && !(inputs.requiredReviews > 0)) {
-            core.setFailed('If set, "required" must be an integer greater than 0');
-            return;
-        }
         const client = new pull_request_labeler_github.GitHub(inputs.token);
-        const { data } = yield getReviews(inputs.token, pullNumber);
-        if (inputs.requiredReviews > 0) {
-            const activeReviews = parseReviews(data || []);
-            const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
-            console.log('active', activeReviews);
-            let reviewCount = approvedReviews.length;
-            if (reviewCount > inputs.requiredReviews) {
-                reviewCount = inputs.requiredReviews;
-            }
-            const toAdd = `${reviewCount} of ${inputs.requiredReviews}`;
-            // Loop through the current labels and remove any existing "x of y" labels
-            for (let i = 0; i <= inputs.requiredReviews; i++) {
-                // When removing, we need to escape special characters
-                const loopCount = `${i}%20of%20${inputs.requiredReviews}`;
-                // Don't remove the one we're trying to add, just in case a race condition happens on the server
-                if (i !== reviewCount) {
-                    removeLabel(client, pullNumber, loopCount);
-                }
-            }
-            addLabels(client, pullNumber, [toAdd]);
-        }
-        if (inputs.labelWIP && draftPR) {
-            addLabels(client, pullNumber, ['WIP']);
-        }
-        else if (inputs.labelWIP && !draftPR) {
-            removeLabel(client, pullNumber, 'WIP');
-        }
-        const octokit = new dist_node.Octokit({ auth: inputs.token });
-        const prCommits = yield getCommitsForPR(pr.commits_url, octokit);
-        const commitsUrl = pr.base.repo.commits_url.split('{/')[0];
-        const branchCommits = yield getBranchCommits(commitsUrl, inputs.branch, octokit);
-        const prLabels = pr.labels.map((label) => label.name);
-        const showBranchLabel = shouldShowBranchLabel(prCommits, branchCommits);
-        const label = `Changes in ${inputs.branch}`;
-        if (!showBranchLabel && prLabels.includes(label)) {
-            removeLabel(client, pullNumber, label);
-        }
-        if (showBranchLabel) {
-            addLabels(client, pullNumber, [label]);
-        }
+        handleReviewCountLabel(inputs, client, pullNumber);
+        handleWIPLabel(inputs, client, pr);
+        handleBranchLabel(inputs, client, pr);
     });
 }
 // Call the main function.
