@@ -14,17 +14,25 @@ const getBranchCommits = async (
 	const branchCommitsResponse = await octokit.request(
 		`GET ${url}?sha=${targetBranch}`
 	);
-	console.log(
-		`${targetBranch} commits: `,
-		JSON.stringify(branchCommitsResponse.data),
-		'\n'
-	);
+	const formattedCommits = branchCommitsResponse.data.map((c) => {
+		return {
+			sha    : c.sha,
+			author : c.commit.author.name,
+		};
+	});
+	console.log(`${targetBranch} commits: `, formattedCommits, '\n');
 	return branchCommitsResponse.data;
 };
 
 const getCommitsForPR = async (url, octokit): Promise<Array<object>> => {
 	const prCommitsResponse = await octokit.request(`GET ${url}`);
-	console.log('PR commits: ', JSON.stringify(prCommitsResponse.data), '\n');
+	const formattedCommits = prCommitsResponse.data.map((c) => {
+		return {
+			sha    : c.sha,
+			author : c.commit.author.name,
+		};
+	});
+	console.log('PR commits: ', formattedCommits, '\n');
 	return prCommitsResponse.data;
 };
 

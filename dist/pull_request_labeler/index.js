@@ -11346,12 +11346,24 @@ const pull_request_labeler_github = __webpack_require__(469);
 
 const getBranchCommits = (url, targetBranch, octokit) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
     const branchCommitsResponse = yield octokit.request(`GET ${url}?sha=${targetBranch}`);
-    console.log(`${targetBranch} commits: `, JSON.stringify(branchCommitsResponse.data), '\n');
+    const formattedCommits = branchCommitsResponse.data.map((c) => {
+        return {
+            sha: c.sha,
+            author: c.commit.author.name,
+        };
+    });
+    console.log(`${targetBranch} commits: `, formattedCommits, '\n');
     return branchCommitsResponse.data;
 });
 const getCommitsForPR = (url, octokit) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
     const prCommitsResponse = yield octokit.request(`GET ${url}`);
-    console.log('PR commits: ', JSON.stringify(prCommitsResponse.data), '\n');
+    const formattedCommits = prCommitsResponse.data.map((c) => {
+        return {
+            sha: c.sha,
+            author: c.commit.author.name,
+        };
+    });
+    console.log('PR commits: ', formattedCommits, '\n');
     return prCommitsResponse.data;
 });
 const shouldShowBranchLabel = (prCommits, branchCommits) => {
