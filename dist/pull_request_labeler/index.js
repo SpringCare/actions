@@ -11398,38 +11398,38 @@ const getBranchCommits = (url, targetBranch, octokit) => pull_request_labeler_aw
         process.exit(1);
     }
 });
-const getCommitsForPR = (url, octokit) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const prCommitsResponse = yield octokit.request(`GET ${url}`);
-        const formattedCommits = prCommitsResponse.data.map((c) => {
-            return {
-                sha: c.sha,
-                author: c.commit.author.name,
-            };
-        });
-        console.log('PR commits: ', formattedCommits, '\n');
-        return prCommitsResponse.data;
-    }
-    catch (error) {
-        console.error('PR commit request failed: ', error.status);
-        process.exit(1);
-    }
-});
-const shouldShowBranchLabel = (prCommits, branchCommits) => {
-    return prCommits.some((prCommit) => branchCommits.some((branchCommit) => branchCommit.sha === prCommit.sha ||
+// const getCommitsForPR = async (url, octokit): Promise<Array<object>> => {
+// 	try {
+// 		const prCommitsResponse = await octokit.request(`GET ${url}`);
+// 		const formattedCommits = prCommitsResponse.data.map((c) => {
+// 			return {
+// 				sha    : c.sha,
+// 				author : c.commit.author.name,
+// 			};
+// 		});
+// 		console.log('PR commits: ', formattedCommits, '\n');
+// 		return prCommitsResponse.data;
+// 	} catch (error) {
+// 		console.error('PR commit request failed: ', error.status);
+// 		process.exit(1);
+// 	}
+// };
+const shouldShowBranchLabel = (prHeadCommitSha, branchCommits) => {
+    return branchCommits.some((branchCommit) => branchCommit.sha === prHeadCommitSha ||
         (branchCommit.parents.length > 1 &&
             branchCommit.parents
                 .map((parent) => parent.sha)
-                .includes(prCommit.sha))));
+                .includes(prHeadCommitSha)));
 };
 const handleBranchLabel = (inputs, client, pr) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
     const octokit = new dist_node.Octokit({ auth: inputs.token });
-    const prCommits = yield getCommitsForPR(pr.commits_url, octokit);
+    // const prCommits = await getPRHeadCommit(pr.commits_url, octokit);
+    const prHeadCommitSha = pr.head.sha;
     const commitsUrl = pr.base.repo.commits_url.split('{/')[0];
     const branchCommits = yield getBranchCommits(commitsUrl, inputs.branch, octokit);
     const pullNumber = pr.number;
     const prLabels = pr.labels.map((label) => label.name);
-    const showBranchLabel = shouldShowBranchLabel(prCommits, branchCommits);
+    const showBranchLabel = shouldShowBranchLabel(prHeadCommitSha, branchCommits);
     const label = `Changes in ${inputs.branch}`;
     if (!showBranchLabel && prLabels.includes(label)) {
         removeLabel(client, pullNumber, label);

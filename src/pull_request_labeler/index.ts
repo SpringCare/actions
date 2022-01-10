@@ -6,7 +6,11 @@ import { parseReviews } from '../utils/parseReviews';
 import { getReviews } from '../utils/getReviews';
 import { Octokit } from '@octokit/core';
 
-const handleReviewCountLabel = async (inputs, client, pullNumber): Promise<void> => {
+const handleReviewCountLabel = async (
+	inputs,
+	client,
+	pullNumber
+): Promise<void> => {
 	if (inputs.requiredReviews && !(inputs.requiredReviews > 0)) {
 		core.setFailed('If set, "required" must be an integer greater than 0');
 		return;
@@ -65,8 +69,8 @@ const getBranchCommits = async (
 		);
 		const formattedCommits = branchCommitsResponse.data.map((c) => {
 			return {
-				sha    : c.sha,
-				author : c.commit.author.name,
+				sha: c.sha,
+				author: c.commit.author.name,
 			};
 		});
 		console.log(`${targetBranch} commits: `, formattedCommits, '\n');
@@ -77,40 +81,39 @@ const getBranchCommits = async (
 	}
 };
 
-const getCommitsForPR = async (url, octokit): Promise<Array<object>> => {
-	try {
-		const prCommitsResponse = await octokit.request(`GET ${url}`);
-		const formattedCommits = prCommitsResponse.data.map((c) => {
-			return {
-				sha    : c.sha,
-				author : c.commit.author.name,
-			};
-		});
-		console.log('PR commits: ', formattedCommits, '\n');
-		return prCommitsResponse.data;
-	} catch (error) {
-		console.error('PR commit request failed: ', error.status);
-		process.exit(1);
-	}
-};
+// const getCommitsForPR = async (url, octokit): Promise<Array<object>> => {
+// 	try {
+// 		const prCommitsResponse = await octokit.request(`GET ${url}`);
+// 		const formattedCommits = prCommitsResponse.data.map((c) => {
+// 			return {
+// 				sha    : c.sha,
+// 				author : c.commit.author.name,
+// 			};
+// 		});
+// 		console.log('PR commits: ', formattedCommits, '\n');
+// 		return prCommitsResponse.data;
+// 	} catch (error) {
+// 		console.error('PR commit request failed: ', error.status);
+// 		process.exit(1);
+// 	}
+// };
 
-const shouldShowBranchLabel = (prCommits, branchCommits): boolean => {
-	return prCommits.some((prCommit) =>
-		branchCommits.some(
-			(branchCommit) =>
-				branchCommit.sha === prCommit.sha ||
-				(branchCommit.parents.length > 1 &&
-					branchCommit.parents
-						.map((parent) => parent.sha)
-						.includes(prCommit.sha))
-		)
+const shouldShowBranchLabel = (prHeadCommitSha, branchCommits): boolean => {
+	return branchCommits.some(
+		(branchCommit) =>
+			branchCommit.sha === prHeadCommitSha ||
+			(branchCommit.parents.length > 1 &&
+				branchCommit.parents
+					.map((parent) => parent.sha)
+					.includes(prHeadCommitSha))
 	);
 };
 
 const handleBranchLabel = async (inputs, client, pr): Promise<void> => {
 	const octokit = new Octokit({ auth: inputs.token });
-	const prCommits = await getCommitsForPR(pr.commits_url, octokit);
+	// const prCommits = await getPRHeadCommit(pr.commits_url, octokit);
 
+	const prHeadCommitSha = pr.head.sha;
 	const commitsUrl = pr.base.repo.commits_url.split('{/')[0];
 	const branchCommits = await getBranchCommits(
 		commitsUrl,
@@ -120,7 +123,7 @@ const handleBranchLabel = async (inputs, client, pr): Promise<void> => {
 	const pullNumber = pr.number;
 	const prLabels = pr.labels.map((label) => label.name);
 
-	const showBranchLabel = shouldShowBranchLabel(prCommits, branchCommits);
+	const showBranchLabel = shouldShowBranchLabel(prHeadCommitSha, branchCommits);
 
 	const label = `Changes in ${inputs.branch}`;
 
@@ -141,10 +144,10 @@ async function main(): Promise<void> {
 		labelWIP: boolean;
 		branch: string;
 	} = {
-		token           : core.getInput('repo-token', { required: true }),
-		requiredReviews : core.getInput('required'),
-		labelWIP        : core.getInput('wip'),
-		branch          : core.getInput('target-branch'),
+		token: core.getInput('repo-token', { required: true }),
+		requiredReviews: core.getInput('required'),
+		labelWIP: core.getInput('wip'),
+		branch: core.getInput('target-branch'),
 	};
 
 	const pr = github.context.payload.pull_request;
