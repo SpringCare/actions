@@ -11120,6 +11120,37 @@ const core = __webpack_require__(470);
 const changes_in_branch_labeler_github = __webpack_require__(469);
 
 
+const getPrHeadCommitSha = (octokit, commitsUrl, inputs) => changes_in_branch_labeler_awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const headCommitSha = changes_in_branch_labeler_github.context.payload.head_commit.id;
+        const commitResponse = yield octokit.request(`GET ${commitsUrl}/${headCommitSha}?sha=${inputs.branch}`);
+        const commit = commitResponse.data;
+        let prHeadCommitSha = headCommitSha;
+        if (commit.parents.length > 1) {
+            prHeadCommitSha = commit.parents[1].sha;
+        }
+        return prHeadCommitSha;
+    }
+    catch (error) {
+        console.error('PR head commit request failed: ', error.status);
+        process.exit(1);
+    }
+});
+const getPrsForCommit = (octokit, commitsUrl, prHeadCommitSha) => changes_in_branch_labeler_awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const prsForCommitResponse = yield octokit.request(`GET ${commitsUrl}/${prHeadCommitSha}/pulls`);
+        const prsForCommit = prsForCommitResponse.data;
+        const formattedPrs = prsForCommit.map((pr) => {
+            return { number: pr.number, title: pr.title };
+        });
+        console.log('PRs: ', formattedPrs);
+        return prsForCommit;
+    }
+    catch (error) {
+        console.error('PRs for commit request failed: ', error.status);
+        process.exit(1);
+    }
+});
 function main() {
     return changes_in_branch_labeler_awaiter(this, void 0, void 0, function* () {
         const inputs = {
@@ -11127,20 +11158,9 @@ function main() {
             branch: core.getInput('target-branch'),
         };
         const octokit = new dist_node.Octokit({ auth: inputs.token });
-        const headCommitSha = changes_in_branch_labeler_github.context.payload.head_commit.id;
         const commitsUrl = changes_in_branch_labeler_github.context.payload.repository.commits_url.split('{/')[0];
-        const commitResponse = yield octokit.request(`GET ${commitsUrl}/${headCommitSha}?sha=${inputs.branch}`);
-        const commit = commitResponse.data;
-        let prHeadCommitSha = headCommitSha;
-        if (commit.parents.length > 1) {
-            prHeadCommitSha = commit.parents[1].sha;
-        }
-        const prsForCommitResponse = yield octokit.request(`GET ${commitsUrl}/${prHeadCommitSha}/pulls`);
-        const prsForCommit = prsForCommitResponse.data;
-        const formattedPrs = prsForCommit.map((pr) => {
-            return { number: pr.number, title: pr.title };
-        });
-        console.log('PRs: ', formattedPrs);
+        const prHeadCommitSha = yield getPrHeadCommitSha(octokit, commitsUrl, inputs);
+        const prsForCommit = yield getPrsForCommit(octokit, commitsUrl, prHeadCommitSha);
         const client = new changes_in_branch_labeler_github.GitHub(inputs.token);
         prsForCommit.forEach((pr) => {
             const pullNumber = pr.number;

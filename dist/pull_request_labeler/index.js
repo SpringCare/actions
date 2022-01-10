@@ -11398,22 +11398,6 @@ const getBranchCommits = (url, targetBranch, octokit) => pull_request_labeler_aw
         process.exit(1);
     }
 });
-// const getCommitsForPR = async (url, octokit): Promise<Array<object>> => {
-// 	try {
-// 		const prCommitsResponse = await octokit.request(`GET ${url}`);
-// 		const formattedCommits = prCommitsResponse.data.map((c) => {
-// 			return {
-// 				sha    : c.sha,
-// 				author : c.commit.author.name,
-// 			};
-// 		});
-// 		console.log('PR commits: ', formattedCommits, '\n');
-// 		return prCommitsResponse.data;
-// 	} catch (error) {
-// 		console.error('PR commit request failed: ', error.status);
-// 		process.exit(1);
-// 	}
-// };
 const shouldShowBranchLabel = (prHeadCommitSha, branchCommits) => {
     return branchCommits.some((branchCommit) => branchCommit.sha === prHeadCommitSha ||
         (branchCommit.parents.length > 1 &&
@@ -11423,7 +11407,6 @@ const shouldShowBranchLabel = (prHeadCommitSha, branchCommits) => {
 };
 const handleBranchLabel = (inputs, client, pr) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
     const octokit = new dist_node.Octokit({ auth: inputs.token });
-    // const prCommits = await getPRHeadCommit(pr.commits_url, octokit);
     const prHeadCommitSha = pr.head.sha;
     const commitsUrl = pr.base.repo.commits_url.split('{/')[0];
     const branchCommits = yield getBranchCommits(commitsUrl, inputs.branch, octokit);
