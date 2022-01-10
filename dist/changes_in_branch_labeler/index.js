@@ -11127,25 +11127,25 @@ function main() {
             branch: core.getInput('target-branch'),
         };
         const octokit = new dist_node.Octokit({ auth: inputs.token });
-        const payload = changes_in_branch_labeler_github.context.payload;
-        console.log('Payload: ', JSON.stringify(payload), '\n');
-        const headCommitSha = payload.head_commit.id;
-        const commitsUrl = payload.repository.commits_url.split('{/')[0];
+        const headCommitSha = changes_in_branch_labeler_github.context.payload.head_commit.id;
+        const commitsUrl = changes_in_branch_labeler_github.context.payload.repository.commits_url.split('{/')[0];
         const commitResponse = yield octokit.request(`GET ${commitsUrl}/${headCommitSha}?sha=${inputs.branch}`);
         const commit = commitResponse.data;
-        console.log('Commit: ', JSON.stringify(commit), '\n');
-        let commitForPrSha = headCommitSha;
+        let prHeadCommitSha = headCommitSha;
         if (commit.parents.length > 1) {
-            commitForPrSha = commit.parents[1].sha;
+            prHeadCommitSha = commit.parents[1].sha;
         }
-        const prsForCommitResponse = yield octokit.request(`GET ${commitsUrl}/${commitForPrSha}/pulls`);
+        const prsForCommitResponse = yield octokit.request(`GET ${commitsUrl}/${prHeadCommitSha}/pulls`);
         const prsForCommit = prsForCommitResponse.data;
-        console.log('PRs: ', JSON.stringify(prsForCommit));
+        const formattedPrs = prsForCommit.map((pr) => {
+            return { number: pr.number, title: pr.title };
+        });
+        console.log('PRs: ', formattedPrs);
         const client = new changes_in_branch_labeler_github.GitHub(inputs.token);
         prsForCommit.forEach((pr) => {
             const pullNumber = pr.number;
             const prLabels = pr.labels.map((label) => label.name);
-            const showBranchLabel = pr.head.sha === commitForPrSha;
+            const showBranchLabel = pr.head.sha === prHeadCommitSha;
             const label = `Changes in ${inputs.branch}`;
             if (!showBranchLabel && prLabels.includes(label)) {
                 removeLabel(client, pullNumber, label);
