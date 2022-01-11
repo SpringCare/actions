@@ -1,13 +1,17 @@
 name: Changes In Branch Labeler
-description: "A GitHub Action to label pull requests that have all its changes in a target branch"
+description: 'A GitHub Action to label pull requests that have all its changes in a target branch'
 inputs:
   repo-token:
     description: 'The GITHUB_TOKEN secret'
   target-branch:
     description: 'The branch for which the label needs to be added'
+  label:
+    description: 'The label to be added'
+  color:
+    description: 'The color of the label'
 branding:
-  icon: "git-pull-request"
+  icon: 'git-pull-request'
   color: green
 runs:
-  using: "node12"
-  main: "index.js"
+  using: 'node12'
+  main: 'index.js'

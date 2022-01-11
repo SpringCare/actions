@@ -67,9 +67,13 @@ async function main(): Promise<void> {
 	const inputs: {
 		token: string;
 		branch: string;
+		label: string;
+		color: string;
 	} = {
 		token  : core.getInput('repo-token', { required: true }),
 		branch : core.getInput('target-branch'),
+		label  : core.getInput('label'),
+		color  : core.getInput('color'),
 	};
 
 	const octokit = new Octokit({ auth: inputs.token });
@@ -87,8 +91,7 @@ async function main(): Promise<void> {
 
 	const client = new github.GitHub(inputs.token);
 
-	const label = `Changes in ${inputs.branch}`;
-	await createLabel(octokit, label, 'febb34');
+	await createLabel(octokit, inputs);
 
 	prsForCommit.forEach((pr) => {
 		const pullNumber = pr.number;
@@ -96,12 +99,12 @@ async function main(): Promise<void> {
 
 		const showBranchLabel = pr.head.sha === prHeadCommitSha;
 
-		if (!showBranchLabel && prLabels.includes(label)) {
-			removeLabel(client, pullNumber, label);
+		if (!showBranchLabel && prLabels.includes(inputs.label)) {
+			removeLabel(client, pullNumber, inputs.label);
 		}
 
 		if (showBranchLabel) {
-			addLabels(client, pullNumber, [label]);
+			addLabels(client, pullNumber, [inputs.label]);
 		}
 	});
 }

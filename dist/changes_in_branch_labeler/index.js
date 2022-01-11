@@ -11105,24 +11105,24 @@ function removeLabel(client, prNumber, label) {
         });
     });
 }
-function createLabel(octokit, label, color) {
+function createLabel(octokit, inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             yield octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
                 owner: github.context.repo.owner,
                 repo: github.context.repo.repo,
-                name: label,
+                name: inputs.label,
             });
-            console.log(`Label ${label} already exists.`);
+            console.log(`Label ${inputs.label} already exists.`);
         }
         catch (error) {
             yield octokit.request('POST /repos/{owner}/{repo}/labels', {
                 owner: github.context.repo.owner,
                 repo: github.context.repo.repo,
-                name: label,
-                color: color,
+                name: inputs.label,
+                color: inputs.color,
             });
-            console.log(`Created label ${label} with color ${color}.`);
+            console.log(`Created label ${inputs.label} with color ${inputs.color}.`);
         }
     });
 }
@@ -11177,23 +11177,24 @@ function main() {
         const inputs = {
             token: core.getInput('repo-token', { required: true }),
             branch: core.getInput('target-branch'),
+            label: core.getInput('label'),
+            color: core.getInput('color'),
         };
         const octokit = new dist_node.Octokit({ auth: inputs.token });
         const commitsUrl = changes_in_branch_labeler_github.context.payload.repository.commits_url.split('{/')[0];
         const prHeadCommitSha = yield getPrHeadCommitSha(octokit, commitsUrl, inputs);
         const prsForCommit = yield getPrsForCommit(octokit, commitsUrl, prHeadCommitSha);
         const client = new changes_in_branch_labeler_github.GitHub(inputs.token);
-        const label = `Changes in ${inputs.branch}`;
-        yield createLabel(octokit, label, 'febb34');
+        yield createLabel(octokit, inputs);
         prsForCommit.forEach((pr) => {
             const pullNumber = pr.number;
             const prLabels = pr.labels.map((label) => label.name);
             const showBranchLabel = pr.head.sha === prHeadCommitSha;
-            if (!showBranchLabel && prLabels.includes(label)) {
-                removeLabel(client, pullNumber, label);
+            if (!showBranchLabel && prLabels.includes(inputs.label)) {
+                removeLabel(client, pullNumber, inputs.label);
             }
             if (showBranchLabel) {
-                addLabels(client, pullNumber, [label]);
+                addLabels(client, pullNumber, [inputs.label]);
             }
         });
     });

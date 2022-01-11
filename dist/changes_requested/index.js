@@ -11535,24 +11535,24 @@ function removeLabel(client, prNumber, label) {
         });
     });
 }
-function createLabel(octokit, label, color) {
+function createLabel(octokit, inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             yield octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
                 owner: github.context.repo.owner,
                 repo: github.context.repo.repo,
-                name: label,
+                name: inputs.label,
             });
-            console.log(`Label ${label} already exists.`);
+            console.log(`Label ${inputs.label} already exists.`);
         }
         catch (error) {
             yield octokit.request('POST /repos/{owner}/{repo}/labels', {
                 owner: github.context.repo.owner,
                 repo: github.context.repo.repo,
-                name: label,
-                color: color,
+                name: inputs.label,
+                color: inputs.color,
             });
-            console.log(`Created label ${label} with color ${color}.`);
+            console.log(`Created label ${inputs.label} with color ${inputs.color}.`);
         }
     });
 }
