@@ -86,6 +86,8 @@ async function main(): Promise<void> {
 	);
 
 	const client = new github.GitHub(inputs.token);
+	console.log(JSON.stringify(client));
+	console.log(JSON.stringify(client.labels));
 
 	prsForCommit.forEach((pr) => {
 		const pullNumber = pr.number;
