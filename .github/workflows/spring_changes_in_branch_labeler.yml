@@ -1,17 +1,18 @@
-name: Spring Pull Request Labeler
+name: Changes in Staging Labeler
 
-on: [pull_request, pull_request_review]
+on:
+  push:
+    branches:
+      - staging
 
 jobs:
-  labelPRs:
+  labelPrChangesInBranch:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: SpringCare/actions/dist/pull_request_labeler@master
+    - uses: SpringCare/actions/dist/changes_in_branch_labeler@master
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        required: 2
-        wip: true
         target-branch: staging
         label: Changes in staging
         color: 8989FF
