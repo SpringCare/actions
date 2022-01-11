@@ -11163,7 +11163,7 @@ function main() {
         const prsForCommit = yield getPrsForCommit(octokit, commitsUrl, prHeadCommitSha);
         const client = new changes_in_branch_labeler_github.GitHub(inputs.token);
         console.log(JSON.stringify(client));
-        console.log(JSON.stringify(client.labels));
+        console.log(JSON.stringify(client.issues));
         prsForCommit.forEach((pr) => {
             const pullNumber = pr.number;
             const prLabels = pr.labels.map((label) => label.name);
