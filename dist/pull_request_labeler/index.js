@@ -11273,6 +11273,25 @@ function removeLabel(client, prNumber, label) {
         });
     });
 }
+function createLabel(octokit, label, color) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                name: label,
+            });
+        }
+        catch (error) {
+            yield octokit.request('POST /repos/{owner}/{repo}/labels', {
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                name: label,
+                color: color,
+            });
+        }
+    });
+}
 
 // CONCATENATED MODULE: ./src/utils/parseReviews.ts
 function parseReviews(reviews = []) {
@@ -11414,6 +11433,7 @@ const handleBranchLabel = (inputs, client, pr) => pull_request_labeler_awaiter(v
     const prLabels = pr.labels.map((label) => label.name);
     const showBranchLabel = shouldShowBranchLabel(prHeadCommitSha, branchCommits);
     const label = `Changes in ${inputs.branch}`;
+    yield createLabel(octokit, label, 'febb34');
     if (!showBranchLabel && prLabels.includes(label)) {
         removeLabel(client, pullNumber, label);
     }
