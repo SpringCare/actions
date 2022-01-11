@@ -11281,6 +11281,7 @@ function createLabel(octokit, label, color) {
                 repo: github.context.repo.repo,
                 name: label,
             });
+            console.log(`Label ${label} already exists.`);
         }
         catch (error) {
             yield octokit.request('POST /repos/{owner}/{repo}/labels', {
@@ -11289,6 +11290,7 @@ function createLabel(octokit, label, color) {
                 name: label,
                 color: color,
             });
+            console.log(`Created label ${label} with color ${color}.`);
         }
     });
 }

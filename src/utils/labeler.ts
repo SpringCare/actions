@@ -30,6 +30,7 @@ export async function createLabel(octokit, label, color): Promise<void> {
 			repo  : github.context.repo.repo,
 			name  : label,
 		});
+		console.log(`Label ${label} already exists.`);
 	} catch (error) {
 		await octokit.request('POST /repos/{owner}/{repo}/labels', {
 			owner : github.context.repo.owner,
@@ -37,5 +38,6 @@ export async function createLabel(octokit, label, color): Promise<void> {
 			name  : label,
 			color : color,
 		});
+		console.log(`Created label ${label} with color ${color}.`);
 	}
 }
