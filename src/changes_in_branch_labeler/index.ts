@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 
 import { Octokit } from '@octokit/core';
-import { addLabels, removeLabel } from '../utils/labeler';
+import { addLabels, removeLabel, createLabel } from '../utils/labeler';
 
 interface Head {
 	sha: string;
@@ -87,13 +87,14 @@ async function main(): Promise<void> {
 
 	const client = new github.GitHub(inputs.token);
 
+	const label = `Changes in ${inputs.branch}`;
+	await createLabel(octokit, label, 'febb34');
+
 	prsForCommit.forEach((pr) => {
 		const pullNumber = pr.number;
 		const prLabels = pr.labels.map((label) => label.name);
 
 		const showBranchLabel = pr.head.sha === prHeadCommitSha;
-
-		const label = `Changes in ${inputs.branch}`;
 
 		if (!showBranchLabel && prLabels.includes(label)) {
 			removeLabel(client, pullNumber, label);

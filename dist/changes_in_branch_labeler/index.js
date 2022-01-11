@@ -11105,6 +11105,27 @@ function removeLabel(client, prNumber, label) {
         });
     });
 }
+function createLabel(octokit, label, color) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                name: label,
+            });
+            console.log(`Label ${label} already exists.`);
+        }
+        catch (error) {
+            yield octokit.request('POST /repos/{owner}/{repo}/labels', {
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                name: label,
+                color: color,
+            });
+            console.log(`Created label ${label} with color ${color}.`);
+        }
+    });
+}
 
 // CONCATENATED MODULE: ./src/changes_in_branch_labeler/index.ts
 var changes_in_branch_labeler_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -11162,11 +11183,12 @@ function main() {
         const prHeadCommitSha = yield getPrHeadCommitSha(octokit, commitsUrl, inputs);
         const prsForCommit = yield getPrsForCommit(octokit, commitsUrl, prHeadCommitSha);
         const client = new changes_in_branch_labeler_github.GitHub(inputs.token);
+        const label = `Changes in ${inputs.branch}`;
+        yield createLabel(octokit, label, 'febb34');
         prsForCommit.forEach((pr) => {
             const pullNumber = pr.number;
             const prLabels = pr.labels.map((label) => label.name);
             const showBranchLabel = pr.head.sha === prHeadCommitSha;
-            const label = `Changes in ${inputs.branch}`;
             if (!showBranchLabel && prLabels.includes(label)) {
                 removeLabel(client, pullNumber, label);
             }

@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-import { addLabels, removeLabel } from '../utils/labeler';
+import { addLabels, removeLabel, createLabel } from '../utils/labeler';
 import { parseReviews } from '../utils/parseReviews';
 import { getReviews } from '../utils/getReviews';
 import { Octokit } from '@octokit/core';
@@ -108,6 +108,7 @@ const handleBranchLabel = async (inputs, client, pr): Promise<void> => {
 	const showBranchLabel = shouldShowBranchLabel(prHeadCommitSha, branchCommits);
 
 	const label = `Changes in ${inputs.branch}`;
+	await createLabel(octokit, label, 'febb34');
 
 	if (!showBranchLabel && prLabels.includes(label)) {
 		removeLabel(client, pullNumber, label);

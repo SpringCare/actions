@@ -22,3 +22,22 @@ export async function removeLabel(client, prNumber, label): Promise<void> {
 		name         : label
 	});
 }
+
+export async function createLabel(octokit, label, color): Promise<void> {
+	try {
+		await octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
+			owner : github.context.repo.owner,
+			repo  : github.context.repo.repo,
+			name  : label,
+		});
+		console.log(`Label ${label} already exists.`);
+	} catch (error) {
+		await octokit.request('POST /repos/{owner}/{repo}/labels', {
+			owner : github.context.repo.owner,
+			repo  : github.context.repo.repo,
+			name  : label,
+			color : color,
+		});
+		console.log(`Created label ${label} with color ${color}.`);
+	}
+}
