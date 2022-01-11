@@ -1,7 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-import { Octokit } from '@octokit/core';
 import { addLabels, removeLabel } from '../utils/labeler';
 
 interface Head {
@@ -19,7 +18,7 @@ interface Pr {
 }
 
 const getPrHeadCommitSha = async (
-	octokit: Octokit,
+	octokit,
 	commitsUrl: string,
 	inputs: { token: string; branch: string }
 ): Promise<string> => {
@@ -43,7 +42,7 @@ const getPrHeadCommitSha = async (
 };
 
 const getPrsForCommit = async (
-	octokit: Octokit,
+	octokit,
 	commitsUrl: string,
 	prHeadCommitSha: string
 ): Promise<Array<Pr>> => {
@@ -72,7 +71,8 @@ async function main(): Promise<void> {
 		branch : core.getInput('target-branch'),
 	};
 
-	const octokit = new Octokit({ auth: inputs.token });
+	const client = new github.GitHub(inputs.token);
+	const octokit = github.getOctokit(inputs.token);
 
 	const commitsUrl =
 		github.context.payload.repository.commits_url.split('{/')[0];
@@ -85,7 +85,6 @@ async function main(): Promise<void> {
 		prHeadCommitSha
 	);
 
-	const client = new github.GitHub(inputs.token);
 	console.log(JSON.stringify(client));
 	console.log(JSON.stringify(client.issues));
 
