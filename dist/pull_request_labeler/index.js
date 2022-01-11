@@ -11273,24 +11273,24 @@ function removeLabel(client, prNumber, label) {
         });
     });
 }
-function createLabel(octokit, label, color) {
+function createLabel(octokit, inputs) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             yield octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
                 owner: github.context.repo.owner,
                 repo: github.context.repo.repo,
-                name: label,
+                name: inputs.label,
             });
-            console.log(`Label ${label} already exists.`);
+            console.log(`Label ${inputs.label} already exists.`);
         }
         catch (error) {
             yield octokit.request('POST /repos/{owner}/{repo}/labels', {
                 owner: github.context.repo.owner,
                 repo: github.context.repo.repo,
-                name: label,
-                color: color,
+                name: inputs.label,
+                color: inputs.color,
             });
-            console.log(`Created label ${label} with color ${color}.`);
+            console.log(`Created label ${inputs.label} with color ${inputs.color}.`);
         }
     });
 }
@@ -11434,13 +11434,12 @@ const handleBranchLabel = (inputs, client, pr) => pull_request_labeler_awaiter(v
     const pullNumber = pr.number;
     const prLabels = pr.labels.map((label) => label.name);
     const showBranchLabel = shouldShowBranchLabel(prHeadCommitSha, branchCommits);
-    const label = `Changes in ${inputs.branch}`;
-    yield createLabel(octokit, label, 'febb34');
-    if (!showBranchLabel && prLabels.includes(label)) {
-        removeLabel(client, pullNumber, label);
+    yield createLabel(octokit, inputs);
+    if (!showBranchLabel && prLabels.includes(inputs.label)) {
+        removeLabel(client, pullNumber, inputs.label);
     }
     if (showBranchLabel) {
-        addLabels(client, pullNumber, [label]);
+        addLabels(client, pullNumber, [inputs.label]);
     }
 });
 function main() {
@@ -11451,6 +11450,8 @@ function main() {
             requiredReviews: core.getInput('required'),
             labelWIP: core.getInput('wip'),
             branch: core.getInput('target-branch'),
+            label: core.getInput('label'),
+            color: core.getInput('color'),
         };
         const pr = pull_request_labeler_github.context.payload.pull_request;
         if (!pr) {

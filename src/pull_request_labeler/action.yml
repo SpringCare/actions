@@ -1,5 +1,5 @@
 name: Pull Request Labeler
-description: "A GitHub Action to label pull requests"
+description: 'A GitHub Action to label pull requests'
 inputs:
   repo-token:
     description: 'The GITHUB_TOKEN secret'
@@ -9,9 +9,13 @@ inputs:
     description: 'Whether to label WIP PRs automatically'
   target-branch:
     description: 'The branch for which the label needs to be added'
+  label:
+    description: 'The label to be added'
+  color:
+    description: 'The color of the label'
 branding:
-  icon: "git-pull-request"
+  icon: 'git-pull-request'
   color: green
 runs:
-  using: "node12"
-  main: "index.js"
+  using: 'node12'
+  main: 'index.js'

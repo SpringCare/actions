@@ -107,15 +107,14 @@ const handleBranchLabel = async (inputs, client, pr): Promise<void> => {
 
 	const showBranchLabel = shouldShowBranchLabel(prHeadCommitSha, branchCommits);
 
-	const label = `Changes in ${inputs.branch}`;
-	await createLabel(octokit, label, 'febb34');
+	await createLabel(octokit, inputs);
 
-	if (!showBranchLabel && prLabels.includes(label)) {
-		removeLabel(client, pullNumber, label);
+	if (!showBranchLabel && prLabels.includes(inputs.label)) {
+		removeLabel(client, pullNumber, inputs.label);
 	}
 
 	if (showBranchLabel) {
-		addLabels(client, pullNumber, [label]);
+		addLabels(client, pullNumber, [inputs.label]);
 	}
 };
 
@@ -126,11 +125,15 @@ async function main(): Promise<void> {
 		requiredReviews: number;
 		labelWIP: boolean;
 		branch: string;
+		label: string;
+		color: string;
 	} = {
 		token           : core.getInput('repo-token', { required: true }),
 		requiredReviews : core.getInput('required'),
 		labelWIP        : core.getInput('wip'),
 		branch          : core.getInput('target-branch'),
+		label           : core.getInput('label'),
+		color           : core.getInput('color'),
 	};
 
 	const pr = github.context.payload.pull_request;
