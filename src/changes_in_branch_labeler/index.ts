@@ -86,8 +86,21 @@ async function main(): Promise<void> {
 	);
 
 	const client = new github.GitHub(inputs.token);
-	console.log(JSON.stringify(client));
-	console.log(JSON.stringify(client.issues));
+
+	try {
+		await octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
+			owner : github.context.payload.repository.owner.name,
+			repo  : github.context.payload.repository.name,
+			name  : `Changes in ${inputs.branch}`,
+		});
+	} catch (error) {
+		await octokit.request('POST /repos/{owner}/{repo}/labels', {
+			owner : github.context.payload.repository.owner.name,
+			repo  : github.context.payload.repository.name,
+			name  : `Changes in ${inputs.branch}`,
+			color : 'febb34',
+		});
+	}
 
 	prsForCommit.forEach((pr) => {
 		const pullNumber = pr.number;

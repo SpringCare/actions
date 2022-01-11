@@ -11162,8 +11162,21 @@ function main() {
         const prHeadCommitSha = yield getPrHeadCommitSha(octokit, commitsUrl, inputs);
         const prsForCommit = yield getPrsForCommit(octokit, commitsUrl, prHeadCommitSha);
         const client = new changes_in_branch_labeler_github.GitHub(inputs.token);
-        console.log(JSON.stringify(client));
-        console.log(JSON.stringify(client.issues));
+        try {
+            yield octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
+                owner: changes_in_branch_labeler_github.context.payload.repository.owner.name,
+                repo: changes_in_branch_labeler_github.context.payload.repository.name,
+                name: `Changes in ${inputs.branch}`,
+            });
+        }
+        catch (error) {
+            yield octokit.request('POST /repos/{owner}/{repo}/labels', {
+                owner: changes_in_branch_labeler_github.context.payload.repository.owner.name,
+                repo: changes_in_branch_labeler_github.context.payload.repository.name,
+                name: `Changes in ${inputs.branch}`,
+                color: 'febb34',
+            });
+        }
         prsForCommit.forEach((pr) => {
             const pullNumber = pr.number;
             const prLabels = pr.labels.map((label) => label.name);
