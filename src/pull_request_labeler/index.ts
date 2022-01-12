@@ -58,6 +58,23 @@ const handleWIPLabel = (inputs, client, pr): void => {
 	}
 };
 
+const getCommitsForPR = async (url, octokit): Promise<Array<object>> => {
+	try {
+		const prCommitsResponse = await octokit.request(`GET ${url}`);
+		const formattedCommits = prCommitsResponse.data.map((c) => {
+			return {
+				sha    : c.sha,
+				author : c.commit.author.name,
+			};
+		});
+		console.log('PR commits: ', formattedCommits, '\n');
+		return prCommitsResponse.data;
+	} catch (error) {
+		console.error('PR commit request failed: ', error.status);
+		process.exit(1);
+	}
+};
+
 const getBranchCommits = async (
 	url,
 	targetBranch,
@@ -81,21 +98,23 @@ const getBranchCommits = async (
 	}
 };
 
-const shouldShowBranchLabel = (prHeadCommitSha, branchCommits): boolean => {
-	return branchCommits.some(
-		(branchCommit) =>
-			branchCommit.sha === prHeadCommitSha ||
-			(branchCommit.parents.length > 1 &&
-				branchCommit.parents
-					.map((parent) => parent.sha)
-					.includes(prHeadCommitSha))
+const shouldShowBranchLabel = (prCommits, branchCommits): boolean => {
+	return prCommits.every((prCommit) =>
+		branchCommits.some(
+			(branchCommit) =>
+				branchCommit.sha === prCommit.sha ||
+				(branchCommit.parents.length > 1 &&
+					branchCommit.parents
+						.map((parent) => parent.sha)
+						.includes(prCommit.sha))
+		)
 	);
 };
 
 const handleBranchLabel = async (inputs, client, pr): Promise<void> => {
 	const octokit = new Octokit({ auth: inputs.token });
 
-	const prHeadCommitSha = pr.head.sha;
+	const prCommits = await getCommitsForPR(pr.commits_url, octokit);
 	const commitsUrl = pr.base.repo.commits_url.split('{/')[0];
 	const branchCommits = await getBranchCommits(
 		commitsUrl,
@@ -105,7 +124,7 @@ const handleBranchLabel = async (inputs, client, pr): Promise<void> => {
 	const pullNumber = pr.number;
 	const prLabels = pr.labels.map((label) => label.name);
 
-	const showBranchLabel = shouldShowBranchLabel(prHeadCommitSha, branchCommits);
+	const showBranchLabel = shouldShowBranchLabel(prCommits, branchCommits);
 
 	await createLabel(octokit, inputs);
 
