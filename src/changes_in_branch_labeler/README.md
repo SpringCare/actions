@@ -3,7 +3,7 @@
 ## Features
 
 - Adds a label mentioning whether or not commits in a PR are already present in a target branch (staging by default), this is useful for QA.
-    - If your repo requires you to track a staging or a pre0prod environment, this can help!
+    - If your repo requires you to track a staging or a pre-prod environment, this can help!
     - If the changes in the PR are already present on the target-branch the label `Changes in target-branch` will show up.
     - If a PR already has it's changes in target-branch and we add new commits in PR or remove the changes from target-branch, the label is removed.
 
