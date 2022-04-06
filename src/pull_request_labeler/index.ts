@@ -1,15 +1,17 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-import { addLabels, removeLabel, createLabel } from '../utils/labeler';
+import { addLabels, removeLabel } from '../utils/labeler';
 import { parseReviews } from '../utils/parseReviews';
 import { getReviews } from '../utils/getReviews';
 import { Octokit } from '@octokit/core';
+import { getBranchCommits, addOrRemoveBranchLabel } from '../utils/prInBranchLabelerHelper';
+import { Pr, PRLabelerInputs, Client } from '../utils/types';
 
 const handleReviewCountLabel = async (
-	inputs,
-	client,
-	pullNumber
+	inputs: PRLabelerInputs,
+	client: Client,
+	pullNumber: string
 ): Promise<void> => {
 	if (inputs.requiredReviews && !(inputs.requiredReviews > 0)) {
 		core.setFailed('If set, "required" must be an integer greater than 0');
@@ -48,7 +50,7 @@ const handleReviewCountLabel = async (
 	}
 };
 
-const handleWIPLabel = (inputs, client, pr): void => {
+const handleWIPLabel = (inputs: PRLabelerInputs, client: Client, pr: Pr): void => {
 	const draftPR = pr.draft;
 	const pullNumber = pr.number;
 	if (inputs.labelWIP && draftPR) {
@@ -58,95 +60,23 @@ const handleWIPLabel = (inputs, client, pr): void => {
 	}
 };
 
-const getCommitsForPR = async (url, octokit): Promise<Array<object>> => {
-	try {
-		const prCommitsResponse = await octokit.request(`GET ${url}`);
-		const formattedCommits = prCommitsResponse.data.map((c) => {
-			return {
-				sha    : c.sha,
-				author : c.commit.author.name,
-			};
-		});
-		console.log('PR commits: ', formattedCommits, '\n');
-		return prCommitsResponse.data;
-	} catch (error) {
-		console.error('PR commit request failed: ', error.status);
-		process.exit(1);
-	}
-};
-
-const getBranchCommits = async (
-	url,
-	targetBranch,
-	octokit
-): Promise<Array<object>> => {
-	try {
-		const branchCommitsResponse = await octokit.request(
-			`GET ${url}?sha=${targetBranch}`
-		);
-		const formattedCommits = branchCommitsResponse.data.map((c) => {
-			return {
-				sha    : c.sha,
-				author : c.commit.author.name,
-			};
-		});
-		console.log(`${targetBranch} commits: `, formattedCommits, '\n');
-		return branchCommitsResponse.data;
-	} catch (error) {
-		console.error('Branch commit request failed: ', error.status);
-		process.exit(1);
-	}
-};
-
-const shouldShowBranchLabel = (prCommits, branchCommits): boolean => {
-	return prCommits.every((prCommit) =>
-		branchCommits.some(
-			(branchCommit) =>
-				branchCommit.sha === prCommit.sha ||
-				(branchCommit.parents.length > 1 &&
-					branchCommit.parents
-						.map((parent) => parent.sha)
-						.includes(prCommit.sha))
-		)
-	);
-};
-
-const handleBranchLabel = async (inputs, client, pr): Promise<void> => {
+const handleBranchLabel = async (inputs: PRLabelerInputs, client: Client, pr: Pr): Promise<void> => {
 	const octokit = new Octokit({ auth: inputs.token });
 
-	const prCommits = await getCommitsForPR(pr.commits_url, octokit);
-	const commitsUrl = pr.base.repo.commits_url.split('{/')[0];
+	const repository = github.context.repo;
+
 	const branchCommits = await getBranchCommits(
-		commitsUrl,
-		inputs.branch,
-		octokit
+		octokit,
+		repository,
+		inputs.branch
 	);
-	const pullNumber = pr.number;
-	const prLabels = pr.labels.map((label) => label.name);
 
-	const showBranchLabel = shouldShowBranchLabel(prCommits, branchCommits);
-
-	await createLabel(octokit, inputs);
-
-	if (!showBranchLabel && prLabels.includes(inputs.label)) {
-		removeLabel(client, pullNumber, inputs.label);
-	}
-
-	if (showBranchLabel) {
-		addLabels(client, pullNumber, [inputs.label]);
-	}
+	addOrRemoveBranchLabel(inputs, client, octokit, pr, branchCommits);
 };
 
 async function main(): Promise<void> {
 	// Get a few inputs from the GitHub event.
-	const inputs: {
-		token: string;
-		requiredReviews: number;
-		labelWIP: boolean;
-		branch: string;
-		label: string;
-		color: string;
-	} = {
+	const inputs: PRLabelerInputs = {
 		token           : core.getInput('repo-token', { required: true }),
 		requiredReviews : core.getInput('required'),
 		labelWIP        : core.getInput('wip'),
