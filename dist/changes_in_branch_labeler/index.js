@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(685);
+/******/ 		return __webpack_require__(773);
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -11062,148 +11062,6 @@ module.exports = function btoa(str) {
 
 /***/ }),
 
-/***/ 685:
-/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-
-// EXTERNAL MODULE: ./node_modules/@octokit/core/dist-node/index.js
-var dist_node = __webpack_require__(448);
-
-// CONCATENATED MODULE: ./src/utils/labeler.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const github = __webpack_require__(469);
-function addLabels(client, prNumber, labels) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Adding labels:', labels);
-        yield client.issues.addLabels({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            labels: labels
-        });
-    });
-}
-function removeLabel(client, prNumber, label) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Removing label:', label);
-        yield client.issues.removeLabel({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            name: label
-        });
-    });
-}
-function createLabel(octokit, inputs) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            yield octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                name: inputs.label,
-            });
-            console.log(`Label ${inputs.label} already exists.`);
-        }
-        catch (error) {
-            yield octokit.request('POST /repos/{owner}/{repo}/labels', {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                name: inputs.label,
-                color: inputs.color,
-            });
-            console.log(`Created label ${inputs.label} with color ${inputs.color}.`);
-        }
-    });
-}
-
-// CONCATENATED MODULE: ./src/changes_in_branch_labeler/index.ts
-var changes_in_branch_labeler_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const core = __webpack_require__(470);
-const changes_in_branch_labeler_github = __webpack_require__(469);
-
-
-const getPrHeadCommitSha = (octokit, commitsUrl, inputs) => changes_in_branch_labeler_awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const headCommitSha = changes_in_branch_labeler_github.context.payload.head_commit.id;
-        const commitResponse = yield octokit.request(`GET ${commitsUrl}/${headCommitSha}?sha=${inputs.branch}`);
-        const commit = commitResponse.data;
-        let prHeadCommitSha = headCommitSha;
-        if (commit.parents.length > 1) {
-            prHeadCommitSha = commit.parents[1].sha;
-        }
-        return prHeadCommitSha;
-    }
-    catch (error) {
-        console.error('PR head commit request failed: ', error.status);
-        process.exit(1);
-    }
-});
-const getPrsForCommit = (octokit, commitsUrl, prHeadCommitSha) => changes_in_branch_labeler_awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const prsForCommitResponse = yield octokit.request(`GET ${commitsUrl}/${prHeadCommitSha}/pulls`);
-        const prsForCommit = prsForCommitResponse.data;
-        const formattedPrs = prsForCommit.map((pr) => {
-            return { number: pr.number, title: pr.title };
-        });
-        console.log('PRs: ', formattedPrs);
-        return prsForCommit;
-    }
-    catch (error) {
-        console.error('PRs for commit request failed: ', error.status);
-        process.exit(1);
-    }
-});
-function main() {
-    return changes_in_branch_labeler_awaiter(this, void 0, void 0, function* () {
-        const inputs = {
-            token: core.getInput('repo-token', { required: true }),
-            branch: core.getInput('target-branch'),
-            label: core.getInput('label'),
-            color: core.getInput('color'),
-        };
-        const octokit = new dist_node.Octokit({ auth: inputs.token });
-        const commitsUrl = changes_in_branch_labeler_github.context.payload.repository.commits_url.split('{/')[0];
-        const prHeadCommitSha = yield getPrHeadCommitSha(octokit, commitsUrl, inputs);
-        const prsForCommit = yield getPrsForCommit(octokit, commitsUrl, prHeadCommitSha);
-        const client = new changes_in_branch_labeler_github.GitHub(inputs.token);
-        yield createLabel(octokit, inputs);
-        prsForCommit.forEach((pr) => {
-            const pullNumber = pr.number;
-            const prLabels = pr.labels.map((label) => label.name);
-            const showBranchLabel = pr.head.sha === prHeadCommitSha;
-            if (!showBranchLabel && prLabels.includes(inputs.label)) {
-                removeLabel(client, pullNumber, inputs.label);
-            }
-            if (showBranchLabel) {
-                addLabels(client, pullNumber, [inputs.label]);
-            }
-        });
-    });
-}
-main();
-
-
-/***/ }),
-
 /***/ 692:
 /***/ (function(__unusedmodule, exports) {
 
@@ -11851,6 +11709,191 @@ module.exports = function (x) {
 
 	return x;
 };
+
+
+/***/ }),
+
+/***/ 773:
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: ./node_modules/@octokit/core/dist-node/index.js
+var dist_node = __webpack_require__(448);
+
+// CONCATENATED MODULE: ./src/utils/labeler.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const github = __webpack_require__(469);
+function addLabels(client, prNumber, labels) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Adding labels:', labels);
+        yield client.issues.addLabels({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+            labels: labels
+        });
+    });
+}
+function removeLabel(client, prNumber, label) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Removing label:', label);
+        yield client.issues.removeLabel({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+            name: label
+        });
+    });
+}
+function createLabel(octokit, inputs) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                name: inputs.label,
+            });
+            console.log(`Label ${inputs.label} already exists.`);
+        }
+        catch (error) {
+            yield octokit.request('POST /repos/{owner}/{repo}/labels', {
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                name: inputs.label,
+                color: inputs.color,
+            });
+            console.log(`Created label ${inputs.label} with color ${inputs.color}.`);
+        }
+    });
+}
+
+// CONCATENATED MODULE: ./src/utils/prInBranchLabelerHelper.ts
+var prInBranchLabelerHelper_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+const getOpenPrs = (octokit, repository) => prInBranchLabelerHelper_awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const openPrsResponse = yield octokit.request(`GET /repos/${repository.owner}/${repository.repo}/pulls`);
+        const openPrs = openPrsResponse.data;
+        const formattedPrs = openPrs.map((pr) => {
+            return { number: pr.number, title: pr.title };
+        });
+        console.log('Open PRs: ', formattedPrs);
+        return openPrs;
+    }
+    catch (error) {
+        console.error('Open PRs request failed: ', error.status);
+        process.exit(1);
+    }
+});
+const getBranchCommits = (octokit, repository, targetBranch) => prInBranchLabelerHelper_awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const branchCommitsResponse = yield octokit.request(`GET /repos/${repository.owner}/${repository.repo}/commits?sha=${targetBranch}`);
+        const formattedCommits = branchCommitsResponse.data.map((c) => {
+            return {
+                sha: c.sha,
+                author: c.commit.author.name,
+            };
+        });
+        console.log(`${targetBranch} commits: `, formattedCommits, '\n');
+        return branchCommitsResponse.data;
+    }
+    catch (error) {
+        console.error('Branch commit request failed: ', error.status);
+        process.exit(1);
+    }
+});
+const getCommitsForPR = (octokit, url) => prInBranchLabelerHelper_awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const prCommitsResponse = yield octokit.request(`GET ${url}`);
+        const formattedCommits = prCommitsResponse.data.map((c) => {
+            return {
+                sha: c.sha,
+                author: c.commit.author.name,
+            };
+        });
+        console.log('PR commits: ', formattedCommits, '\n');
+        return prCommitsResponse.data;
+    }
+    catch (error) {
+        console.error('PR commit request failed: ', error.status);
+        process.exit(1);
+    }
+});
+const shouldShowBranchLabel = (prCommits, branchCommits) => {
+    return prCommits.every((prCommit) => branchCommits.some((branchCommit) => branchCommit.sha === prCommit.sha ||
+        (branchCommit.parents.length > 1 &&
+            branchCommit.parents
+                .map((parent) => parent.sha)
+                .includes(prCommit.sha))));
+};
+const addOrRemoveBranchLabel = (inputs, client, octokit, pr, branchCommits) => prInBranchLabelerHelper_awaiter(void 0, void 0, void 0, function* () {
+    const prCommits = yield getCommitsForPR(octokit, pr.commits_url);
+    const pullNumber = pr.number;
+    const prLabels = pr.labels.map((label) => label.name);
+    const showBranchLabel = shouldShowBranchLabel(prCommits, branchCommits);
+    yield createLabel(octokit, inputs);
+    if (!showBranchLabel && prLabels.includes(inputs.label)) {
+        removeLabel(client, pullNumber, inputs.label);
+    }
+    if (showBranchLabel) {
+        addLabels(client, pullNumber, [inputs.label]);
+    }
+});
+
+// CONCATENATED MODULE: ./src/changes_in_branch_labeler/index.ts
+var changes_in_branch_labeler_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+const core = __webpack_require__(470);
+const changes_in_branch_labeler_github = __webpack_require__(469);
+
+
+
+function main() {
+    return changes_in_branch_labeler_awaiter(this, void 0, void 0, function* () {
+        const inputs = {
+            token: core.getInput('repo-token', { required: true }),
+            branch: core.getInput('target-branch'),
+            label: core.getInput('label'),
+            color: core.getInput('color'),
+        };
+        const octokit = new dist_node.Octokit({ auth: inputs.token });
+        const repository = changes_in_branch_labeler_github.context.repo;
+        const openPrs = yield getOpenPrs(octokit, repository);
+        const branchCommits = yield getBranchCommits(octokit, repository, inputs.branch);
+        const client = new changes_in_branch_labeler_github.GitHub(inputs.token);
+        yield createLabel(octokit, inputs);
+        openPrs.forEach((pr) => changes_in_branch_labeler_awaiter(this, void 0, void 0, function* () {
+            addOrRemoveBranchLabel(inputs, client, octokit, pr, branchCommits);
+        }));
+    });
+}
+main();
 
 
 /***/ }),
