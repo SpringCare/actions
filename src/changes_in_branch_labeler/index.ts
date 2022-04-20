@@ -1,9 +1,6 @@
 const core = require('@actions/core');
-const github = require('@actions/github');
 
-import { Octokit } from '@octokit/core';
-import { createLabel } from '../utils/labeler';
-import { getOpenPrs, getBranchCommits, addOrRemoveBranchLabel } from '../utils/prInBranchLabelerHelper';
+import makePrInBranchLabelManager from '../utils/prInBranchLabelManager';
 import { Pr, Commit, BranchLabelerInputs } from '../utils/types';
 
 async function main(): Promise<void> {
@@ -14,24 +11,14 @@ async function main(): Promise<void> {
 		color  : core.getInput('color'),
 	};
 
-	const octokit = new Octokit({ auth: inputs.token });
+	const prInBranchLabelManager = makePrInBranchLabelManager(inputs);
 
-	const repository = github.context.repo;
+	const openPrs = await prInBranchLabelManager.getOpenPrs();
 
-	const openPrs = await getOpenPrs(octokit, repository);
-
-	const branchCommits: Commit[] = await getBranchCommits(
-		octokit,
-		repository,
-		inputs.branch
-	);
-
-	const client = new github.GitHub(inputs.token);
-
-	await createLabel(octokit, inputs);
+	const branchCommits: Commit[] = await prInBranchLabelManager.getBranchCommits(inputs.branch);
 
 	openPrs.forEach(async (pr: Pr) => {
-		addOrRemoveBranchLabel(inputs, client, octokit, pr, branchCommits);
+		prInBranchLabelManager.addOrRemoveBranchLabel(pr, branchCommits);
 	});
 }
 

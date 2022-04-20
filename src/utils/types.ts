@@ -1,17 +1,13 @@
-export interface PRLabelerInputs {
-    token: string;
-	requiredReviews: number;
-	labelWIP: boolean;
-	branch: string;
-	label: string;
-	color: string;
-}
-
 export interface BranchLabelerInputs {
     token: string;
 	branch: string;
 	label: string;
 	color: string;
+}
+
+export interface PrLabelerInputs extends BranchLabelerInputs {
+	requiredReviews: number;
+	labelWIP: boolean;
 }
 
 export interface Client {

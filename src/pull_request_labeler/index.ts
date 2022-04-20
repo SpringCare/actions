@@ -4,12 +4,11 @@ const github = require('@actions/github');
 import { addLabels, removeLabel } from '../utils/labeler';
 import { parseReviews } from '../utils/parseReviews';
 import { getReviews } from '../utils/getReviews';
-import { Octokit } from '@octokit/core';
-import { getBranchCommits, addOrRemoveBranchLabel } from '../utils/prInBranchLabelerHelper';
-import { Pr, PRLabelerInputs, Client } from '../utils/types';
+import makePrInBranchLabelManager from '../utils/prInBranchLabelManager';
+import { Pr, PrLabelerInputs, Client, BranchLabelerInputs } from '../utils/types';
 
 const handleReviewCountLabel = async (
-	inputs: PRLabelerInputs,
+	inputs: PrLabelerInputs,
 	client: Client,
 	pullNumber: string
 ): Promise<void> => {
@@ -50,7 +49,7 @@ const handleReviewCountLabel = async (
 	}
 };
 
-const handleWIPLabel = (inputs: PRLabelerInputs, client: Client, pr: Pr): void => {
+const handleWIPLabel = (inputs: PrLabelerInputs, client: Client, pr: Pr): void => {
 	const draftPR = pr.draft;
 	const pullNumber = pr.number;
 	if (inputs.labelWIP && draftPR) {
@@ -60,23 +59,17 @@ const handleWIPLabel = (inputs: PRLabelerInputs, client: Client, pr: Pr): void =
 	}
 };
 
-const handleBranchLabel = async (inputs: PRLabelerInputs, client: Client, pr: Pr): Promise<void> => {
-	const octokit = new Octokit({ auth: inputs.token });
+const handleBranchLabel = async (inputs: PrLabelerInputs, pr: Pr): Promise<void> => {
+	const prInBranchLabelManager = makePrInBranchLabelManager(inputs as BranchLabelerInputs);
 
-	const repository = github.context.repo;
+	const branchCommits = await prInBranchLabelManager.getBranchCommits(inputs.branch);
 
-	const branchCommits = await getBranchCommits(
-		octokit,
-		repository,
-		inputs.branch
-	);
-
-	addOrRemoveBranchLabel(inputs, client, octokit, pr, branchCommits);
+	prInBranchLabelManager.addOrRemoveBranchLabel(pr, branchCommits);
 };
 
 async function main(): Promise<void> {
 	// Get a few inputs from the GitHub event.
-	const inputs: PRLabelerInputs = {
+	const inputs: PrLabelerInputs = {
 		token           : core.getInput('repo-token', { required: true }),
 		requiredReviews : core.getInput('required'),
 		labelWIP        : core.getInput('wip'),
@@ -103,7 +96,7 @@ async function main(): Promise<void> {
 
 	handleWIPLabel(inputs, client, pr);
 
-	handleBranchLabel(inputs, client, pr);
+	handleBranchLabel(inputs, pr);
 }
 
 // Call the main function.
