@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(571);
+/******/ 		return __webpack_require__(569);
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -10795,7 +10795,7 @@ module.exports = parse;
 
 /***/ }),
 
-/***/ 571:
+/***/ 569:
 /***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -10911,8 +10911,8 @@ function getReviews(token, pullNumber) {
 // EXTERNAL MODULE: ./node_modules/@octokit/core/dist-node/index.js
 var dist_node = __webpack_require__(448);
 
-// CONCATENATED MODULE: ./src/utils/prInBranchLabelerHelper.ts
-var prInBranchLabelerHelper_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+// CONCATENATED MODULE: ./src/utils/prInBranchLabelManager.ts
+var prInBranchLabelManager_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -10921,76 +10921,85 @@ var prInBranchLabelerHelper_awaiter = (undefined && undefined.__awaiter) || func
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+const prInBranchLabelManager_github = __webpack_require__(469);
 
-const getOpenPrs = (octokit, repository) => prInBranchLabelerHelper_awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const openPrsResponse = yield octokit.request(`GET /repos/${repository.owner}/${repository.repo}/pulls`);
-        const openPrs = openPrsResponse.data;
-        const formattedPrs = openPrs.map((pr) => {
-            return { number: pr.number, title: pr.title };
-        });
-        console.log('Open PRs: ', formattedPrs);
-        return openPrs;
-    }
-    catch (error) {
-        console.error('Open PRs request failed: ', error.status);
-        process.exit(1);
-    }
-});
-const getBranchCommits = (octokit, repository, targetBranch) => prInBranchLabelerHelper_awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const branchCommitsResponse = yield octokit.request(`GET /repos/${repository.owner}/${repository.repo}/commits?sha=${targetBranch}`);
-        const formattedCommits = branchCommitsResponse.data.map((c) => {
-            return {
-                sha: c.sha,
-                author: c.commit.author.name,
-            };
-        });
-        console.log(`${targetBranch} commits: `, formattedCommits, '\n');
-        return branchCommitsResponse.data;
-    }
-    catch (error) {
-        console.error('Branch commit request failed: ', error.status);
-        process.exit(1);
-    }
-});
-const getCommitsForPR = (octokit, url) => prInBranchLabelerHelper_awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const prCommitsResponse = yield octokit.request(`GET ${url}`);
-        const formattedCommits = prCommitsResponse.data.map((c) => {
-            return {
-                sha: c.sha,
-                author: c.commit.author.name,
-            };
-        });
-        console.log('PR commits: ', formattedCommits, '\n');
-        return prCommitsResponse.data;
-    }
-    catch (error) {
-        console.error('PR commit request failed: ', error.status);
-        process.exit(1);
-    }
-});
-const shouldShowBranchLabel = (prCommits, branchCommits) => {
-    return prCommits.every((prCommit) => branchCommits.some((branchCommit) => branchCommit.sha === prCommit.sha ||
-        (branchCommit.parents.length > 1 &&
-            branchCommit.parents
-                .map((parent) => parent.sha)
-                .includes(prCommit.sha))));
-};
-const addOrRemoveBranchLabel = (inputs, client, octokit, pr, branchCommits) => prInBranchLabelerHelper_awaiter(void 0, void 0, void 0, function* () {
-    const prCommits = yield getCommitsForPR(octokit, pr.commits_url);
-    const pullNumber = pr.number;
-    const prLabels = pr.labels.map((label) => label.name);
-    const showBranchLabel = shouldShowBranchLabel(prCommits, branchCommits);
-    yield createLabel(octokit, inputs);
-    if (!showBranchLabel && prLabels.includes(inputs.label)) {
-        removeLabel(client, pullNumber, inputs.label);
-    }
-    if (showBranchLabel) {
-        addLabels(client, pullNumber, [inputs.label]);
-    }
-});
+
+function makePrInBranchLabelManager(inputs) {
+    const octokit = new dist_node.Octokit({ auth: inputs.token });
+    const client = new prInBranchLabelManager_github.GitHub(inputs.token);
+    const repository = prInBranchLabelManager_github.context.repo;
+    const getCommitsForPR = (url) => prInBranchLabelManager_awaiter(this, void 0, void 0, function* () {
+        try {
+            const prCommitsResponse = yield octokit.request(`GET ${url}`);
+            const formattedCommits = prCommitsResponse.data.map((c) => {
+                return {
+                    sha: c.sha,
+                    author: c.commit.author.name,
+                };
+            });
+            console.log('PR commits: ', formattedCommits, '\n');
+            return prCommitsResponse.data;
+        }
+        catch (error) {
+            console.error('PR commit request failed: ', error.status);
+            process.exit(1);
+        }
+    });
+    const shouldShowBranchLabel = (prCommits, branchCommits) => {
+        return prCommits.every((prCommit) => branchCommits.some((branchCommit) => branchCommit.sha === prCommit.sha ||
+            (branchCommit.parents.length > 1 &&
+                branchCommit.parents
+                    .map((parent) => parent.sha)
+                    .includes(prCommit.sha))));
+    };
+    return {
+        getOpenPrs: () => prInBranchLabelManager_awaiter(this, void 0, void 0, function* () {
+            try {
+                const openPrsResponse = yield octokit.request(`GET /repos/${repository.owner}/${repository.repo}/pulls`);
+                const openPrs = openPrsResponse.data;
+                const formattedPrs = openPrs.map((pr) => {
+                    return { number: pr.number, title: pr.title };
+                });
+                console.log('Open PRs: ', formattedPrs);
+                return openPrs;
+            }
+            catch (error) {
+                console.error('Open PRs request failed: ', error.status);
+                process.exit(1);
+            }
+        }),
+        getBranchCommits: (targetBranch) => prInBranchLabelManager_awaiter(this, void 0, void 0, function* () {
+            try {
+                const branchCommitsResponse = yield octokit.request(`GET /repos/${repository.owner}/${repository.repo}/commits?sha=${targetBranch}`);
+                const formattedCommits = branchCommitsResponse.data.map((c) => {
+                    return {
+                        sha: c.sha,
+                        author: c.commit.author.name,
+                    };
+                });
+                console.log(`${targetBranch} commits: `, formattedCommits, '\n');
+                return branchCommitsResponse.data;
+            }
+            catch (error) {
+                console.error('Branch commit request failed: ', error.status);
+                process.exit(1);
+            }
+        }),
+        addOrRemoveBranchLabel: (pr, branchCommits) => prInBranchLabelManager_awaiter(this, void 0, void 0, function* () {
+            const prCommits = yield getCommitsForPR(pr.commits_url);
+            const pullNumber = pr.number;
+            const prLabels = pr.labels.map((label) => label.name);
+            const showBranchLabel = shouldShowBranchLabel(prCommits, branchCommits);
+            yield createLabel(octokit, inputs);
+            if (!showBranchLabel && prLabels.includes(inputs.label)) {
+                removeLabel(client, pullNumber, inputs.label);
+            }
+            if (showBranchLabel) {
+                addLabels(client, pullNumber, [inputs.label]);
+            }
+        }),
+    };
+}
 
 // CONCATENATED MODULE: ./src/pull_request_labeler/index.ts
 var pull_request_labeler_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -11004,7 +11013,6 @@ var pull_request_labeler_awaiter = (undefined && undefined.__awaiter) || functio
 };
 const core = __webpack_require__(470);
 const pull_request_labeler_github = __webpack_require__(469);
-
 
 
 
@@ -11046,11 +11054,10 @@ const handleWIPLabel = (inputs, client, pr) => {
         removeLabel(client, pullNumber, 'WIP');
     }
 };
-const handleBranchLabel = (inputs, client, pr) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
-    const octokit = new dist_node.Octokit({ auth: inputs.token });
-    const repository = pull_request_labeler_github.context.repo;
-    const branchCommits = yield getBranchCommits(octokit, repository, inputs.branch);
-    addOrRemoveBranchLabel(inputs, client, octokit, pr, branchCommits);
+const handleBranchLabel = (inputs, pr) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
+    const prInBranchLabelManager = makePrInBranchLabelManager(inputs);
+    const branchCommits = yield prInBranchLabelManager.getBranchCommits(inputs.branch);
+    prInBranchLabelManager.addOrRemoveBranchLabel(pr, branchCommits);
 });
 function main() {
     return pull_request_labeler_awaiter(this, void 0, void 0, function* () {
@@ -11074,7 +11081,7 @@ function main() {
         const client = new pull_request_labeler_github.GitHub(inputs.token);
         handleReviewCountLabel(inputs, client, pullNumber);
         handleWIPLabel(inputs, client, pr);
-        handleBranchLabel(inputs, client, pr);
+        handleBranchLabel(inputs, pr);
     });
 }
 // Call the main function.
