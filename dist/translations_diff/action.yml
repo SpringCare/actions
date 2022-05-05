@@ -1,0 +1,12 @@
+name: Translations diff check
+
+on: [pull_request]
+
+jobs:
+  translation-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: utsav00/actions/dist/translations_diff@master
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
