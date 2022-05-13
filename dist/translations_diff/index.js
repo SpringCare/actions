@@ -10914,16 +10914,16 @@ function main() {
         const filesFromResponse = resp.data.filter(elem => new RegExp('.*.json').test(elem.filename));
         // returns an file: patch object for lang keys
         /**
-         * {
-         *  en: {
-         *    file1: patch1,
-         *    file2: patch2
-         *  },
-         * es: {
-         *    file1: patch1
-         * }
-         * }
-        */
+       * {
+       *  en: {
+       *    file1: patch1,
+       *    file2: patch2
+       *  },
+       * es: {
+       *    file1: patch1
+       * }
+       * }
+      */
         filesFromResponse.forEach(element => {
             const path = element.filename.split('/');
             const n = path.length;

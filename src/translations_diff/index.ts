@@ -35,7 +35,7 @@ function compareFiles(file: string, lang = 'en'): boolean {
 		const otherLangFileKeys = extractKeys(file, allFiles[lang][file]);
 
 		if (!(compareKeys(enFilePatchKeys, otherLangFileKeys)))
-      // Todo: return list of keys
+		// Todo: return list of keys
 			return false;
 	}
 	return true;
@@ -65,8 +65,8 @@ async function main (): Promise<void> {
 
 	const filesFromResponse = resp.data.filter(elem => new RegExp('.*.json').test(elem.filename));
 
-  // returns an file: patch object for lang keys
-  /**
+	// returns an file: patch object for lang keys
+	/**
    * {
    *  en: {
    *    file1: patch1,
@@ -92,7 +92,7 @@ async function main (): Promise<void> {
 	console.log('Check here');
 	console.log(allFiles);
 	for (const file in allFiles['en']) {
-    // Todo: return error or success status
+		// Todo: return error or success status
 		console.log(file, ': ', compareFiles(file));
 	}
 }
