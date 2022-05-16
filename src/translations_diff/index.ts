@@ -25,20 +25,42 @@ function extractKeys(filename: string, patch: string): Record<string, any> {
 	};
 }
 
-function compareFiles(file: string, lang = 'en'): boolean {
+function compareFiles(file: string, lang = 'en'): void {
+
+	// error if not lang or file not present
+	// else check content of one file with another
 	const enFilePatchKeys = extractKeys(file, allFiles[lang][file]);
+	let notExistsFlag: boolean = true;
+	let keyMismatchFlag: boolean = true;
+
+	let notExists = [];
+	let keysNotMatching = [];
 
 	for (const lang of languages) {
-		if (allFiles[lang] === undefined || allFiles[lang][file] === undefined)
-			return false;
+		if (allFiles[lang] === undefined || allFiles[lang][file] === undefined) {
+			notExistsFlag = false;
+			notExists.push(file);
+		}	
 
 		const otherLangFileKeys = extractKeys(file, allFiles[lang][file]);
 
-		if (!(compareKeys(enFilePatchKeys, otherLangFileKeys)))
-		// Todo: return list of keys
-			return false;
+		if (!(compareKeys(enFilePatchKeys, otherLangFileKeys))) {
+			keyMismatchFlag = false;
+			keysNotMatching.push(lang)
+		}
 	}
-	return true;
+
+	if (!notExistsFlag) {
+		console.log("Language or file not does not exists:");
+		console.log(notExists);
+	}
+
+	if (!keyMismatchFlag) {
+		console.log("\nKeys not matching:");
+		console.log(keysNotMatching);
+	}
+
+	return null;
 }
 
 async function main (): Promise<void> {
@@ -67,16 +89,16 @@ async function main (): Promise<void> {
 
 	// returns an file: patch object for lang keys
 	/**
-   * {
-   *  en: {
-   *    file1: patch1,
-   *    file2: patch2
-   *  },
-   * es: {
-   *    file1: patch1
-   * }
-   * }
-  */
+	* {
+	*  en: {
+	*    file1: patch1,
+	*    file2: patch2
+	*  },
+	* es: {
+	*    file1: patch1
+	* }
+	* }
+	*/
 	filesFromResponse.forEach(element => {
 		const path = element.filename.split('/');
 		const n = path.length;
@@ -92,9 +114,11 @@ async function main (): Promise<void> {
 	console.log('Check here');
 	console.log(allFiles);
 	for (const file in allFiles['en']) {
-		// Todo: return error or success status
-		console.log(file, ': ', compareFiles(file));
+		console.log(file, ' ', compareFiles(file));
 	}
+
+	if (compareFiles === undefined)
+		core.setFailed("Failed!");
 }
 
 main();

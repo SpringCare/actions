@@ -10887,16 +10887,33 @@ function extractKeys(filename, patch) {
     };
 }
 function compareFiles(file, lang = 'en') {
+    // error if not lang or file not present
+    // else check content of one file with another
     const enFilePatchKeys = extractKeys(file, allFiles[lang][file]);
+    let notExistsFlag = true;
+    let keyMismatchFlag = true;
+    let notExists = [];
+    let keysNotMatching = [];
     for (const lang of languages) {
-        if (allFiles[lang] === undefined || allFiles[lang][file] === undefined)
-            return false;
+        if (allFiles[lang] === undefined || allFiles[lang][file] === undefined) {
+            notExistsFlag = false;
+            notExists.push(file);
+        }
         const otherLangFileKeys = extractKeys(file, allFiles[lang][file]);
-        if (!(compareKeys(enFilePatchKeys, otherLangFileKeys)))
-            // Todo: return list of keys
-            return false;
+        if (!(compareKeys(enFilePatchKeys, otherLangFileKeys))) {
+            keyMismatchFlag = false;
+            keysNotMatching.push(lang);
+        }
     }
-    return true;
+    if (!notExistsFlag) {
+        console.log("Language or file not does not exists:");
+        console.log(notExists);
+    }
+    if (!keyMismatchFlag) {
+        console.log("\nKeys not matching:");
+        console.log(keysNotMatching);
+    }
+    return null;
 }
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -10914,16 +10931,16 @@ function main() {
         const filesFromResponse = resp.data.filter(elem => new RegExp('.*.json').test(elem.filename));
         // returns an file: patch object for lang keys
         /**
-       * {
-       *  en: {
-       *    file1: patch1,
-       *    file2: patch2
-       *  },
-       * es: {
-       *    file1: patch1
-       * }
-       * }
-      */
+        * {
+        *  en: {
+        *    file1: patch1,
+        *    file2: patch2
+        *  },
+        * es: {
+        *    file1: patch1
+        * }
+        * }
+        */
         filesFromResponse.forEach(element => {
             const path = element.filename.split('/');
             const n = path.length;
@@ -10937,9 +10954,10 @@ function main() {
         console.log('Check here');
         console.log(allFiles);
         for (const file in allFiles['en']) {
-            // Todo: return error or success status
-            console.log(file, ': ', compareFiles(file));
+            console.log(file, ' ', compareFiles(file));
         }
+        if (compareFiles === undefined)
+            core.setFailed("Failed!");
     });
 }
 main();
