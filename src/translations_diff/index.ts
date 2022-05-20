@@ -2,6 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 
 import { Octokit } from '@octokit/core';
+import _ from 'lodash';
 
 const allFiles = {};
 
@@ -25,42 +26,41 @@ function extractKeys(filename: string, patch: string): Record<string, any> {
 	};
 }
 
-function compareFiles(file: string, lang = 'en'): void {
+// returns an object with flattened keys
+const objectPaths = (object) => {
+	const result = {};
+	_.forOwn(object, function (value, key) {
+		if (_.isPlainObject(value)) {
+			// Recursive step
+			const keys = objectPaths(value);
+			for (const subKey in keys) {
+				const finalKey = key + '.' + subKey;
+				result[finalKey] = keys[subKey];
+			}
+		} else {
+			result[key] = value;
+		}
+	});
+	return result;
+};
 
-	// error if not lang or file not present
-	// else check content of one file with another
-	const enFilePatchKeys = extractKeys(file, allFiles[lang][file]);
-	let notExistsFlag: boolean = true;
-	let keyMismatchFlag: boolean = true;
+function compareFiles(baseFile: string, targetFile: string): Array<string> {
+	const baseObject = objectPaths(baseFile);
+	const targetObject = objectPaths(targetFile);
 
-	let notExists = [];
-	let keysNotMatching = [];
-
-	for (const lang of languages) {
-		if (allFiles[lang] === undefined || allFiles[lang][file] === undefined) {
-			notExistsFlag = false;
-			notExists.push(file);
-		}	
-
-		const otherLangFileKeys = extractKeys(file, allFiles[lang][file]);
-
-		if (!(compareKeys(enFilePatchKeys, otherLangFileKeys))) {
-			keyMismatchFlag = false;
-			keysNotMatching.push(lang)
+	// if all the keys from base are present in targetObject
+	// compare keys and values
+	const difference = [];
+	for (const key in baseObject) {
+		if (!(key in targetObject)) {
+			difference.push(key);
+		}
+		else if (baseObject[key] !== targetObject[key]) {
+			difference.push(key);
 		}
 	}
 
-	if (!notExistsFlag) {
-		console.log("Language or file not does not exists:");
-		console.log(notExists);
-	}
-
-	if (!keyMismatchFlag) {
-		console.log("\nKeys not matching:");
-		console.log(keysNotMatching);
-	}
-
-	return null;
+	return difference;
 }
 
 async function main (): Promise<void> {
@@ -110,15 +110,6 @@ async function main (): Promise<void> {
 		}
 		allFiles[lang][filename] = element.patch;
 	});
-
-	console.log('Check here');
-	console.log(allFiles);
-	for (const file in allFiles['en']) {
-		console.log(file, ' ', compareFiles(file));
-	}
-
-	if (compareFiles === undefined)
-		core.setFailed("Failed!");
 }
 
 main();
