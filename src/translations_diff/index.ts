@@ -68,7 +68,15 @@ async function main (): Promise<void> {
 
 	const inputs: {
 		token: string;
-	} = { token: core.getInput('repo-token', { required: true }) };
+		base_branch: string;
+		target_branch: string;
+	} = {
+		token         : core.getInput('repo-token', { required: true }),
+		base_branch   : core.getInput('base-branch'),
+		target_branch : core.getInput('target-branch')
+	};
+
+	console.log('inputs: ', inputs);
 
 	const pullNumber = github.context.payload.pull_request.number;
 	const repository = github.context.repo;

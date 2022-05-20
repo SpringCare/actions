@@ -28143,7 +28143,12 @@ function compareFiles(baseFile, targetFile) {
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log('Starting');
-        const inputs = { token: core.getInput('repo-token', { required: true }) };
+        const inputs = {
+            token: core.getInput('repo-token', { required: true }),
+            base_branch: core.getInput('base-branch'),
+            target_branch: core.getInput('target-branch')
+        };
+        console.log('inputs: ', inputs);
         const pullNumber = github.context.payload.pull_request.number;
         const repository = github.context.repo;
         const octokit = new _octokit_core__WEBPACK_IMPORTED_MODULE_0__.Octokit({ auth: inputs.token });
