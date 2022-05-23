@@ -28181,7 +28181,7 @@ function main() {
                     },
                     owner: repository.owner,
                     repo: repository.repo,
-                    filePath: encodeURIComponent(enFilePath),
+                    filePath: enFilePath,
                     ref: inputs.base_branch,
                 });
             }

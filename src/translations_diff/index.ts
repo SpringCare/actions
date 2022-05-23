@@ -186,7 +186,7 @@ async function main(): Promise<void> {
 					},
 					owner    : repository.owner,
 					repo     : repository.repo,
-					filePath : encodeURIComponent(enFilePath),
+					filePath : enFilePath,
 					ref      : inputs.base_branch,
 				}
 			);
