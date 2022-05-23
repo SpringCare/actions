@@ -28148,7 +28148,7 @@ function main() {
         // });
         // core.setFailed('Failed!');
         const filterLocaleFiles = (locale) => {
-            return filesFromResponse.filter((elem) => new RegExp(`.*/${locale}}/.*.json`).test(elem));
+            return filesFromResponse.filter((elem) => new RegExp(`.*/${locale}/.*.json`).test(elem));
         };
         const getLastItem = (path) => path.substring(path.lastIndexOf('/') + 1);
         const enFilePaths = filterLocaleFiles('en');
