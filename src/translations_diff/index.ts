@@ -180,7 +180,7 @@ async function main(): Promise<void> {
 	const outOfSyncFiles = [];
 	allFiles.forEach((lang) => {
 		if (!_.isEqual(enLocale.fileNames, lang.fileNames)) {
-			outOfSyncFiles.push(lang);
+			outOfSyncFiles.push(lang.locale);
 		}
 	});
 

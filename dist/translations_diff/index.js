@@ -28178,7 +28178,7 @@ function main() {
         const outOfSyncFiles = [];
         allFiles.forEach((lang) => {
             if (!lodash__WEBPACK_IMPORTED_MODULE_1___default().isEqual(enLocale.fileNames, lang.fileNames)) {
-                outOfSyncFiles.push(lang);
+                outOfSyncFiles.push(lang.locale);
             }
         });
         if (outOfSyncFiles.length > 0) {
