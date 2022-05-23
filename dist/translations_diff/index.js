@@ -28150,9 +28150,9 @@ function main() {
         const filterLocaleFiles = (locale) => {
             return filesFromResponse.filter((elem) => new RegExp(`.*/${locale}}/.*.json`).test(elem));
         };
-        console.log('Filtered locale files: ', filterLocaleFiles);
         const getLastItem = (path) => path.substring(path.lastIndexOf('/') + 1);
         const enFilePaths = filterLocaleFiles('en');
+        console.log('Filtered en locale files: ', enFilePaths);
         const enLocale = {
             locale: 'en',
             filePaths: enFilePaths,
