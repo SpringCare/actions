@@ -176,18 +176,23 @@ async function main(): Promise<void> {
 	});
 
 	enLocale.filePaths.forEach(async (enFilePath) => {
-		const baseResp = await octokit.request(
-			'GET /repos/{owner}/{repo}/contents/{filePath}?ref={ref}',
-			{
-				headers: {
-					Accept: 'application/vnd.github.v3.raw',
-				},
-				owner    : repository.owner,
-				repo     : repository.repo,
-				filePath : encodeURIComponent(enFilePath),
-				ref      : inputs.base_branch,
-			}
-		);
+		let baseResp;
+		try {
+			baseResp = await octokit.request(
+				'GET /repos/{owner}/{repo}/contents/{filePath}?ref={ref}',
+				{
+					headers: {
+						Accept: 'application/vnd.github.v3.raw',
+					},
+					owner    : repository.owner,
+					repo     : repository.repo,
+					filePath : encodeURIComponent(enFilePath),
+					ref      : inputs.base_branch,
+				}
+			);
+		} catch (error) {
+			console.log('Error: ', error);
+		}
 
 		const targetResp = await octokit.request(
 			'GET /repos/{owner}/{repo}/contents/{filePath}?ref={ref}',

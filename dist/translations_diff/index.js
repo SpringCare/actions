@@ -28173,15 +28173,21 @@ function main() {
             };
         });
         enLocale.filePaths.forEach((enFilePath) => __awaiter(this, void 0, void 0, function* () {
-            const baseResp = yield octokit.request('GET /repos/{owner}/{repo}/contents/{filePath}?ref={ref}', {
-                headers: {
-                    Accept: 'application/vnd.github.v3.raw',
-                },
-                owner: repository.owner,
-                repo: repository.repo,
-                filePath: encodeURIComponent(enFilePath),
-                ref: inputs.base_branch,
-            });
+            let baseResp;
+            try {
+                baseResp = yield octokit.request('GET /repos/{owner}/{repo}/contents/{filePath}?ref={ref}', {
+                    headers: {
+                        Accept: 'application/vnd.github.v3.raw',
+                    },
+                    owner: repository.owner,
+                    repo: repository.repo,
+                    filePath: encodeURIComponent(enFilePath),
+                    ref: inputs.base_branch,
+                });
+            }
+            catch (error) {
+                console.log('Error: ', error);
+            }
             const targetResp = yield octokit.request('GET /repos/{owner}/{repo}/contents/{filePath}?ref={ref}', {
                 headers: {
                     Accept: 'application/vnd.github.v3.raw',
