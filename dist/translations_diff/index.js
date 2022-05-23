@@ -28079,6 +28079,8 @@ const objectPaths = (object) => {
 function compareFiles(baseFile, targetFile) {
     const baseObject = objectPaths(baseFile);
     const targetObject = objectPaths(targetFile);
+    console.log('baseObject: ', baseObject);
+    console.log('targetObject: ', targetObject);
     // if all the keys from base are present in targetObject
     // compare keys and values
     const difference = [];
