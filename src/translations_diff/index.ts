@@ -214,6 +214,8 @@ async function main(): Promise<void> {
 
 		console.log('baseResp: ', baseResp);
 		console.log('targetResp: ', targetResp);
+
+		console.log(compareFiles(JSON.parse(baseResp.data), JSON.parse(targetResp.data)));
 	});
 	// Todo: change this to locale path
 	// const filesFromResponse = resp.data.filter(elem => new RegExp('.*.json').test(elem.filename));
