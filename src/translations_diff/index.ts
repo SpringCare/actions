@@ -80,6 +80,41 @@ function validateKeySync(keyDifference: Array<string>, file: string) {
 	}
 }
 
+const filterLocaleFiles = (locale: string, filePaths: Array<string>): Array<string> => {
+	return filePaths.filter((elem) =>
+		new RegExp(`.*/${locale}/.*.json`).test(elem)
+	);
+};
+
+const getLastItem = (path: string): string =>
+	path.substring(path.lastIndexOf('/') + 1);
+
+async function getRawFileContent(
+	filePath: string,
+	branch: string,
+	octokit: Octokit,
+	repository: Record<string, any>
+): Promise<string> {
+	let resp;
+	try {
+		resp = await octokit.request(
+			'GET /repos/{owner}/{repo}/contents/{filePath}?ref={ref}',
+			{
+				headers: {
+					Accept: 'application/vnd.github.v3.raw',
+				},
+				owner    : repository.owner,
+				repo     : repository.repo,
+				filePath : filePath,
+				ref      : branch,
+			}
+		);
+	} catch (error) {
+		console.log('Error: ', error);
+	}
+	return resp.data;
+}
+
 async function main(): Promise<void> {
 	console.log('Starting');
 
@@ -111,46 +146,12 @@ async function main(): Promise<void> {
 
 	console.log('Response: ', resp);
 
-	const filesFromResponse = resp.data
+	const jsonFilePathsFromResponse = resp.data
 		.map((elem) => elem.filename)
 		.filter((elem) => new RegExp('.*.json').test(elem));
-	console.log('Files from response: ', filesFromResponse);
+	console.log('Files from response: ', jsonFilePathsFromResponse);
 
-	// returns an file: patch object for lang keys
-	/**
-	 * {
-	 *  en: {
-	 *    file1: patch1,
-	 *    file2: patch2
-	 *  },
-	 * es: {
-	 *    file1: patch1
-	 *  }
-	 * }
-	 */
-	// filesFromResponse.forEach((element) => {
-	// 	const path = element.filename.split('/');
-	// 	const n = path.length;
-	// 	const lang = path[n - 2];
-	// 	const filename = path[n - 1];
-
-	// 	if (!(lang in allFiles)) {
-	// 		allFiles[lang] = {};
-	// 	}
-	// 	allFiles[lang][filename] = element.patch;
-	// });
-
-	// core.setFailed('Failed!');
-	const filterLocaleFiles = (locale: string): Array<string> => {
-		return filesFromResponse.filter((elem) =>
-			new RegExp(`.*/${locale}/.*.json`).test(elem)
-		);
-	};
-
-	const getLastItem = (path: string): string =>
-		path.substring(path.lastIndexOf('/') + 1);
-
-	const enFilePaths = filterLocaleFiles('en');
+	const enFilePaths = filterLocaleFiles('en', jsonFilePathsFromResponse);
 	console.log('Filtered en locale files: ', enFilePaths);
 
 	const enLocale = {
@@ -167,7 +168,7 @@ async function main(): Promise<void> {
 	}
 
 	languages.forEach((lang) => {
-		const filePaths = filterLocaleFiles(lang);
+		const filePaths = filterLocaleFiles(lang, jsonFilePathsFromResponse);
 		const fileNames = filePaths.map(getLastItem);
 
 		allFiles.push({
@@ -177,6 +178,7 @@ async function main(): Promise<void> {
 		});
 	});
 	console.log('allFiles: ', allFiles);
+
 	const outOfSyncFiles = [];
 	allFiles.forEach((lang) => {
 		if (!_.isEqual(enLocale.fileNames, lang.fileNames)) {
@@ -189,39 +191,19 @@ async function main(): Promise<void> {
 		return;
 	}
 
-	async function getRawFileContent(
-		filePath: string,
-		branch: string
-	): Promise<string> {
-		let resp;
-		try {
-			resp = await octokit.request(
-				'GET /repos/{owner}/{repo}/contents/{filePath}?ref={ref}',
-				{
-					headers: {
-						Accept: 'application/vnd.github.v3.raw',
-					},
-					owner    : repository.owner,
-					repo     : repository.repo,
-					filePath : filePath,
-					ref      : branch,
-				}
-			);
-		} catch (error) {
-			console.log('Error: ', error);
-		}
-		return resp.data;
-	}
-
 	enLocale.filePaths.forEach(async (path) => {
 		const rawFileContentBase = await getRawFileContent(
 			path,
-			inputs.base_branch
+			inputs.base_branch,
+			octokit,
+			repository
 		);
 
 		const rawFileContentTarget = await getRawFileContent(
 			path,
-			inputs.target_branch
+			inputs.target_branch,
+			octokit,
+			repository
 		);
 
 		console.log('baseResp: ', rawFileContentBase);
