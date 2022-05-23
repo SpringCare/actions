@@ -176,49 +176,54 @@ async function main(): Promise<void> {
 			fileNames : fileNames,
 		};
 	});
+	console.log('allFiles: ', allFiles);
+
+	async function getRawFileContent(
+		filePath: string,
+		branch: string
+	): Promise<string> {
+		let resp;
+		try {
+			resp = await octokit.request(
+				'GET /repos/{owner}/{repo}/contents/{filePath}?ref={ref}',
+				{
+					headers: {
+						Accept: 'application/vnd.github.v3.raw',
+					},
+					owner    : repository.owner,
+					repo     : repository.repo,
+					filePath : filePath,
+					ref      : branch,
+				}
+			);
+		} catch (error) {
+			console.log('Error: ', error);
+		}
+		return resp.data;
+	}
 
 	enLocale.filePaths.forEach(async (path) => {
-		let baseResp;
-		try {
-			baseResp = await octokit.request(
-				'GET /repos/{owner}/{repo}/contents/{filePath}?ref={ref}',
-				{
-					headers: {
-						Accept: 'application/vnd.github.v3.raw',
-					},
-					owner    : repository.owner,
-					repo     : repository.repo,
-					filePath : path,
-					ref      : inputs.base_branch,
-				}
-			);
-		} catch (error) {
-			console.log('Error: ', error);
-		}
+		const rawFileContentBase = await getRawFileContent(
+			path,
+			inputs.base_branch
+		);
 
-		let targetResp;
-		try {
-			targetResp = await octokit.request(
-				'GET /repos/{owner}/{repo}/contents/{filePath}?ref={ref}',
-				{
-					headers: {
-						Accept: 'application/vnd.github.v3.raw',
-					},
-					owner    : repository.owner,
-					repo     : repository.repo,
-					filePath : path,
-					ref      : inputs.target_branch,
-				}
-			);
-		} catch (error) {
-			console.log('Error: ', error);
-		}
+		const rawFileContentTarget = await getRawFileContent(
+			path,
+			inputs.target_branch
+		);
 
-		console.log('baseResp: ', baseResp);
-		console.log('targetResp: ', targetResp);
+		console.log('baseResp: ', rawFileContentBase);
+		console.log('targetResp: ', rawFileContentTarget);
 
-		console.log(compareFiles(JSON.parse(baseResp.data), JSON.parse(targetResp.data)));
+		console.log(
+			compareFiles(
+				JSON.parse(rawFileContentBase),
+				JSON.parse(rawFileContentTarget)
+			)
+		);
 	});
+
 	// Todo: change this to locale path
 	// const filesFromResponse = resp.data.filter(elem => new RegExp('.*.json').test(elem.filename));
 
