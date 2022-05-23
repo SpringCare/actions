@@ -141,7 +141,7 @@ async function main(): Promise<void> {
 	// core.setFailed('Failed!');
 	const filterLocaleFiles = (locale: string): Array<string> => {
 		return filesFromResponse.filter((elem) =>
-			new RegExp(`.*/${locale}}/.*.json`).test(elem)
+			new RegExp(`.*/${locale}/.*.json`).test(elem)
 		);
 	};
 
