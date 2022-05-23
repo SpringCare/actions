@@ -4,7 +4,7 @@ const github = require('@actions/github');
 import { Octokit } from '@octokit/core';
 import _ from 'lodash';
 
-const allFiles = {};
+const allFiles = [];
 
 const languages = ['es', 'fr'];
 
@@ -170,13 +170,24 @@ async function main(): Promise<void> {
 		const filePaths = filterLocaleFiles(lang);
 		const fileNames = filePaths.map(getLastItem);
 
-		allFiles[lang] = {
+		allFiles.push({
 			locale    : lang,
 			filePaths : filePaths,
 			fileNames : fileNames,
-		};
+		});
 	});
 	console.log('allFiles: ', allFiles);
+	const outOfSyncFiles = [];
+	allFiles.forEach((lang) => {
+		if (!_.isEqual(enLocale.fileNames, lang.fileNames)) {
+			outOfSyncFiles.push(lang);
+		}
+	});
+
+	if (outOfSyncFiles.length > 0) {
+		core.setFailed(`${outOfSyncFiles} files out of sync`);
+		return;
+	}
 
 	async function getRawFileContent(
 		filePath: string,

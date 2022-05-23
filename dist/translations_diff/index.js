@@ -28042,7 +28042,7 @@ const core = __webpack_require__(470);
 const github = __webpack_require__(469);
 
 
-const allFiles = {};
+const allFiles = [];
 const languages = ['es', 'fr'];
 function compareKeys(enKeys, otherKeys) {
     return (enKeys['added'].toString() === otherKeys['added'].toString() &&
@@ -28168,13 +28168,23 @@ function main() {
         languages.forEach((lang) => {
             const filePaths = filterLocaleFiles(lang);
             const fileNames = filePaths.map(getLastItem);
-            allFiles[lang] = {
+            allFiles.push({
                 locale: lang,
                 filePaths: filePaths,
                 fileNames: fileNames,
-            };
+            });
         });
         console.log('allFiles: ', allFiles);
+        const outOfSyncFiles = [];
+        allFiles.forEach((lang) => {
+            if (!lodash__WEBPACK_IMPORTED_MODULE_1___default().isEqual(enLocale.fileNames, lang.fileNames)) {
+                outOfSyncFiles.push(lang);
+            }
+        });
+        if (outOfSyncFiles.length > 0) {
+            core.setFailed(`${outOfSyncFiles} files out of sync`);
+            return;
+        }
         function getRawFileContent(filePath, branch) {
             return __awaiter(this, void 0, void 0, function* () {
                 let resp;
