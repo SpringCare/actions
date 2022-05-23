@@ -58,10 +58,10 @@ function compareFiles(baseFile: string, targetFile: string): Array<string> {
 	// if all the keys from base are present in targetObject
 	// compare keys and values
 	const difference = [];
-	for (const key in baseObject) {
-		if (!(key in targetObject)) {
+	for (const key in targetObject) {
+		if (!(key in baseObject)) {
 			difference.push(key);
-		} else if (baseObject[key] !== targetObject[key]) {
+		} else if (targetObject[key] !== baseObject[key]) {
 			difference.push(key);
 		}
 	}
