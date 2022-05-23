@@ -112,6 +112,7 @@ async function main(): Promise<void> {
 	const filesFromResponse = resp.data
 		.map((elem) => elem.filename)
 		.filter((elem) => new RegExp('.*.json').test(elem));
+	console.log('Files from response: ', filesFromResponse);
 
 	// returns an file: patch object for lang keys
 	/**
@@ -143,6 +144,7 @@ async function main(): Promise<void> {
 			new RegExp(`.*/${locale}}/.*.json`).test(elem)
 		);
 	};
+	console.log('Filtered locale files: ', filterLocaleFiles);
 
 	const getLastItem = (path: string): string =>
 		path.substring(path.lastIndexOf('/') + 1);

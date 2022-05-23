@@ -28123,6 +28123,7 @@ function main() {
         const filesFromResponse = resp.data
             .map((elem) => elem.filename)
             .filter((elem) => new RegExp('.*.json').test(elem));
+        console.log('Files from response: ', filesFromResponse);
         // returns an file: patch object for lang keys
         /**
          * {
@@ -28149,6 +28150,7 @@ function main() {
         const filterLocaleFiles = (locale) => {
             return filesFromResponse.filter((elem) => new RegExp(`.*/${locale}}/.*.json`).test(elem));
         };
+        console.log('Filtered locale files: ', filterLocaleFiles);
         const getLastItem = (path) => path.substring(path.lastIndexOf('/') + 1);
         const enFilePaths = filterLocaleFiles('en');
         const enLocale = {
