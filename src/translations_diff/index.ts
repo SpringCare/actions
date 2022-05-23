@@ -157,6 +157,8 @@ async function main(): Promise<void> {
 		fileNames : enFilePaths.map(getLastItem),
 	};
 
+	console.log('en locale: ', enLocale);
+
 	if (enLocale.fileNames.length === 0) {
 		core.setFailed('No en files found');
 		return;
