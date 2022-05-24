@@ -178,23 +178,23 @@ async function main (): Promise<void> {
 
 		// get file diff i.e. compareFiles
 		const baseFile = await octokit.request(
-			'GET /repos/{owner}/{repo}/contents/{path}?ref={target_branch}', {
+			'GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
 				headers: {
 					Accept: 'application/vnd.github.v3.raw',
 				},
-				owner         : 'utsav00',
-				repo          : 'Diff-Checker-on-Actions',
+				owner         : repository.owner,
+				repo          : repository.repo,
 				path          : `en/${file}`,
 				target_branch : inputs.base_branch
 			}
 		);
 		const targetFile = await octokit.request(
-			'GET /repos/{owner}/{repo}/contents/{path}?ref={target_branch}', {
+			'GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
 				headers: {
 					Accept: 'application/vnd.github.v3.raw',
 				},
-				owner         : 'utsav00',
-				repo          : 'Diff-Checker-on-Actions',
+				owner         : repository.owner,
+				repo          : repository.repo,
 				path          : `en/${file}`,
 				target_branch : inputs.target_branch
 			}

@@ -28232,21 +28232,21 @@ function main() {
         for (const file in allFiles['en']) {
             console.log(file + ':');
             // get file diff i.e. compareFiles
-            const baseFile = yield octokit.request('GET /repos/{owner}/{repo}/contents/{path}?ref={target_branch}', {
+            const baseFile = yield octokit.request('GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
                 headers: {
                     Accept: 'application/vnd.github.v3.raw',
                 },
-                owner: 'utsav00',
-                repo: 'Diff-Checker-on-Actions',
+                owner: repository.owner,
+                repo: repository.repo,
                 path: `en/${file}`,
                 target_branch: inputs.base_branch
             });
-            const targetFile = yield octokit.request('GET /repos/{owner}/{repo}/contents/{path}?ref={target_branch}', {
+            const targetFile = yield octokit.request('GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
                 headers: {
                     Accept: 'application/vnd.github.v3.raw',
                 },
-                owner: 'utsav00',
-                repo: 'Diff-Checker-on-Actions',
+                owner: repository.owner,
+                repo: repository.repo,
                 path: `en/${file}`,
                 target_branch: inputs.target_branch
             });
