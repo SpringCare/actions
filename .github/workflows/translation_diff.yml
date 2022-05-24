@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: SpringCare/actions/dist/translations_diff@master
+      - uses: SpringCare/actions/dist/translations_diff@feature/translation-diff
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           base-branch: ${{ github.head_ref }}
