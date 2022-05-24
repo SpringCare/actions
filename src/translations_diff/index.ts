@@ -165,13 +165,18 @@ async function main (): Promise<void> {
 		return;
 	}
 
+	let failFlag = false;
+
 	const langNotPresent = languageCheck();
-	if (langNotPresent.length !== 0)
+	if (langNotPresent.length !== 0) {
 		console.log('Languages not present: ', langNotPresent);
+		failFlag = true;
+	}
 
 	for (const file in allFiles['en']) {
 		console.log(file + ':');
 
+		// get file diff i.e. compareFiles
 		const baseFile = await octokit.request(
 			'GET /repos/{owner}/{repo}/contents/{path}?ref={target_branch}', {
 				headers: {
@@ -197,13 +202,21 @@ async function main (): Promise<void> {
 		const keyDifference = compareFiles(JSON.parse(baseFile.data), JSON.parse(targetFile.data));
 		const absent = validateKeySync(keyDifference, file);
 
-		if (!_.isEmpty(absent['fileNotPresent']))
+		if (!_.isEmpty(absent['fileNotPresent'])) {
 			console.log(JSON.stringify(absent['fileNotPresent']));
+			failFlag = true;
+		}
 
-		if (!_.isEmpty(absent['keyNotPresent']))
+		if (!_.isEmpty(absent['keyNotPresent'])) {
 			console.log(JSON.stringify(absent['keyNotPresent']));
+			failFlag = true;
+		}
 
 		console.log();
+	}
+
+	if (failFlag) {
+		core.setFailed('Translations out of sync!');
 	}
 }
 
