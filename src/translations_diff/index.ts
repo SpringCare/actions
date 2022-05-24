@@ -8,26 +8,32 @@ const allFiles = {};
 
 const languages = ['es', 'pt'];
 
-function compareKeys(enKeys: Record<string, any>, otherKeys: Record<string, any>): boolean {
-	return (enKeys['added'].toString() === otherKeys['added'].toString()) &&
-	(enKeys['deleted'].toString() === otherKeys['deleted'].toString());
+function compareKeys(enKeys: Array<string>, otherKeys: Array<string>): Array<string> {
+	const keyNotPresent = [];
+	for (let element in enKeys) {
+		if (element.includes('.')) {
+			element = element.split('.').slice(-1)[0];
+		}
+		if (otherKeys.includes(element)) {
+			otherKeys.splice(otherKeys.indexOf(element), 1);
+		}
+		else {
+			keyNotPresent.push(element);
+		}
+	}
+
+	return keyNotPresent;
 }
 
-function extractKeys(filename: string, patch: string): Record<string, any> {
+function extractKeys(patch: string): Array<string> {
 	const regExpPlus = /(?<=\+).*(?=:)/g;
-	const regExpMinus = /(?<=-).*(?=:)/g;
-
 	const addedKeys = patch.match(regExpPlus);
-	const deletedKeys = patch.match(regExpMinus);
 
-	return {
-		added   : addedKeys,
-		deleted : deletedKeys,
-	};
+	return addedKeys.map(key => key.trim()).sort();
 }
 
 // returns an object with flattened keys
-const objectPaths = (object) => {
+const objectPaths = (object): Record<string, string> => {
 	const result = {};
 	_.forOwn(object, function (value, key) {
 		if (_.isPlainObject(value)) {
@@ -60,12 +66,77 @@ function compareFiles(baseFile: string, targetFile: string): Array<string> {
 		}
 	}
 
-	return difference;
+	return difference.sort();
+}
+
+function validateKeySync(keyDifference: Array<string>, file: string): object {
+	const fileNotPresent = [];
+	const keyNotPresent = [];
+	for (const lang of languages) {
+		if (allFiles[lang] === undefined)
+			continue;
+
+		if (allFiles[lang][file] === undefined) {
+			fileNotPresent.push({lang: file});
+			continue;
+		}
+
+		const patchedKeys = extractKeys(allFiles[lang][file]);
+
+		keyNotPresent.push({lang: compareKeys(keyDifference, patchedKeys)});
+
+	}
+	return {
+		'fileNotPresent' : fileNotPresent.length? fileNotPresent: null,
+		'keyNotPresent'  : keyNotPresent.length? keyNotPresent: null
+	};
+}
+
+// returns an file: patch object for lang keys
+/**
+* {
+*  en: {
+*    file1: raw_url1,
+*    file2: raw_url2
+*  },
+* es: {
+*    file1: patch1
+*  }
+* }
+*/
+function transformResponse(response: Record<string, any>) {
+
+	// Todo: change this to locale path: `.*\/locales\/.*.json`
+	const filesFromResponse = response.data.filter(elem => new RegExp('.*.json').test(elem.filename));
+
+	filesFromResponse.forEach(element => {
+		const path = element.filename.split('/');
+		const lang = path.slice(-2)[0];
+		const filename = path.slice(-1)[0];
+
+		if (!(lang in allFiles)) {
+			allFiles[lang] = {};
+		}
+		let store = '';
+		if (lang === 'en') store = element.raw_url;
+		else store = element.patch;
+
+		allFiles[lang][filename] = store;
+	});
+}
+
+function languageCheck(): Array<string> {
+	const langNotPresent = [];
+	for (const lang of languages) {
+		if (allFiles[lang] === undefined) {
+			langNotPresent.push(lang);
+		}
+	}
+
+	return langNotPresent;
 }
 
 async function main (): Promise<void> {
-	console.log('Starting');
-
 	const inputs: {
 		token: string;
 		base_branch: string;
@@ -76,14 +147,12 @@ async function main (): Promise<void> {
 		target_branch : core.getInput('target-branch')
 	};
 
-	console.log('inputs: ', inputs);
-
 	const pullNumber = github.context.payload.pull_request.number;
 	const repository = github.context.repo;
 
 	const octokit = new Octokit({ auth: inputs.token });
 
-	const resp = await octokit.request(
+	const response = await octokit.request(
 		'GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
 			owner       : repository.owner,
 			repo        : repository.repo,
@@ -91,33 +160,47 @@ async function main (): Promise<void> {
 		}
 	);
 
-	console.log('Response: ', resp);
+	transformResponse(response);
 
-	const filesFromResponse = resp.data.filter(elem => new RegExp('.*.json').test(elem.filename));
+	if (allFiles['en'] === undefined) {
+		console.log('No modified/added keys in english locale');
+		return;
+	}
 
-	// returns an file: patch object for lang keys
-	/**
-	* {
-	*  en: {
-	*    file1: patch1,
-	*    file2: patch2
-	*  },
-	* es: {
-	*    file1: patch1
-	* }
-	* }
-	*/
-	filesFromResponse.forEach(element => {
-		const path = element.filename.split('/');
-		const n = path.length;
-		const lang = path[n - 2];
-		const filename = path[n - 1];
+	const langNotPresent = languageCheck();
 
-		if (!(lang in allFiles)) {
-			allFiles[lang] = {};
-		}
-		allFiles[lang][filename] = element.patch;
-	});
+	for (const file in allFiles['en']) {
+		// get file diff i.e. compareFiles
+		const baseFile = await octokit.request(
+			'GET /repos/{owner}/{repo}/contents/{path}?ref={target_branch}', {
+				headers: {
+					Accept: 'application/vnd.github.v3.raw',
+				},
+				owner         : 'utsav00',
+				repo          : 'Diff-Checker-on-Actions',
+				path          : `en/${file}`,
+				target_branch : inputs.base_branch
+			}
+		);
+		const targetFile = await octokit.request(
+			'GET /repos/{owner}/{repo}/contents/{path}?ref={target_branch}', {
+				headers: {
+					Accept: 'application/vnd.github.v3.raw',
+				},
+				owner         : 'utsav00',
+				repo          : 'Diff-Checker-on-Actions',
+				path          : `en/${file}`,
+				target_branch : inputs.target_branch
+			}
+		);
+		const keyDifference = compareFiles(JSON.parse(baseFile.data), JSON.parse(targetFile.data));
+		const absent = validateKeySync(keyDifference, file);
+
+		if (langNotPresent.length !== 0)
+			console.log(langNotPresent);
+		if (!(_.isEmpty(absent['fileNotPresent']) || _.isEmpty(['keyNotPresent'])))
+			console.log(absent);
+	}
 }
 
 main();
