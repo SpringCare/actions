@@ -10,7 +10,7 @@ const languages = ['es', 'pt'];
 
 function compareKeys(enKeys: Array<string>, otherKeys: Array<string>): Array<string> {
 	const keyNotPresent = [];
-	for (let element in enKeys) {
+	for (let element of enKeys) {
 		if (element.includes('.')) {
 			element = element.split('.').slice(-1)[0];
 		}
@@ -21,7 +21,6 @@ function compareKeys(enKeys: Array<string>, otherKeys: Array<string>): Array<str
 			keyNotPresent.push(element);
 		}
 	}
-
 	return keyNotPresent;
 }
 
@@ -77,18 +76,17 @@ function validateKeySync(keyDifference: Array<string>, file: string): object {
 			continue;
 
 		if (allFiles[lang][file] === undefined) {
-			fileNotPresent.push({lang: file});
+			fileNotPresent.push({[lang]: file});
 			continue;
 		}
 
 		const patchedKeys = extractKeys(allFiles[lang][file]);
 
-		keyNotPresent.push({lang: compareKeys(keyDifference, patchedKeys)});
-
+		keyNotPresent.push({[lang]: compareKeys(keyDifference, patchedKeys)});
 	}
 	return {
-		'fileNotPresent' : fileNotPresent.length? fileNotPresent: null,
-		'keyNotPresent'  : keyNotPresent.length? keyNotPresent: null
+		'fileNotPresent' : fileNotPresent,
+		'keyNotPresent'  : keyNotPresent
 	};
 }
 
@@ -168,9 +166,12 @@ async function main (): Promise<void> {
 	}
 
 	const langNotPresent = languageCheck();
+	if (langNotPresent.length !== 0)
+		console.log('Languages not present: ', langNotPresent);
 
 	for (const file in allFiles['en']) {
-		// get file diff i.e. compareFiles
+		console.log(file + ':');
+
 		const baseFile = await octokit.request(
 			'GET /repos/{owner}/{repo}/contents/{path}?ref={target_branch}', {
 				headers: {
@@ -196,10 +197,13 @@ async function main (): Promise<void> {
 		const keyDifference = compareFiles(JSON.parse(baseFile.data), JSON.parse(targetFile.data));
 		const absent = validateKeySync(keyDifference, file);
 
-		if (langNotPresent.length !== 0)
-			console.log(langNotPresent);
-		if (!(_.isEmpty(absent['fileNotPresent']) || _.isEmpty(['keyNotPresent'])))
-			console.log(absent);
+		if (!_.isEmpty(absent['fileNotPresent']))
+			console.log(JSON.stringify(absent['fileNotPresent']));
+
+		if (!_.isEmpty(absent['keyNotPresent']))
+			console.log(JSON.stringify(absent['keyNotPresent']));
+
+		console.log();
 	}
 }
 

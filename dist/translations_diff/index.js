@@ -28094,7 +28094,7 @@ const allFiles = {};
 const languages = ['es', 'pt'];
 function compareKeys(enKeys, otherKeys) {
     const keyNotPresent = [];
-    for (let element in enKeys) {
+    for (let element of enKeys) {
         if (element.includes('.')) {
             element = element.split('.').slice(-1)[0];
         }
@@ -28153,15 +28153,15 @@ function validateKeySync(keyDifference, file) {
         if (allFiles[lang] === undefined)
             continue;
         if (allFiles[lang][file] === undefined) {
-            fileNotPresent.push({ lang: file });
+            fileNotPresent.push({ [lang]: file });
             continue;
         }
         const patchedKeys = extractKeys(allFiles[lang][file]);
-        keyNotPresent.push({ lang: compareKeys(keyDifference, patchedKeys) });
+        keyNotPresent.push({ [lang]: compareKeys(keyDifference, patchedKeys) });
     }
     return {
-        'fileNotPresent': fileNotPresent.length ? fileNotPresent : null,
-        'keyNotPresent': keyNotPresent.length ? keyNotPresent : null
+        'fileNotPresent': fileNotPresent,
+        'keyNotPresent': keyNotPresent
     };
 }
 // returns an file: patch object for lang keys
@@ -28224,8 +28224,10 @@ function main() {
             return;
         }
         const langNotPresent = languageCheck();
+        if (langNotPresent.length !== 0)
+            console.log('Languages not present: ', langNotPresent);
         for (const file in allFiles['en']) {
-            // get file diff i.e. compareFiles
+            console.log(file + ':');
             const baseFile = yield octokit.request('GET /repos/{owner}/{repo}/contents/{path}?ref={target_branch}', {
                 headers: {
                     Accept: 'application/vnd.github.v3.raw',
@@ -28246,10 +28248,11 @@ function main() {
             });
             const keyDifference = compareFiles(JSON.parse(baseFile.data), JSON.parse(targetFile.data));
             const absent = validateKeySync(keyDifference, file);
-            if (langNotPresent.length !== 0)
-                console.log(langNotPresent);
-            if (!(lodash__WEBPACK_IMPORTED_MODULE_1___default().isEmpty(absent['fileNotPresent']) || lodash__WEBPACK_IMPORTED_MODULE_1___default().isEmpty(['keyNotPresent'])))
-                console.log(absent);
+            if (!lodash__WEBPACK_IMPORTED_MODULE_1___default().isEmpty(absent['fileNotPresent']))
+                console.log(JSON.stringify(absent['fileNotPresent']));
+            if (!lodash__WEBPACK_IMPORTED_MODULE_1___default().isEmpty(absent['keyNotPresent']))
+                console.log(JSON.stringify(absent['keyNotPresent']));
+            console.log();
         }
     });
 }
