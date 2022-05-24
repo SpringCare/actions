@@ -28178,7 +28178,7 @@ function validateKeySync(keyDifference, file) {
 */
 function transformResponse(response) {
     // Todo: change this to locale path: `.*\/locales\/.*.json`
-    const filesFromResponse = response.data.filter(elem => new RegExp('.*.json').test(elem.filename));
+    const filesFromResponse = response.data.filter(elem => new RegExp('.*/locales/.*.json').test(elem.filename));
     filesFromResponse.forEach(element => {
         const path = element.filename.split('/');
         const lang = path.slice(-2)[0];
