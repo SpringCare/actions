@@ -28204,6 +28204,20 @@ function languageCheck() {
     }
     return langNotPresent;
 }
+function getFileContent(octokit, branch, repository, file) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const content = yield octokit.request('GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
+            headers: {
+                Accept: 'application/vnd.github.v3.raw',
+            },
+            owner: repository.owner,
+            repo: repository.repo,
+            path: `en/${file}`,
+            target_branch: branch
+        });
+        return JSON.parse(content.data);
+    });
+}
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const inputs = {
@@ -28231,25 +28245,9 @@ function main() {
             failFlag = true;
         }
         for (const file in allFiles['en']) {
-            const baseFile = yield octokit.request('GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
-                headers: {
-                    Accept: 'application/vnd.github.v3.raw',
-                },
-                owner: repository.owner,
-                repo: repository.repo,
-                path: `en/${file}`,
-                target_branch: inputs.base_branch
-            });
-            const targetFile = yield octokit.request('GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
-                headers: {
-                    Accept: 'application/vnd.github.v3.raw',
-                },
-                owner: repository.owner,
-                repo: repository.repo,
-                path: `en/${file}`,
-                target_branch: inputs.target_branch
-            });
-            const keyDifference = compareFiles(JSON.parse(baseFile.data), JSON.parse(targetFile.data));
+            const baseFile = yield getFileContent(octokit, inputs.base_branch, repository, file);
+            const targetFile = yield getFileContent(octokit, inputs.target_branch, repository, file);
+            const keyDifference = compareFiles(baseFile, targetFile);
             const absent = validateKeySync(keyDifference, file);
             if (!lodash__WEBPACK_IMPORTED_MODULE_1___default().isEmpty(absent['fileNotPresent'])) {
                 console.log(file + ': ' + absent['fileNotPresent']);

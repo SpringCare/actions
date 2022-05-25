@@ -135,6 +135,22 @@ function languageCheck(): Array<string> {
 	return langNotPresent;
 }
 
+async function getFileContent(octokit: Octokit, branch: string, repository: Record<string, any>, file: string) {
+	const content = await octokit.request(
+		'GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
+			headers: {
+				Accept: 'application/vnd.github.v3.raw',
+			},
+			owner         : repository.owner,
+			repo          : repository.repo,
+			path          : `en/${file}`,
+			target_branch : branch
+		}
+	);
+
+	return JSON.parse(content.data);
+}
+
 async function main (): Promise<void> {
 	const inputs: {
 		token: string;
@@ -175,29 +191,10 @@ async function main (): Promise<void> {
 	}
 
 	for (const file in allFiles['en']) {
-		const baseFile = await octokit.request(
-			'GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
-				headers: {
-					Accept: 'application/vnd.github.v3.raw',
-				},
-				owner         : repository.owner,
-				repo          : repository.repo,
-				path          : `en/${file}`,
-				target_branch : inputs.base_branch
-			}
-		);
-		const targetFile = await octokit.request(
-			'GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
-				headers: {
-					Accept: 'application/vnd.github.v3.raw',
-				},
-				owner         : repository.owner,
-				repo          : repository.repo,
-				path          : `en/${file}`,
-				target_branch : inputs.target_branch
-			}
-		);
-		const keyDifference = compareFiles(JSON.parse(baseFile.data), JSON.parse(targetFile.data));
+		const baseFile = await getFileContent(octokit, inputs.base_branch, repository, file);
+		const targetFile = await getFileContent(octokit, inputs.target_branch, repository, file);
+
+		const keyDifference = compareFiles(baseFile, targetFile);
 		const absent = validateKeySync(keyDifference, file);
 
 		if (!_.isEmpty(absent['fileNotPresent'])) {
