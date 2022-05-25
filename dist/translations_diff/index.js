@@ -28110,7 +28110,7 @@ function compareKeys(enKeys, otherKeys) {
 function extractKeys(patch) {
     const regExpPlus = /(?<=\+).*(?=:)/g;
     const addedKeys = patch.match(regExpPlus);
-    return addedKeys.map(key => key.trim().replace('"', '').replace('"', '')).sort();
+    return addedKeys.map(key => key.trim().replace(/"/g, '')).sort();
 }
 // returns an object with flattened keys
 const objectPaths = (object) => {
