@@ -28,7 +28,7 @@ function extractKeys(patch: string): Array<string> {
 	const regExpPlus = /(?<=\+).*(?=:)/g;
 	const addedKeys = patch.match(regExpPlus);
 
-	return addedKeys.map(key => key.trim()).sort();
+	return addedKeys.map(key => key.trim().replace('"', '').replace('"', '')).sort();
 }
 
 // returns an object with flattened keys
@@ -76,13 +76,15 @@ function validateKeySync(keyDifference: Array<string>, file: string): object {
 			continue;
 
 		if (allFiles[lang][file] === undefined) {
-			fileNotPresent.push({[lang]: file});
+			fileNotPresent.push(lang);
 			continue;
 		}
 
 		const patchedKeys = extractKeys(allFiles[lang][file]);
 
-		keyNotPresent.push({[lang]: compareKeys(keyDifference, patchedKeys)});
+		const notSynced = compareKeys(keyDifference, patchedKeys);
+		if (notSynced.length !== 0)
+			keyNotPresent.push({[lang]: notSynced});
 	}
 	return {
 		'fileNotPresent' : fileNotPresent,
@@ -104,7 +106,6 @@ function validateKeySync(keyDifference: Array<string>, file: string): object {
 */
 function transformResponse(response: Record<string, any>) {
 
-	// Todo: change this to locale path: `.*\/locales\/.*.json`
 	const filesFromResponse = response.data.filter(elem => new RegExp('.*/locales/.*.json').test(elem.filename));
 
 	filesFromResponse.forEach(element => {
@@ -174,9 +175,6 @@ async function main (): Promise<void> {
 	}
 
 	for (const file in allFiles['en']) {
-		console.log(file + ':');
-
-		// get file diff i.e. compareFiles
 		const baseFile = await octokit.request(
 			'GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
 				headers: {
@@ -203,16 +201,14 @@ async function main (): Promise<void> {
 		const absent = validateKeySync(keyDifference, file);
 
 		if (!_.isEmpty(absent['fileNotPresent'])) {
-			console.log(JSON.stringify(absent['fileNotPresent']));
+			console.log(file + ': ' + absent['fileNotPresent']);
 			failFlag = true;
 		}
 
 		if (!_.isEmpty(absent['keyNotPresent'])) {
-			console.log(JSON.stringify(absent['keyNotPresent']));
+			console.log(file + ': \n' + JSON.stringify(absent['keyNotPresent']));
 			failFlag = true;
 		}
-
-		console.log();
 	}
 
 	if (failFlag) {

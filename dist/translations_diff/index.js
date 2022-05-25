@@ -28110,7 +28110,7 @@ function compareKeys(enKeys, otherKeys) {
 function extractKeys(patch) {
     const regExpPlus = /(?<=\+).*(?=:)/g;
     const addedKeys = patch.match(regExpPlus);
-    return addedKeys.map(key => key.trim()).sort();
+    return addedKeys.map(key => key.trim().replace('"', '').replace('"', '')).sort();
 }
 // returns an object with flattened keys
 const objectPaths = (object) => {
@@ -28153,11 +28153,13 @@ function validateKeySync(keyDifference, file) {
         if (allFiles[lang] === undefined)
             continue;
         if (allFiles[lang][file] === undefined) {
-            fileNotPresent.push({ [lang]: file });
+            fileNotPresent.push(lang);
             continue;
         }
         const patchedKeys = extractKeys(allFiles[lang][file]);
-        keyNotPresent.push({ [lang]: compareKeys(keyDifference, patchedKeys) });
+        const notSynced = compareKeys(keyDifference, patchedKeys);
+        if (notSynced.length !== 0)
+            keyNotPresent.push({ [lang]: notSynced });
     }
     return {
         'fileNotPresent': fileNotPresent,
@@ -28177,7 +28179,6 @@ function validateKeySync(keyDifference, file) {
 * }
 */
 function transformResponse(response) {
-    // Todo: change this to locale path: `.*\/locales\/.*.json`
     const filesFromResponse = response.data.filter(elem => new RegExp('.*/locales/.*.json').test(elem.filename));
     filesFromResponse.forEach(element => {
         const path = element.filename.split('/');
@@ -28230,8 +28231,6 @@ function main() {
             failFlag = true;
         }
         for (const file in allFiles['en']) {
-            console.log(file + ':');
-            // get file diff i.e. compareFiles
             const baseFile = yield octokit.request('GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
                 headers: {
                     Accept: 'application/vnd.github.v3.raw',
@@ -28253,14 +28252,13 @@ function main() {
             const keyDifference = compareFiles(JSON.parse(baseFile.data), JSON.parse(targetFile.data));
             const absent = validateKeySync(keyDifference, file);
             if (!lodash__WEBPACK_IMPORTED_MODULE_1___default().isEmpty(absent['fileNotPresent'])) {
-                console.log(JSON.stringify(absent['fileNotPresent']));
+                console.log(file + ': ' + absent['fileNotPresent']);
                 failFlag = true;
             }
             if (!lodash__WEBPACK_IMPORTED_MODULE_1___default().isEmpty(absent['keyNotPresent'])) {
-                console.log(JSON.stringify(absent['keyNotPresent']));
+                console.log(file + ': \n' + JSON.stringify(absent['keyNotPresent']));
                 failFlag = true;
             }
-            console.log();
         }
         if (failFlag) {
             core.setFailed('Translations out of sync!');
