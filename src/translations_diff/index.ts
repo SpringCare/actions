@@ -6,8 +6,6 @@ import _ from 'lodash';
 
 const allFiles = {};
 
-const languages = ['es', 'pt'];
-
 function compareKeys(enKeys: Array<string>, otherKeys: Array<string>): Array<string> {
 	const keyNotPresent = [];
 	for (let element of enKeys) {
@@ -68,7 +66,7 @@ function compareFiles(baseFile: string, targetFile: string): Array<string> {
 	return difference.sort();
 }
 
-function validateKeySync(keyDifference: Array<string>, file: string): object {
+function validateKeySync(keyDifference: Array<string>, file: string, languages: Array<string>): object {
 	const fileNotPresent = [];
 	const keyNotPresent = [];
 	for (const lang of languages) {
@@ -104,7 +102,7 @@ function validateKeySync(keyDifference: Array<string>, file: string): object {
 *  }
 * }
 */
-function transformResponse(response: Record<string, any>) {
+function transformResponse(response: Record<string, any>): void {
 
 	const filesFromResponse = response.data.filter(elem => new RegExp('.*/locales/.*.json').test(elem.filename));
 
@@ -124,7 +122,7 @@ function transformResponse(response: Record<string, any>) {
 	});
 }
 
-function languageCheck(): Array<string> {
+function languageCheck(languages: Array<string>): Array<string> {
 	const langNotPresent = [];
 	for (const lang of languages) {
 		if (allFiles[lang] === undefined) {
@@ -156,10 +154,12 @@ async function main (): Promise<void> {
 		token: string;
 		base_branch: string;
 		target_branch: string;
+		langs: string;
 	} = {
 		token         : core.getInput('repo-token', { required: true }),
 		base_branch   : core.getInput('base-branch'),
-		target_branch : core.getInput('target-branch')
+		target_branch : core.getInput('target-branch'),
+		langs         : core.getInput('langs')
 	};
 
 	const pullNumber = github.context.payload.pull_request.number;
@@ -182,9 +182,10 @@ async function main (): Promise<void> {
 		return;
 	}
 
+	const languages = inputs.langs.split(',').map(elem => elem.trim());
 	let failFlag = false;
 
-	const langNotPresent = languageCheck();
+	const langNotPresent = languageCheck(languages);
 	if (langNotPresent.length !== 0) {
 		console.log('Languages not present: ', langNotPresent);
 		failFlag = true;
@@ -195,7 +196,7 @@ async function main (): Promise<void> {
 		const targetFile = await getFileContent(octokit, inputs.target_branch, repository, file);
 
 		const keyDifference = compareFiles(baseFile, targetFile);
-		const absent = validateKeySync(keyDifference, file);
+		const absent = validateKeySync(keyDifference, file, languages);
 
 		if (!_.isEmpty(absent['fileNotPresent'])) {
 			console.log(file + ': ' + absent['fileNotPresent']);

@@ -12,3 +12,4 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           base-branch: ${{ github.head_ref }}
           target-branch: ${{ github.base_ref }}
+          langs: 'es, pt'

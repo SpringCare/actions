@@ -28091,7 +28091,6 @@ const github = __webpack_require__(469);
 
 
 const allFiles = {};
-const languages = ['es', 'pt'];
 function compareKeys(enKeys, otherKeys) {
     const keyNotPresent = [];
     for (let element of enKeys) {
@@ -28146,7 +28145,7 @@ function compareFiles(baseFile, targetFile) {
     }
     return difference.sort();
 }
-function validateKeySync(keyDifference, file) {
+function validateKeySync(keyDifference, file, languages) {
     const fileNotPresent = [];
     const keyNotPresent = [];
     for (const lang of languages) {
@@ -28195,7 +28194,7 @@ function transformResponse(response) {
         allFiles[lang][filename] = store;
     });
 }
-function languageCheck() {
+function languageCheck(languages) {
     const langNotPresent = [];
     for (const lang of languages) {
         if (allFiles[lang] === undefined) {
@@ -28223,7 +28222,8 @@ function main() {
         const inputs = {
             token: core.getInput('repo-token', { required: true }),
             base_branch: core.getInput('base-branch'),
-            target_branch: core.getInput('target-branch')
+            target_branch: core.getInput('target-branch'),
+            langs: core.getInput('langs')
         };
         const pullNumber = github.context.payload.pull_request.number;
         const repository = github.context.repo;
@@ -28238,8 +28238,9 @@ function main() {
             console.log('No modified/added keys in english locale');
             return;
         }
+        const languages = inputs.langs.split(',').map(elem => elem.trim());
         let failFlag = false;
-        const langNotPresent = languageCheck();
+        const langNotPresent = languageCheck(languages);
         if (langNotPresent.length !== 0) {
             console.log('Languages not present: ', langNotPresent);
             failFlag = true;
@@ -28248,7 +28249,7 @@ function main() {
             const baseFile = yield getFileContent(octokit, inputs.base_branch, repository, file);
             const targetFile = yield getFileContent(octokit, inputs.target_branch, repository, file);
             const keyDifference = compareFiles(baseFile, targetFile);
-            const absent = validateKeySync(keyDifference, file);
+            const absent = validateKeySync(keyDifference, file, languages);
             if (!lodash__WEBPACK_IMPORTED_MODULE_1___default().isEmpty(absent['fileNotPresent'])) {
                 console.log(file + ': ' + absent['fileNotPresent']);
                 failFlag = true;
