@@ -11240,59 +11240,44 @@ module.exports = {"activity":{"checkStarringRepo":{"method":"GET","params":{"own
 __webpack_require__.r(__webpack_exports__);
 
 // CONCATENATED MODULE: ./src/utils/labeler.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const github = __webpack_require__(469);
-function addLabels(client, prNumber, labels) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Adding labels:', labels);
-        yield client.issues.addLabels({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            labels: labels
-        });
+async function addLabels(client, prNumber, labels) {
+    console.log('Adding labels:', labels);
+    await client.issues.addLabels({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: prNumber,
+        labels: labels
     });
 }
-function removeLabel(client, prNumber, label) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Removing label:', label);
-        yield client.issues.removeLabel({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            name: label
-        });
+async function removeLabel(client, prNumber, label) {
+    console.log('Removing label:', label);
+    await client.issues.removeLabel({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: prNumber,
+        name: label
     });
 }
-function createLabel(octokit, inputs) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            yield octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                name: inputs.label,
-            });
-            console.log(`Label ${inputs.label} already exists.`);
-        }
-        catch (error) {
-            yield octokit.request('POST /repos/{owner}/{repo}/labels', {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                name: inputs.label,
-                color: inputs.color,
-            });
-            console.log(`Created label ${inputs.label} with color ${inputs.color}.`);
-        }
-    });
+async function createLabel(octokit, inputs) {
+    try {
+        await octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            name: inputs.label,
+        });
+        console.log(`Label ${inputs.label} already exists.`);
+    }
+    catch (error) {
+        await octokit.request('POST /repos/{owner}/{repo}/labels', {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            name: inputs.label,
+            color: inputs.color,
+        });
+        console.log(`Created label ${inputs.label} with color ${inputs.color}.`);
+    }
 }
 
 // CONCATENATED MODULE: ./src/utils/parseReviews.ts
@@ -11325,24 +11310,13 @@ function parseReviews(reviews = []) {
 }
 
 // CONCATENATED MODULE: ./src/utils/getReviews.ts
-var getReviews_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 const getReviews_github = __webpack_require__(469);
-function getReviews(token, pullNumber) {
-    return getReviews_awaiter(this, void 0, void 0, function* () {
-        const client = new getReviews_github.GitHub(token);
-        return yield client.pulls.listReviews({
-            owner: getReviews_github.context.repo.owner,
-            repo: getReviews_github.context.repo.repo,
-            pull_number: pullNumber,
-        });
+async function getReviews(token, pullNumber) {
+    const client = new getReviews_github.GitHub(token);
+    return await client.pulls.listReviews({
+        owner: getReviews_github.context.repo.owner,
+        repo: getReviews_github.context.repo.repo,
+        pull_number: pullNumber,
     });
 }
 
@@ -11350,27 +11324,18 @@ function getReviews(token, pullNumber) {
 var dist_node = __webpack_require__(448);
 
 // CONCATENATED MODULE: ./src/pull_request_labeler/index.ts
-var pull_request_labeler_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 const core = __webpack_require__(470);
 const pull_request_labeler_github = __webpack_require__(469);
 
 
 
 
-const handleReviewCountLabel = (inputs, client, pullNumber) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
+const handleReviewCountLabel = async (inputs, client, pullNumber) => {
     if (inputs.requiredReviews && !(inputs.requiredReviews > 0)) {
         core.setFailed('If set, "required" must be an integer greater than 0');
         return;
     }
-    const { data } = yield getReviews(inputs.token, pullNumber);
+    const { data } = await getReviews(inputs.token, pullNumber);
     if (inputs.requiredReviews > 0) {
         const activeReviews = parseReviews(data || []);
         const approvedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'approved');
@@ -11391,7 +11356,7 @@ const handleReviewCountLabel = (inputs, client, pullNumber) => pull_request_labe
         }
         addLabels(client, pullNumber, [toAdd]);
     }
-});
+};
 const handleWIPLabel = (inputs, client, pr) => {
     const draftPR = pr.draft;
     const pullNumber = pr.number;
@@ -11402,9 +11367,9 @@ const handleWIPLabel = (inputs, client, pr) => {
         removeLabel(client, pullNumber, 'WIP');
     }
 };
-const getCommitsForPR = (url, octokit) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
+const getCommitsForPR = async (url, octokit) => {
     try {
-        const prCommitsResponse = yield octokit.request(`GET ${url}`);
+        const prCommitsResponse = await octokit.request(`GET ${url}`);
         const formattedCommits = prCommitsResponse.data.map((c) => {
             return {
                 sha: c.sha,
@@ -11418,10 +11383,10 @@ const getCommitsForPR = (url, octokit) => pull_request_labeler_awaiter(void 0, v
         console.error('PR commit request failed: ', error.status);
         process.exit(1);
     }
-});
-const getBranchCommits = (url, targetBranch, octokit) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
+};
+const getBranchCommits = async (url, targetBranch, octokit) => {
     try {
-        const branchCommitsResponse = yield octokit.request(`GET ${url}?sha=${targetBranch}`);
+        const branchCommitsResponse = await octokit.request(`GET ${url}?sha=${targetBranch}`);
         const formattedCommits = branchCommitsResponse.data.map((c) => {
             return {
                 sha: c.sha,
@@ -11435,7 +11400,7 @@ const getBranchCommits = (url, targetBranch, octokit) => pull_request_labeler_aw
         console.error('Branch commit request failed: ', error.status);
         process.exit(1);
     }
-});
+};
 const shouldShowBranchLabel = (prCommits, branchCommits) => {
     return prCommits.every((prCommit) => branchCommits.some((branchCommit) => branchCommit.sha === prCommit.sha ||
         (branchCommit.parents.length > 1 &&
@@ -11443,46 +11408,44 @@ const shouldShowBranchLabel = (prCommits, branchCommits) => {
                 .map((parent) => parent.sha)
                 .includes(prCommit.sha))));
 };
-const handleBranchLabel = (inputs, client, pr) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
+const handleBranchLabel = async (inputs, client, pr) => {
     const octokit = new dist_node.Octokit({ auth: inputs.token });
-    const prCommits = yield getCommitsForPR(pr.commits_url, octokit);
+    const prCommits = await getCommitsForPR(pr.commits_url, octokit);
     const commitsUrl = pr.base.repo.commits_url.split('{/')[0];
-    const branchCommits = yield getBranchCommits(commitsUrl, inputs.branch, octokit);
+    const branchCommits = await getBranchCommits(commitsUrl, inputs.branch, octokit);
     const pullNumber = pr.number;
     const prLabels = pr.labels.map((label) => label.name);
     const showBranchLabel = shouldShowBranchLabel(prCommits, branchCommits);
-    yield createLabel(octokit, inputs);
+    await createLabel(octokit, inputs);
     if (!showBranchLabel && prLabels.includes(inputs.label)) {
         removeLabel(client, pullNumber, inputs.label);
     }
     if (showBranchLabel) {
         addLabels(client, pullNumber, [inputs.label]);
     }
-});
-function main() {
-    return pull_request_labeler_awaiter(this, void 0, void 0, function* () {
-        // Get a few inputs from the GitHub event.
-        const inputs = {
-            token: core.getInput('repo-token', { required: true }),
-            requiredReviews: core.getInput('required'),
-            labelWIP: core.getInput('wip'),
-            branch: core.getInput('target-branch'),
-            label: core.getInput('label'),
-            color: core.getInput('color'),
-        };
-        const pr = pull_request_labeler_github.context.payload.pull_request;
-        if (!pr) {
-            core.setFailed('This action must be run with only "pull_request" or "pull_request_review".');
-            return;
-        }
-        const pullNumber = pr.number;
-        console.log('PR number is', pullNumber);
-        console.log('Inputs', inputs);
-        const client = new pull_request_labeler_github.GitHub(inputs.token);
-        handleReviewCountLabel(inputs, client, pullNumber);
-        handleWIPLabel(inputs, client, pr);
-        handleBranchLabel(inputs, client, pr);
-    });
+};
+async function main() {
+    // Get a few inputs from the GitHub event.
+    const inputs = {
+        token: core.getInput('repo-token', { required: true }),
+        requiredReviews: core.getInput('required'),
+        labelWIP: core.getInput('wip'),
+        branch: core.getInput('target-branch'),
+        label: core.getInput('label'),
+        color: core.getInput('color'),
+    };
+    const pr = pull_request_labeler_github.context.payload.pull_request;
+    if (!pr) {
+        core.setFailed('This action must be run with only "pull_request" or "pull_request_review".');
+        return;
+    }
+    const pullNumber = pr.number;
+    console.log('PR number is', pullNumber);
+    console.log('Inputs', inputs);
+    const client = new pull_request_labeler_github.GitHub(inputs.token);
+    handleReviewCountLabel(inputs, client, pullNumber);
+    handleWIPLabel(inputs, client, pr);
+    handleBranchLabel(inputs, client, pr);
 }
 // Call the main function.
 main();

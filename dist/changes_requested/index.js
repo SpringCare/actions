@@ -2354,6 +2354,10 @@ exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
 exports.useColors = useColors;
+exports.destroy = util.deprecate(
+	() => {},
+	'Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.'
+);
 
 /**
  * Colors.
@@ -2583,7 +2587,9 @@ const {formatters} = module.exports;
 formatters.o = function (v) {
 	this.inspectOpts.colors = this.useColors;
 	return util.inspect(v, this.inspectOpts)
-		.replace(/\s*\n\s*/g, ' ');
+		.split('\n')
+		.map(str => str.trim())
+		.join(' ');
 };
 
 /**
@@ -9024,15 +9030,11 @@ function setup(env) {
 	createDebug.enable = enable;
 	createDebug.enabled = enabled;
 	createDebug.humanize = __webpack_require__(317);
+	createDebug.destroy = destroy;
 
 	Object.keys(env).forEach(key => {
 		createDebug[key] = env[key];
 	});
-
-	/**
-	* Active `debug` instances.
-	*/
-	createDebug.instances = [];
 
 	/**
 	* The currently active debug mode names, and names to skip.
@@ -9050,7 +9052,7 @@ function setup(env) {
 
 	/**
 	* Selects a color for a debug namespace
-	* @param {String} namespace The namespace string for the for the debug instance to be colored
+	* @param {String} namespace The namespace string for the debug instance to be colored
 	* @return {Number|String} An ANSI color code for the given namespace
 	* @api private
 	*/
@@ -9075,6 +9077,9 @@ function setup(env) {
 	*/
 	function createDebug(namespace) {
 		let prevTime;
+		let enableOverride = null;
+		let namespacesCache;
+		let enabledCache;
 
 		function debug(...args) {
 			// Disabled?
@@ -9104,7 +9109,7 @@ function setup(env) {
 			args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
 				// If we encounter an escaped % then don't increase the array index
 				if (match === '%%') {
-					return match;
+					return '%';
 				}
 				index++;
 				const formatter = createDebug.formatters[format];
@@ -9127,31 +9132,36 @@ function setup(env) {
 		}
 
 		debug.namespace = namespace;
-		debug.enabled = createDebug.enabled(namespace);
 		debug.useColors = createDebug.useColors();
-		debug.color = selectColor(namespace);
-		debug.destroy = destroy;
+		debug.color = createDebug.selectColor(namespace);
 		debug.extend = extend;
-		// Debug.formatArgs = formatArgs;
-		// debug.rawLog = rawLog;
+		debug.destroy = createDebug.destroy; // XXX Temporary. Will be removed in the next major release.
 
-		// env-specific initialization logic for debug instances
+		Object.defineProperty(debug, 'enabled', {
+			enumerable: true,
+			configurable: false,
+			get: () => {
+				if (enableOverride !== null) {
+					return enableOverride;
+				}
+				if (namespacesCache !== createDebug.namespaces) {
+					namespacesCache = createDebug.namespaces;
+					enabledCache = createDebug.enabled(namespace);
+				}
+
+				return enabledCache;
+			},
+			set: v => {
+				enableOverride = v;
+			}
+		});
+
+		// Env-specific initialization logic for debug instances
 		if (typeof createDebug.init === 'function') {
 			createDebug.init(debug);
 		}
 
-		createDebug.instances.push(debug);
-
 		return debug;
-	}
-
-	function destroy() {
-		const index = createDebug.instances.indexOf(this);
-		if (index !== -1) {
-			createDebug.instances.splice(index, 1);
-			return true;
-		}
-		return false;
 	}
 
 	function extend(namespace, delimiter) {
@@ -9169,6 +9179,7 @@ function setup(env) {
 	*/
 	function enable(namespaces) {
 		createDebug.save(namespaces);
+		createDebug.namespaces = namespaces;
 
 		createDebug.names = [];
 		createDebug.skips = [];
@@ -9186,15 +9197,10 @@ function setup(env) {
 			namespaces = split[i].replace(/\*/g, '.*?');
 
 			if (namespaces[0] === '-') {
-				createDebug.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+				createDebug.skips.push(new RegExp('^' + namespaces.slice(1) + '$'));
 			} else {
 				createDebug.names.push(new RegExp('^' + namespaces + '$'));
 			}
-		}
-
-		for (i = 0; i < createDebug.instances.length; i++) {
-			const instance = createDebug.instances[i];
-			instance.enabled = createDebug.enabled(instance.namespace);
 		}
 	}
 
@@ -9268,6 +9274,14 @@ function setup(env) {
 			return val.stack || val.message;
 		}
 		return val;
+	}
+
+	/**
+	* XXX DO NOT USE. This is a temporary stub function.
+	* XXX It WILL be removed in the next major release.
+	*/
+	function destroy() {
+		console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
 	}
 
 	createDebug.enable(createDebug.load());
@@ -11502,59 +11516,44 @@ module.exports = require("fs");
 __webpack_require__.r(__webpack_exports__);
 
 // CONCATENATED MODULE: ./src/utils/labeler.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const github = __webpack_require__(469);
-function addLabels(client, prNumber, labels) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Adding labels:', labels);
-        yield client.issues.addLabels({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            labels: labels
-        });
+async function addLabels(client, prNumber, labels) {
+    console.log('Adding labels:', labels);
+    await client.issues.addLabels({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: prNumber,
+        labels: labels
     });
 }
-function removeLabel(client, prNumber, label) {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log('Removing label:', label);
-        yield client.issues.removeLabel({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            name: label
-        });
+async function removeLabel(client, prNumber, label) {
+    console.log('Removing label:', label);
+    await client.issues.removeLabel({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: prNumber,
+        name: label
     });
 }
-function createLabel(octokit, inputs) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            yield octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                name: inputs.label,
-            });
-            console.log(`Label ${inputs.label} already exists.`);
-        }
-        catch (error) {
-            yield octokit.request('POST /repos/{owner}/{repo}/labels', {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                name: inputs.label,
-                color: inputs.color,
-            });
-            console.log(`Created label ${inputs.label} with color ${inputs.color}.`);
-        }
-    });
+async function createLabel(octokit, inputs) {
+    try {
+        await octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            name: inputs.label,
+        });
+        console.log(`Label ${inputs.label} already exists.`);
+    }
+    catch (error) {
+        await octokit.request('POST /repos/{owner}/{repo}/labels', {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            name: inputs.label,
+            color: inputs.color,
+        });
+        console.log(`Created label ${inputs.label} with color ${inputs.color}.`);
+    }
 }
 
 // EXTERNAL MODULE: ./node_modules/axios/index.js
@@ -11602,195 +11601,151 @@ function parseReviews(reviews = []) {
 }
 
 // CONCATENATED MODULE: ./src/utils/getReviews.ts
-var getReviews_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 const getReviews_github = __webpack_require__(469);
-function getReviews(token, pullNumber) {
-    return getReviews_awaiter(this, void 0, void 0, function* () {
-        const client = new getReviews_github.GitHub(token);
-        return yield client.pulls.listReviews({
-            owner: getReviews_github.context.repo.owner,
-            repo: getReviews_github.context.repo.repo,
-            pull_number: pullNumber,
-        });
+async function getReviews(token, pullNumber) {
+    const client = new getReviews_github.GitHub(token);
+    return await client.pulls.listReviews({
+        owner: getReviews_github.context.repo.owner,
+        repo: getReviews_github.context.repo.repo,
+        pull_number: pullNumber,
     });
 }
 
 // CONCATENATED MODULE: ./src/changes_requested/changesRequested.ts
-var changesRequested_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 const core = __webpack_require__(470);
 const changesRequested_github = __webpack_require__(469);
 
 
 
 
-function changesRequested(context, inputs) {
-    return changesRequested_awaiter(this, void 0, void 0, function* () {
-        try {
-            const pr = context.payload.pull_request;
-            const review = context.payload.review;
-            const pullNumber = pr.number;
-            const pullUrl = pr.html_url;
-            const author = pr.user.id;
-            const state = review.state;
-            const token = inputs.token;
-            console.log('PR number is', pullNumber);
-            console.log('Inputs', inputs);
-            const { data } = yield getReviews(token, pullNumber);
-            const activeReviews = parseReviews(data || []);
-            const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
-            console.log('denied', deniedReviews.length);
-            console.log('alert', inputs.labelChangesRequested);
-            const client = new changesRequested_github.GitHub(inputs.token);
-            if (inputs.labelChangesRequested && state === 'changes_requested') {
-                addLabels(client, pullNumber, ['changes requested']);
-            }
-            if (inputs.labelChangesRequested && deniedReviews.length === 0) {
-                removeLabel(client, pullNumber, 'changes%20requested');
-            }
-            if (state === 'changes_requested' &&
-                (inputs.slackChannel || inputs.githubSlackMapping) &&
-                inputs.slackUrl) {
-                const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${changesRequested_github.context.repo.repo}\`.`;
-                if (inputs.githubSlackMapping) {
-                    const mapping = JSON.parse(inputs.githubSlackMapping);
-                    const slackUser = mapping[author];
-                    console.log(`Slacking author: ${author} at slack ID: ${slackUser}`);
-                    if (!slackUser) {
-                        core.setFailed(`Couldn't find an associated slack ID for user: ${author}`);
-                        return;
-                    }
-                    sendMessage(inputs.slackUrl, slackUser, message, inputs.botName, inputs.iconEmoji);
+async function changesRequested(context, inputs) {
+    try {
+        const pr = context.payload.pull_request;
+        const review = context.payload.review;
+        const pullNumber = pr.number;
+        const pullUrl = pr.html_url;
+        const author = pr.user.id;
+        const state = review.state;
+        const token = inputs.token;
+        console.log('PR number is', pullNumber);
+        console.log('Inputs', inputs);
+        const { data } = await getReviews(token, pullNumber);
+        const activeReviews = parseReviews(data || []);
+        const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
+        console.log('denied', deniedReviews.length);
+        console.log('alert', inputs.labelChangesRequested);
+        const client = new changesRequested_github.GitHub(inputs.token);
+        if (inputs.labelChangesRequested && state === 'changes_requested') {
+            addLabels(client, pullNumber, ['changes requested']);
+        }
+        if (inputs.labelChangesRequested && deniedReviews.length === 0) {
+            removeLabel(client, pullNumber, 'changes%20requested');
+        }
+        if (state === 'changes_requested' &&
+            (inputs.slackChannel || inputs.githubSlackMapping) &&
+            inputs.slackUrl) {
+            const message = `Changes have been requested on pull request <${pullUrl}|#${pullNumber}> in \`${changesRequested_github.context.repo.repo}\`.`;
+            if (inputs.githubSlackMapping) {
+                const mapping = JSON.parse(inputs.githubSlackMapping);
+                const slackUser = mapping[author];
+                console.log(`Slacking author: ${author} at slack ID: ${slackUser}`);
+                if (!slackUser) {
+                    core.setFailed(`Couldn't find an associated slack ID for user: ${author}`);
+                    return;
                 }
-                else if (inputs.slackChannel) {
-                    sendMessage(inputs.slackUrl, inputs.slackChannel, message, inputs.botName, inputs.iconEmoji);
-                }
+                sendMessage(inputs.slackUrl, slackUser, message, inputs.botName, inputs.iconEmoji);
+            }
+            else if (inputs.slackChannel) {
+                sendMessage(inputs.slackUrl, inputs.slackChannel, message, inputs.botName, inputs.iconEmoji);
             }
         }
-        catch (error) {
-            console.log(error);
-        }
-    });
+    }
+    catch (error) {
+        console.log(error);
+    }
 }
 
 // CONCATENATED MODULE: ./src/changes_requested/pullRequestUnlabeled.ts
-var pullRequestUnlabeled_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 const pullRequestUnlabeled_core = __webpack_require__(470);
 const pullRequestUnlabeled_github = __webpack_require__(469);
 
 
 
-function pullRequestUnlabeled(context, inputs) {
-    return pullRequestUnlabeled_awaiter(this, void 0, void 0, function* () {
-        try {
-            const label = context.payload.label.name;
-            const pr = context.payload.pull_request;
-            const pullNumber = pr.number;
-            const pullUrl = pr.html_url;
-            const token = inputs.token;
-            console.log('PR number is', pullNumber);
-            console.log('Inputs', inputs);
-            const { data } = yield getReviews(token, pullNumber);
-            const activeReviews = parseReviews(data || []);
-            const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
-            console.log(activeReviews);
-            console.log(deniedReviews);
-            if (label === 'changes requested' &&
-                (inputs.slackChannel || inputs.githubSlackMapping) &&
-                inputs.slackUrl &&
-                deniedReviews.length > 0) {
-                const message = `Changes have been made to pull request <${pullUrl}|#${pullNumber}> in \`${pullRequestUnlabeled_github.context.repo.repo}\`. Please review.`;
-                if (inputs.githubSlackMapping) {
-                    const mapping = JSON.parse(inputs.githubSlackMapping);
-                    const reviewers = deniedReviews.map(reviewer => reviewer.user);
-                    console.log(reviewers);
-                    for (let i = 0; i < reviewers.length; i++) {
-                        const slackUser = mapping[reviewers[i]];
-                        console.log(`Slacking reviewer: ${reviewers[i]} at slack ID: ${slackUser}`);
-                        if (!slackUser) {
-                            pullRequestUnlabeled_core.setFailed(`Couldn't find an associated slack ID for reviewer: ${reviewers[i]}`);
-                            return;
-                        }
-                        sendMessage(inputs.slackUrl, slackUser, message, inputs.botName, inputs.iconEmoji);
+async function pullRequestUnlabeled(context, inputs) {
+    try {
+        const label = context.payload.label.name;
+        const pr = context.payload.pull_request;
+        const pullNumber = pr.number;
+        const pullUrl = pr.html_url;
+        const token = inputs.token;
+        console.log('PR number is', pullNumber);
+        console.log('Inputs', inputs);
+        const { data } = await getReviews(token, pullNumber);
+        const activeReviews = parseReviews(data || []);
+        const deniedReviews = activeReviews.filter((r) => r.state.toLowerCase() === 'changes_requested');
+        console.log(activeReviews);
+        console.log(deniedReviews);
+        if (label === 'changes requested' &&
+            (inputs.slackChannel || inputs.githubSlackMapping) &&
+            inputs.slackUrl &&
+            deniedReviews.length > 0) {
+            const message = `Changes have been made to pull request <${pullUrl}|#${pullNumber}> in \`${pullRequestUnlabeled_github.context.repo.repo}\`. Please review.`;
+            if (inputs.githubSlackMapping) {
+                const mapping = JSON.parse(inputs.githubSlackMapping);
+                const reviewers = deniedReviews.map(reviewer => reviewer.user);
+                console.log(reviewers);
+                for (let i = 0; i < reviewers.length; i++) {
+                    const slackUser = mapping[reviewers[i]];
+                    console.log(`Slacking reviewer: ${reviewers[i]} at slack ID: ${slackUser}`);
+                    if (!slackUser) {
+                        pullRequestUnlabeled_core.setFailed(`Couldn't find an associated slack ID for reviewer: ${reviewers[i]}`);
+                        return;
                     }
-                }
-                else if (inputs.slackChannel) {
-                    sendMessage(inputs.slackUrl, inputs.slackChannel, message, inputs.botName, inputs.iconEmoji);
+                    sendMessage(inputs.slackUrl, slackUser, message, inputs.botName, inputs.iconEmoji);
                 }
             }
+            else if (inputs.slackChannel) {
+                sendMessage(inputs.slackUrl, inputs.slackChannel, message, inputs.botName, inputs.iconEmoji);
+            }
         }
-        catch (error) {
-            console.log(error);
-        }
-    });
+    }
+    catch (error) {
+        console.log(error);
+    }
 }
 
 // CONCATENATED MODULE: ./src/changes_requested/index.ts
-var changes_requested_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 const changes_requested_core = __webpack_require__(470);
 const changes_requested_github = __webpack_require__(469);
 
 
-function main() {
-    return changes_requested_awaiter(this, void 0, void 0, function* () {
-        // Get a few inputs from the GitHub event.
-        const inputs = {
-            token: changes_requested_core.getInput('repo-token', { required: true }),
-            labelChangesRequested: changes_requested_core.getInput('label-on-changes-requested'),
-            alertOnRemoved: changes_requested_core.getInput('alert-on-label-removed'),
-            slackUrl: changes_requested_core.getInput('slack-webhook-url'),
-            slackChannel: changes_requested_core.getInput('slack-channel'),
-            botName: changes_requested_core.getInput('bot-name'),
-            iconEmoji: changes_requested_core.getInput('icon_emoji'),
-            githubSlackMapping: changes_requested_core.getInput('github-slack-mapping'),
-        };
-        const pr = changes_requested_github.context.payload.pull_request;
-        if (!pr) {
-            changes_requested_core.setFailed('This action must be run with only "pull_request_review".');
-            return;
-        }
-        const event = changes_requested_github.context.eventName;
-        const action = changes_requested_github.context.payload.action;
-        console.log(event);
-        console.log(action);
-        if (event === 'pull_request_review' && action === 'submitted') {
-            yield changesRequested(changes_requested_github.context, inputs);
-        }
-        else if (event === 'pull_request' && action === 'unlabeled') {
-            yield pullRequestUnlabeled(changes_requested_github.context, inputs);
-        }
-    });
+async function main() {
+    // Get a few inputs from the GitHub event.
+    const inputs = {
+        token: changes_requested_core.getInput('repo-token', { required: true }),
+        labelChangesRequested: changes_requested_core.getInput('label-on-changes-requested'),
+        alertOnRemoved: changes_requested_core.getInput('alert-on-label-removed'),
+        slackUrl: changes_requested_core.getInput('slack-webhook-url'),
+        slackChannel: changes_requested_core.getInput('slack-channel'),
+        botName: changes_requested_core.getInput('bot-name'),
+        iconEmoji: changes_requested_core.getInput('icon_emoji'),
+        githubSlackMapping: changes_requested_core.getInput('github-slack-mapping'),
+    };
+    const pr = changes_requested_github.context.payload.pull_request;
+    if (!pr) {
+        changes_requested_core.setFailed('This action must be run with only "pull_request_review".');
+        return;
+    }
+    const event = changes_requested_github.context.eventName;
+    const action = changes_requested_github.context.payload.action;
+    console.log(event);
+    console.log(action);
+    if (event === 'pull_request_review' && action === 'submitted') {
+        await changesRequested(changes_requested_github.context, inputs);
+    }
+    else if (event === 'pull_request' && action === 'unlabeled') {
+        await pullRequestUnlabeled(changes_requested_github.context, inputs);
+    }
 }
 // Call the main function.
 main();
@@ -12233,12 +12188,21 @@ if (typeof process === 'undefined' || process.type === 'renderer' || process.bro
  * This is the web browser implementation of `debug()`.
  */
 
-exports.log = log;
 exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
 exports.useColors = useColors;
 exports.storage = localstorage();
+exports.destroy = (() => {
+	let warned = false;
+
+	return () => {
+		if (!warned) {
+			warned = true;
+			console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
+		}
+	};
+})();
 
 /**
  * Colors.
@@ -12399,18 +12363,14 @@ function formatArgs(args) {
 }
 
 /**
- * Invokes `console.log()` when available.
- * No-op when `console.log` is not a "function".
+ * Invokes `console.debug()` when available.
+ * No-op when `console.debug` is not a "function".
+ * If `console.debug` is not available, falls back
+ * to `console.log`.
  *
  * @api public
  */
-function log(...args) {
-	// This hackery is required for IE8/9, where
-	// the `console.log` function doesn't have 'apply'
-	return typeof console === 'object' &&
-		console.log &&
-		console.log(...args);
-}
+exports.log = console.debug || console.log || (() => {});
 
 /**
  * Save `namespaces`.
