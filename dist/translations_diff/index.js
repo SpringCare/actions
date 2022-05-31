@@ -28078,11 +28078,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(557);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -28145,17 +28144,17 @@ function compareFiles(baseFile, targetFile) {
     }
     return difference.sort();
 }
-function validateKeySync(keyDifference, file, languages) {
+function validateKeySync(keyDifference, fileName, languages) {
     const fileNotPresent = [];
     const keyNotPresent = [];
     for (const lang of languages) {
         if (allFiles[lang] === undefined)
             continue;
-        if (allFiles[lang][file] === undefined) {
+        if (allFiles[lang][fileName] === undefined) {
             fileNotPresent.push(lang);
             continue;
         }
-        const patchedKeys = extractKeys(allFiles[lang][file]);
+        const patchedKeys = extractKeys(allFiles[lang][fileName]);
         const notSynced = compareKeys(keyDifference, patchedKeys);
         if (notSynced.length !== 0)
             keyNotPresent.push({ [lang]: notSynced });
@@ -28165,15 +28164,15 @@ function validateKeySync(keyDifference, file, languages) {
         'keyNotPresent': keyNotPresent
     };
 }
-// returns an file: patch object for lang keys
+// returns a file: patch object for lang keys
 /**
 * {
 *  en: {
-*    file1: raw_url1,
-*    file2: raw_url2
+*    file_name1: raw_url1,
+*    file_name2: raw_url2
 *  },
 * es: {
-*    file1: patch1
+*    file_name1: patch1
 *  }
 * }
 */
@@ -28251,11 +28250,11 @@ function main() {
             const keyDifference = compareFiles(baseFile, targetFile);
             const absent = validateKeySync(keyDifference, file, languages);
             if (!lodash__WEBPACK_IMPORTED_MODULE_1___default().isEmpty(absent['fileNotPresent'])) {
-                console.log(file + ': ' + absent['fileNotPresent']);
+                console.log(file + ' not available for following languages: ' + absent['fileNotPresent']);
                 failFlag = true;
             }
             if (!lodash__WEBPACK_IMPORTED_MODULE_1___default().isEmpty(absent['keyNotPresent'])) {
-                console.log(file + ': \n' + JSON.stringify(absent['keyNotPresent']));
+                console.log(file + ' is missing following keys: \n' + JSON.stringify(absent['keyNotPresent']));
                 failFlag = true;
             }
         }

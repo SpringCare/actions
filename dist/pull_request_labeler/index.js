@@ -11241,11 +11241,10 @@ __webpack_require__.r(__webpack_exports__);
 
 // CONCATENATED MODULE: ./src/utils/labeler.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -11326,11 +11325,10 @@ function parseReviews(reviews = []) {
 
 // CONCATENATED MODULE: ./src/utils/getReviews.ts
 var getReviews_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -11351,11 +11349,10 @@ var dist_node = __webpack_require__(448);
 
 // CONCATENATED MODULE: ./src/pull_request_labeler/index.ts
 var pull_request_labeler_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -11365,7 +11362,7 @@ const pull_request_labeler_github = __webpack_require__(469);
 
 
 
-const handleReviewCountLabel = (inputs, client, pullNumber) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
+const handleReviewCountLabel = (inputs, client, pullNumber) => pull_request_labeler_awaiter(undefined, void 0, void 0, function* () {
     if (inputs.requiredReviews && !(inputs.requiredReviews > 0)) {
         core.setFailed('If set, "required" must be an integer greater than 0');
         return;
@@ -11402,7 +11399,7 @@ const handleWIPLabel = (inputs, client, pr) => {
         removeLabel(client, pullNumber, 'WIP');
     }
 };
-const getCommitsForPR = (url, octokit) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
+const getCommitsForPR = (url, octokit) => pull_request_labeler_awaiter(undefined, void 0, void 0, function* () {
     try {
         const prCommitsResponse = yield octokit.request(`GET ${url}`);
         const formattedCommits = prCommitsResponse.data.map((c) => {
@@ -11419,7 +11416,7 @@ const getCommitsForPR = (url, octokit) => pull_request_labeler_awaiter(void 0, v
         process.exit(1);
     }
 });
-const getBranchCommits = (url, targetBranch, octokit) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
+const getBranchCommits = (url, targetBranch, octokit) => pull_request_labeler_awaiter(undefined, void 0, void 0, function* () {
     try {
         const branchCommitsResponse = yield octokit.request(`GET ${url}?sha=${targetBranch}`);
         const formattedCommits = branchCommitsResponse.data.map((c) => {
@@ -11443,7 +11440,7 @@ const shouldShowBranchLabel = (prCommits, branchCommits) => {
                 .map((parent) => parent.sha)
                 .includes(prCommit.sha))));
 };
-const handleBranchLabel = (inputs, client, pr) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
+const handleBranchLabel = (inputs, client, pr) => pull_request_labeler_awaiter(undefined, void 0, void 0, function* () {
     const octokit = new dist_node.Octokit({ auth: inputs.token });
     const prCommits = yield getCommitsForPR(pr.commits_url, octokit);
     const commitsUrl = pr.base.repo.commits_url.split('{/')[0];

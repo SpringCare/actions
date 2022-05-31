@@ -66,19 +66,19 @@ function compareFiles(baseFile: string, targetFile: string): Array<string> {
 	return difference.sort();
 }
 
-function validateKeySync(keyDifference: Array<string>, file: string, languages: Array<string>): object {
+function validateKeySync(keyDifference: Array<string>, fileName: string, languages: Array<string>): object {
 	const fileNotPresent = [];
 	const keyNotPresent = [];
 	for (const lang of languages) {
 		if (allFiles[lang] === undefined)
 			continue;
 
-		if (allFiles[lang][file] === undefined) {
+		if (allFiles[lang][fileName] === undefined) {
 			fileNotPresent.push(lang);
 			continue;
 		}
 
-		const patchedKeys = extractKeys(allFiles[lang][file]);
+		const patchedKeys = extractKeys(allFiles[lang][fileName]);
 
 		const notSynced = compareKeys(keyDifference, patchedKeys);
 		if (notSynced.length !== 0)
@@ -90,15 +90,15 @@ function validateKeySync(keyDifference: Array<string>, file: string, languages: 
 	};
 }
 
-// returns an file: patch object for lang keys
+// returns a file: patch object for lang keys
 /**
 * {
 *  en: {
-*    file1: raw_url1,
-*    file2: raw_url2
+*    file_name1: raw_url1,
+*    file_name2: raw_url2
 *  },
 * es: {
-*    file1: patch1
+*    file_name1: patch1
 *  }
 * }
 */
@@ -199,12 +199,12 @@ async function main (): Promise<void> {
 		const absent = validateKeySync(keyDifference, file, languages);
 
 		if (!_.isEmpty(absent['fileNotPresent'])) {
-			console.log(file + ': ' + absent['fileNotPresent']);
+			console.log(file + ' not available for following languages: ' + absent['fileNotPresent']);
 			failFlag = true;
 		}
 
 		if (!_.isEmpty(absent['keyNotPresent'])) {
-			console.log(file + ': \n' + JSON.stringify(absent['keyNotPresent']));
+			console.log(file + ' is missing following keys: \n' + JSON.stringify(absent['keyNotPresent']));
 			failFlag = true;
 		}
 	}
