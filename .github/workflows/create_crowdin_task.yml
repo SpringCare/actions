@@ -1,0 +1,16 @@
+name: Create Crowdin Task
+
+on:
+  workflow_run:
+    workflows: ["Translations diff check"]
+    types:
+      - completed
+
+jobs:
+  translation-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: SpringCare/actions/dist/create_crowdin_task@master
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,12 @@
+name: Create Crowdin Task
+description: "Create a task in Crowdin"
+inputs:
+  repo-token:
+    required: true
+    description: 'The GITHUB_TOKEN secret'
+branding:
+  icon: 'git-pull-request'
+  color: green
+runs:
+  using: 'node12'
+  main: 'index.js'
