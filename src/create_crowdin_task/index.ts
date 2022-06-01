@@ -1,4 +1,4 @@
-import {ProjectsGroups} from "@crowdin/crowdin-api-client";
+import {ProjectsGroups, SourceFiles} from '@crowdin/crowdin-api-client';
 
 const core = require('@actions/core');
 const github = require('@actions/github');
@@ -6,56 +6,61 @@ const crowdin = require('@crowdin/crowdin-api-client');
 
 import { Octokit } from '@octokit/core';
 
-function getProjectId(projectsGroupsApi: ProjectsGroups): void {
-    const projects = projectsGroupsApi.listProjects();
+async function getProjectId(projectsGroupsApi: ProjectsGroups): Promise<number> {
+	const response = await projectsGroupsApi.listProjects();
+	return response.data[0].data.id;
 }
 
-function getEnDirectoryId(projectId: number, sourceFilesApi): void {
-    const cheerimDir = sourceFilesApi.listProjectDirectories(projectId);
-    // Todo: get cherrim id
+async function getEnDirectoryId(projectId: number, sourceFilesApi: SourceFiles): Promise<number> {
+	console.log(projectId);
+	const cherrimResponse = await sourceFilesApi.listProjectDirectories(projectId, { filter: 'cherrim' });
+	const cherrimDirectoryId = cherrimResponse.data[0].data.id;
 
-    const dirs = sourceFilesApi.listProjectDirectories(480727, {
-        directoryId: cherrimId, filter: 'en', recursion: 'true'
-    });
-
-    // return data[0].data.id;
+	const enResponse = await sourceFilesApi.listProjectDirectories(projectId, {
+		directoryId: cherrimDirectoryId, filter: 'en', recursion: 'true'
+	});
+	return enResponse.data[0].data.id;
 }
 
 async function main (): Promise<void> {
-    const inputs: {
-        token: string;
-    } = {
-        token         : core.getInput('repo-token', { required: true }),
-    };
+	const inputs: {
+		token: string;
+	} = {
+		token         : core.getInput('repo-token', { required: true }),
+	};
 
-    const octokit = new Octokit({ auth: inputs.token });
+	const octokit = new Octokit({ auth: inputs.token });
 
-    // Todo: get the token from the env variable
-    const token = "";
-    const { sourceFilesApi,
-        projectsGroupsApi,
-        tasksApi
-    } = new crowdin.default({ token });
+	// Todo: get the token from the env variable
+	const token = '';
+	const { sourceFilesApi,
+		projectsGroupsApi,
+		tasksApi
+	} = new crowdin.default({ token });
 
-    const projectId = getProjectId(projectsGroupsApi);
-    const enLocaleDir = getLocalesDirectoryId(projectId, sourceFilesApi);
+	const projectId = await getProjectId(projectsGroupsApi);
+	const enLocaleDirId = await getEnDirectoryId(projectId, sourceFilesApi);
 
-    const files = await sourceFilesApi.listProjectFiles(projectId, {
-        directoryId: enLocaleDir
-    })
+	const filesResponse = await sourceFilesApi.listProjectFiles(projectId, {
+		directoryId: enLocaleDirId
+	});
 
-    // extract file ids from files
+	// Todo: get changed files
+	// extract file ids from files
+	// What if?
+	//	- output changed files from translation diff action using `setOutput`
+	//	- filter out only the changed files
 
-    // Todo: create task for changed files
-    // check with updatedAt
+	// Todo: create task for changed files
+	// check with updatedAt
 
-    // loop
-    const response = await tasksApi.addTask(projectId, {
-        fileIds: filesIds,
-        languageId: 'fr',
-        type: 0,
-        title: 'SH Internal Task',
-    });
+	// loop
+	const response = await tasksApi.addTask(projectId, {
+		fileIds: filesIds,
+		languageId: 'fr',
+		type: 0,
+		title: 'SH Internal Task',
+	});
 }
 
 main();
