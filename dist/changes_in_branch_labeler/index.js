@@ -11073,10 +11073,11 @@ var dist_node = __webpack_require__(448);
 
 // CONCATENATED MODULE: ./src/utils/labeler.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -11128,10 +11129,11 @@ function createLabel(octokit, inputs) {
 
 // CONCATENATED MODULE: ./src/changes_in_branch_labeler/index.ts
 var changes_in_branch_labeler_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -11139,7 +11141,7 @@ const core = __webpack_require__(470);
 const changes_in_branch_labeler_github = __webpack_require__(469);
 
 
-const getPrHeadCommitSha = (octokit, commitsUrl, inputs) => changes_in_branch_labeler_awaiter(undefined, void 0, void 0, function* () {
+const getPrHeadCommitSha = (octokit, commitsUrl, inputs) => changes_in_branch_labeler_awaiter(void 0, void 0, void 0, function* () {
     try {
         const headCommitSha = changes_in_branch_labeler_github.context.payload.head_commit.id;
         const commitResponse = yield octokit.request(`GET ${commitsUrl}/${headCommitSha}?sha=${inputs.branch}`);
@@ -11155,7 +11157,7 @@ const getPrHeadCommitSha = (octokit, commitsUrl, inputs) => changes_in_branch_la
         process.exit(1);
     }
 });
-const getPrsForCommit = (octokit, commitsUrl, prHeadCommitSha) => changes_in_branch_labeler_awaiter(undefined, void 0, void 0, function* () {
+const getPrsForCommit = (octokit, commitsUrl, prHeadCommitSha) => changes_in_branch_labeler_awaiter(void 0, void 0, void 0, function* () {
     try {
         const prsForCommitResponse = yield octokit.request(`GET ${commitsUrl}/${prHeadCommitSha}/pulls`);
         const prsForCommit = prsForCommitResponse.data;

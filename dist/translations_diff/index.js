@@ -28078,10 +28078,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(557);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -28227,10 +28228,11 @@ function main() {
         const pullNumber = github.context.payload.pull_request.number;
         const repository = github.context.repo;
         const octokit = new _octokit_core__WEBPACK_IMPORTED_MODULE_0__.Octokit({ auth: inputs.token });
-        const response = yield octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
+        const response = yield octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files?per_page={per_page}', {
             owner: repository.owner,
             repo: repository.repo,
-            pull_number: pullNumber
+            pull_number: pullNumber,
+            per_page: 100
         });
         transformResponse(response);
         if (allFiles['en'] === undefined) {

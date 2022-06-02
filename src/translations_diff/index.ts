@@ -168,10 +168,11 @@ async function main (): Promise<void> {
 	const octokit = new Octokit({ auth: inputs.token });
 
 	const response = await octokit.request(
-		'GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
+		'GET /repos/{owner}/{repo}/pulls/{pull_number}/files?per_page={per_page}', {
 			owner       : repository.owner,
 			repo        : repository.repo,
-			pull_number : pullNumber
+			pull_number : pullNumber,
+			per_page    : 100
 		}
 	);
 
