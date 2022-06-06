@@ -1,0 +1,15 @@
+name: Translations diff check
+
+on: [pull_request]
+
+jobs:
+  translation-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: SpringCare/actions/dist/translations_diff@feature/translation-diff
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          base-branch: ${{ github.head_ref }}
+          target-branch: ${{ github.base_ref }}
+          langs: 'es, pt'
