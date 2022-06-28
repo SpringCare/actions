@@ -23,7 +23,7 @@ function compareKeys(enKeys: Array<string>, otherKeys: Array<string>): Array<str
 }
 
 function extractKeys(patch: string): Array<string> {
-	const regExpPlus = /(?<=\+).*(?=:)/g;
+	const regExpPlus = /(?<=\+).*?(?=:)/g;
 	const addedKeys = patch.match(regExpPlus);
 
 	return addedKeys.map(key => key.trim().replace(/"/g, '')).sort();
