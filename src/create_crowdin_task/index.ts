@@ -13,12 +13,8 @@ async function getProjectId(projectsGroupsApi: ProjectsGroups): Promise<number> 
 }
 
 async function getEnDirectoryId(sourceFilesApi: SourceFiles, projectId: number, branchId: number): Promise<number> {
-	console.log(projectId);
-	const cherrimResponse = await sourceFilesApi.listProjectDirectories(projectId, { filter: 'cherrim' });
-	const cherrimDirectoryId = cherrimResponse.data[0].data.id; // Todo: won't work cause the first may not necessarily belong to the branch we want
-
 	const enResponse = await sourceFilesApi.listProjectDirectories(projectId, {
-		directoryId: cherrimDirectoryId, branchId: branchId, filter: 'en', recursion: 'true' // altho cherrimDirectoryId is overwritten by branchId filter
+		branchId: branchId, filter: 'en', recursion: 'true'
 	});
 	return enResponse.data[0].data.id;
 }
@@ -36,6 +32,7 @@ async function getFileIds(sourceFilesApi: SourceFiles, projectId: number, enLoca
 		directoryId: enLocaleDirId
 	});
 
+	// Todo: filter only the files changed in the current PR
 	return files.data.map(elem => elem.data.id);
 }
 
@@ -43,16 +40,24 @@ async function createTask(tasksApi: Tasks, projectId: number, filesIds: Array<nu
 	try {
 		for (const lang of languages) {
 			await tasksApi.addTask(projectId, {
-				title      : 'SH Internal Task',
-				type       : 2,
-				fileIds    : filesIds,
-				languageId : lang,
-				vendor     : 'oht'
+				title                          : 'SH Internal Task',
+				type                           : 2,
+				fileIds                        : filesIds,
+				languageId                     : lang,
+				vendor                         : 'oht',
+				skipAssignedStrings            : true,
+				skipUntranslatedStrings        : false,
+				includeUntranslatedStringsOnly : false
 			});
 		}
 	} catch (e) { // Todo: Check for specific error - Task not created
 		throw 'Manual Translation Needed!';
 	}
+}
+
+async function getTargetLanguages(projectsGroupsApi: ProjectsGroups): Promise<Array<string>> {
+	const response = await projectsGroupsApi.listProjects();
+	return response.data[0].data.targetLanguageIds;
 }
 
 async function main (): Promise<void> {
@@ -84,8 +89,7 @@ async function main (): Promise<void> {
 	//	- filter out only the changed files
 	const filesIds = await getFileIds(sourceFilesApi, projectId, enLocaleDirId);
 
-	// Todo: get languages - listProjects() lists all language ids - targetLanguageIds
-	const languages = [];
+	const languages = await getTargetLanguages(projectsGroupsApi);
 
 	const pullNumber = github.context.payload.pull_request.number;
 	const client = new github.GitHub(inputs.token);
