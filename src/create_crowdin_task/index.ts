@@ -5,7 +5,6 @@ const github = require('@actions/github');
 const crowdin = require('@crowdin/crowdin-api-client');
 
 import { Octokit } from '@octokit/core';
-import { addLabels } from '../utils/labeler';
 
 async function getProjectId(projectsGroupsApi: ProjectsGroups): Promise<number> {
 	const response = await projectsGroupsApi.listProjects();
@@ -41,7 +40,7 @@ async function createTask(tasksApi: Tasks, projectId: number, filesIds: Array<nu
 		for (const lang of languages) {
 			await tasksApi.addTask(projectId, {
 				title                          : 'SH Internal Task',
-				type                           : 2,
+				type                           : 3,
 				fileIds                        : filesIds,
 				languageId                     : lang,
 				vendor                         : 'oht',
@@ -61,43 +60,51 @@ async function getTargetLanguages(projectsGroupsApi: ProjectsGroups): Promise<Ar
 }
 
 async function main (): Promise<void> {
-	const inputs: {
-		token: string;
-		branch: string;
-	} = {
-		token  : core.getInput('repo-token', { required: true }),
-		branch : core.getInput('branch'),
-	};
+	let retry = 3;
 
-	const octokit = new Octokit({ auth: inputs.token });
+	while (retry > 0) {
+		setTimeout(async () => {
+			const inputs: {
+				token: string;
+				branch: string;
+			} = {
+				token  : core.getInput('repo-token', {required: true}),
+				branch : core.getInput('branch'),
+			};
 
-	// Todo: get the token from the env variable
-	const token = '';
-	const { sourceFilesApi,
-		projectsGroupsApi,
-		tasksApi
-	} = new crowdin.default({ token });
+			const octokit = new Octokit({auth: inputs.token});
 
-	const branchName = '[SpringCare.arceus] ' + inputs.branch.replace('/', '.');
-	const projectId = await getProjectId(projectsGroupsApi);
-	const branchId = await getBranchId(sourceFilesApi, projectId, branchName);
-	const enLocaleDirId = await getEnDirectoryId(sourceFilesApi, projectId, branchId);
+			// Todo: get the token from the env variable
+			const token = '';
+			const {
+				sourceFilesApi,
+				projectsGroupsApi,
+				tasksApi
+			} = new crowdin.default({token});
 
-	// Todo: get changed files
-	// What if?
-	//	- output changed files from translation diff action using `setOutput`
-	//	- filter out only the changed files
-	const filesIds = await getFileIds(sourceFilesApi, projectId, enLocaleDirId);
+			const branchName = '[SpringCare.arceus] ' + inputs.branch.replace('/', '.');
+			const projectId = await getProjectId(projectsGroupsApi);
+			const branchId = await getBranchId(sourceFilesApi, projectId, branchName);
+			const enLocaleDirId = await getEnDirectoryId(sourceFilesApi, projectId, branchId);
 
-	const languages = await getTargetLanguages(projectsGroupsApi);
+			// Todo: get changed files
+			// What if?
+			//	- output changed files from translation diff action using `setOutput`
+			//	- filter out only the changed files
+			const filesIds = await getFileIds(sourceFilesApi, projectId, enLocaleDirId);
 
-	const pullNumber = github.context.payload.pull_request.number;
-	const client = new github.GitHub(inputs.token);
-	try {
-		await createTask(tasksApi, projectId, filesIds, languages);
-		await addLabels(client, pullNumber, ['Translations In Progress']);
-	} catch (e) {
-		await addLabels(client, pullNumber, ['Manual Translations Needed']);
+			const languages = await getTargetLanguages(projectsGroupsApi);
+
+			const pullNumber = github.context.payload.pull_request.number;
+			const client = new github.GitHub(inputs.token);
+			try {
+				await createTask(tasksApi, projectId, filesIds, languages);
+				retry = 0;
+			} catch (e) {
+				if (e.message === 'Language has no untranslated words')
+					retry -= 1;
+			}
+		}, 20 * 60 * 1000);
 	}
 }
 
