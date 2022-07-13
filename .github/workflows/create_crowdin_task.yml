@@ -10,6 +10,7 @@ jobs:
   translation-check:
     runs-on: ubuntu-latest
 
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
       - uses: SpringCare/actions/dist/create_crowdin_task@master
         with:
