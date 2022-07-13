@@ -75,7 +75,7 @@ async function main (): Promise<void> {
 			const octokit = new Octokit({auth: inputs.token});
 
 			// Todo: get the token from the env variable
-			const token = '';
+			const token = 'cdb855490129eee0b5807de981ebc4b22b8280ccca2bea52f544af17d52adde2f4cccdb25b9d5272';
 			const {
 				sourceFilesApi,
 				projectsGroupsApi,
@@ -104,7 +104,7 @@ async function main (): Promise<void> {
 				if (e.message === 'Language has no untranslated words')
 					retry -= 1;
 			}
-		}, 20 * 60 * 1000);
+		}, 2 * 60 * 1000); // sync time
 	}
 }
 
