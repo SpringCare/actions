@@ -17142,38 +17142,40 @@ function getTargetLanguages(projectsGroupsApi) {
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         let retry = 1;
-        while (retry > 0) {
-            setTimeout(() => __awaiter(this, void 0, void 0, function* () {
-                const inputs = {
-                    token: core.getInput('repo-token', { required: true }),
-                    branch: core.getInput('branch'),
-                };
-                const octokit = new _octokit_core__WEBPACK_IMPORTED_MODULE_0__.Octokit({ auth: inputs.token });
-                // Todo: get the token from the env variable
-                const token = 'cdb855490129eee0b5807de981ebc4b22b8280ccca2bea52f544af17d52adde2f4cccdb25b9d5272';
-                const { sourceFilesApi, projectsGroupsApi, tasksApi } = new crowdin.default({ token });
-                const branchName = '[SpringCare.arceus] ' + inputs.branch.replace('/', '.');
-                const projectId = yield getProjectId(projectsGroupsApi);
-                const branchId = yield getBranchId(sourceFilesApi, projectId, branchName);
-                const enLocaleDirId = yield getEnDirectoryId(sourceFilesApi, projectId, branchId);
-                // Todo: get changed files
-                // What if?
-                //	- output changed files from translation diff action using `setOutput`
-                //	- filter out only the changed files
-                const filesIds = yield getFileIds(sourceFilesApi, projectId, enLocaleDirId);
-                const languages = yield getTargetLanguages(projectsGroupsApi);
-                const pullNumber = github.context.payload.pull_request.number;
-                const client = new github.GitHub(inputs.token);
-                try {
-                    yield createTask(tasksApi, projectId, filesIds, languages);
-                    retry = 0;
-                }
-                catch (e) {
-                    if (e.message === 'Language has no untranslated words')
-                        retry -= 1;
-                }
-            }), 2 * 60 * 1000); // sync time
-        }
+        const intervalId = setInterval(() => __awaiter(this, void 0, void 0, function* () {
+            const inputs = {
+                token: core.getInput('repo-token', { required: true }),
+                branch: core.getInput('branch'),
+            };
+            const octokit = new _octokit_core__WEBPACK_IMPORTED_MODULE_0__.Octokit({ auth: inputs.token });
+            // Todo: get the token from the env variable
+            const token = 'cdb855490129eee0b5807de981ebc4b22b8280ccca2bea52f544af17d52adde2f4cccdb25b9d5272';
+            const { sourceFilesApi, projectsGroupsApi, tasksApi } = new crowdin.default({ token });
+            const branchName = '[SpringCare.arceus] ' + inputs.branch.replace('/', '.');
+            const projectId = yield getProjectId(projectsGroupsApi);
+            const branchId = yield getBranchId(sourceFilesApi, projectId, branchName);
+            const enLocaleDirId = yield getEnDirectoryId(sourceFilesApi, projectId, branchId);
+            // Todo: get changed files
+            // What if?
+            //	- output changed files from translation diff action using `setOutput`
+            //	- filter out only the changed files
+            const filesIds = yield getFileIds(sourceFilesApi, projectId, enLocaleDirId);
+            const languages = yield getTargetLanguages(projectsGroupsApi);
+            const pullNumber = github.context.payload.pull_request.number;
+            const client = new github.GitHub(inputs.token);
+            try {
+                yield createTask(tasksApi, projectId, filesIds, languages);
+                retry = 0;
+            }
+            catch (e) {
+                if (e.message === 'Language has no untranslated words')
+                    retry -= 1;
+            }
+        }), 2 * 60 * 1000); // sync time
+        setInterval(() => {
+            if (retry === 0)
+                clearInterval(intervalId);
+        }, 2 * 60 * 1000);
     });
 }
 main();

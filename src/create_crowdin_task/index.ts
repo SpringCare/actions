@@ -62,9 +62,8 @@ async function getTargetLanguages(projectsGroupsApi: ProjectsGroups): Promise<Ar
 async function main (): Promise<void> {
 	let retry = 1;
 
-	while (retry > 0) {
-		setTimeout(async () => {
-			const inputs: {
+	const intervalId = setInterval(async () => {
+		const inputs: {
 				token: string;
 				branch: string;
 			} = {
@@ -72,40 +71,45 @@ async function main (): Promise<void> {
 				branch : core.getInput('branch'),
 			};
 
-			const octokit = new Octokit({auth: inputs.token});
+		const octokit = new Octokit({auth: inputs.token});
 
-			// Todo: get the token from the env variable
-			const token = 'cdb855490129eee0b5807de981ebc4b22b8280ccca2bea52f544af17d52adde2f4cccdb25b9d5272';
-			const {
-				sourceFilesApi,
-				projectsGroupsApi,
-				tasksApi
-			} = new crowdin.default({token});
+		// Todo: get the token from the env variable
+		const token = 'cdb855490129eee0b5807de981ebc4b22b8280ccca2bea52f544af17d52adde2f4cccdb25b9d5272';
+		const {
+			sourceFilesApi,
+			projectsGroupsApi,
+			tasksApi
+		} = new crowdin.default({token});
 
-			const branchName = '[SpringCare.arceus] ' + inputs.branch.replace('/', '.');
-			const projectId = await getProjectId(projectsGroupsApi);
-			const branchId = await getBranchId(sourceFilesApi, projectId, branchName);
-			const enLocaleDirId = await getEnDirectoryId(sourceFilesApi, projectId, branchId);
+		const branchName = '[SpringCare.arceus] ' + inputs.branch.replace('/', '.');
+		const projectId = await getProjectId(projectsGroupsApi);
+		const branchId = await getBranchId(sourceFilesApi, projectId, branchName);
+		const enLocaleDirId = await getEnDirectoryId(sourceFilesApi, projectId, branchId);
 
-			// Todo: get changed files
-			// What if?
-			//	- output changed files from translation diff action using `setOutput`
-			//	- filter out only the changed files
-			const filesIds = await getFileIds(sourceFilesApi, projectId, enLocaleDirId);
+		// Todo: get changed files
+		// What if?
+		//	- output changed files from translation diff action using `setOutput`
+		//	- filter out only the changed files
+		const filesIds = await getFileIds(sourceFilesApi, projectId, enLocaleDirId);
 
-			const languages = await getTargetLanguages(projectsGroupsApi);
+		const languages = await getTargetLanguages(projectsGroupsApi);
 
-			const pullNumber = github.context.payload.pull_request.number;
-			const client = new github.GitHub(inputs.token);
-			try {
-				await createTask(tasksApi, projectId, filesIds, languages);
-				retry = 0;
-			} catch (e) {
-				if (e.message === 'Language has no untranslated words')
-					retry -= 1;
-			}
-		}, 2 * 60 * 1000); // sync time
-	}
+		const pullNumber = github.context.payload.pull_request.number;
+		const client = new github.GitHub(inputs.token);
+		try {
+			await createTask(tasksApi, projectId, filesIds, languages);
+			retry = 0;
+		} catch (e) {
+			if (e.message === 'Language has no untranslated words')
+				retry -= 1;
+		}
+	}, 2 * 60 * 1000); // sync time
+
+	setInterval ( () => {
+		if (retry === 0)
+			clearInterval(intervalId);
+	}, 2 * 60 * 1000);
+
 }
 
 main();
