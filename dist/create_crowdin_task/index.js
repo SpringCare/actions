@@ -17141,7 +17141,7 @@ function getTargetLanguages(projectsGroupsApi) {
 }
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        let retry = 3;
+        let retry = 1;
         while (retry > 0) {
             setTimeout(() => __awaiter(this, void 0, void 0, function* () {
                 const inputs = {

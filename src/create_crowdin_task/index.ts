@@ -60,7 +60,7 @@ async function getTargetLanguages(projectsGroupsApi: ProjectsGroups): Promise<Ar
 }
 
 async function main (): Promise<void> {
-	let retry = 3;
+	let retry = 1;
 
 	while (retry > 0) {
 		setTimeout(async () => {
