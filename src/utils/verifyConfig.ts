@@ -1,6 +1,6 @@
 const core = require('@actions/core');
 
-module.exports = function(): {} {
+module.exports = function(): Record<string, unknown> {
 	const repo = process.env.GITHUB_REPOSITORY,
 		ref = process.env.GITHUB_REF;
 
