@@ -82,13 +82,15 @@ const doMainStuff = async (inputs: { token: string; branch: string }, projectsGr
 		retry = 0;
 	} catch (e) {
 		if (e.message === 'Language has no untranslated words')
-			retry -= 1;
+			retry--;
+		else
+			retry = 0;
 	}
 	return retry;
 };
 
 async function main (): Promise<void> {
-	let retry = 1;
+	let retry = 2;
 
 	const inputs: {
 				token: string;
@@ -111,6 +113,8 @@ async function main (): Promise<void> {
 		retry = await doMainStuff(inputs, projectsGroupsApi, sourceFilesApi, tasksApi, retry);
 		if (retry > 0) {
 			await sleep(2 * 60 * 1000);
+		} else {
+			return;
 		}
 	}
 }
