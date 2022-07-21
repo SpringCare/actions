@@ -13571,22 +13571,18 @@ function getFileIds(sourceFilesApi, projectId, enLocaleDirId) {
 }
 function createTask(tasksApi, projectId, filesIds, languages) {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            for (const lang of languages) {
-                yield tasksApi.addTask(projectId, {
-                    title: 'SH Internal Task',
-                    type: 3,
-                    fileIds: filesIds,
-                    languageId: lang,
-                    vendor: 'oht',
-                    skipAssignedStrings: true,
-                    skipUntranslatedStrings: false,
-                    includeUntranslatedStringsOnly: false
-                });
-            }
-        }
-        catch (e) { // Todo: Check for specific error - Task not created
-            throw 'Manual Translation Needed!';
+        for (const lang of languages) {
+            yield tasksApi.addTask(projectId, {
+                title: 'SH Internal Task',
+                type: 3,
+                fileIds: filesIds,
+                languageId: lang,
+                vendor: 'oht',
+                skipAssignedStrings: true,
+                skipUntranslatedStrings: false,
+                includeUntranslatedStringsOnly: true,
+                description: ''
+            });
         }
     });
 }
@@ -13615,7 +13611,7 @@ const doMainStuff = (inputs, projectsGroupsApi, sourceFilesApi, tasksApi, retry)
         retry = 0;
     }
     catch (e) {
-        if (e.message === 'Language has no untranslated words')
+        if (e.message === 'Language has no unapproved words')
             retry--;
         else
             retry = 0;

@@ -36,21 +36,18 @@ async function getFileIds(sourceFilesApi: SourceFiles, projectId: number, enLoca
 }
 
 async function createTask(tasksApi: Tasks, projectId: number, filesIds: Array<number>, languages: string[]): Promise<void> {
-	try {
-		for (const lang of languages) {
-			await tasksApi.addTask(projectId, {
-				title                          : 'SH Internal Task',
-				type                           : 3,
-				fileIds                        : filesIds,
-				languageId                     : lang,
-				vendor                         : 'oht',
-				skipAssignedStrings            : true,
-				skipUntranslatedStrings        : false,
-				includeUntranslatedStringsOnly : false
-			});
-		}
-	} catch (e) { // Todo: Check for specific error - Task not created
-		throw 'Manual Translation Needed!';
+	for (const lang of languages) {
+		await tasksApi.addTask(projectId, {
+			title                          : 'SH Internal Task',
+			type                           : 3,
+			fileIds                        : filesIds,
+			languageId                     : lang,
+			vendor                         : 'oht',
+			skipAssignedStrings            : true,
+			skipUntranslatedStrings        : false,
+			includeUntranslatedStringsOnly : true,
+			description                    : ''
+		});
 	}
 }
 
@@ -81,7 +78,7 @@ const doMainStuff = async (inputs: { token: string; branch: string }, projectsGr
 		await createTask(tasksApi, projectId, filesIds, languages);
 		retry = 0;
 	} catch (e) {
-		if (e.message === 'Language has no untranslated words')
+		if (e.message === 'Language has no unapproved words')
 			retry--;
 		else
 			retry = 0;
