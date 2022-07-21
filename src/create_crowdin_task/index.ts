@@ -60,8 +60,8 @@ function sleep(ms: number): Promise<unknown> {
 	return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-const doMainStuff = async (inputs: { token: string; branch: string }, projectsGroupsApi: ProjectsGroups, sourceFilesApi: SourceFiles, tasksApi: Tasks, retry: number): Promise<number> => {
-	const branchName = '[SpringCare.arceus] ' + inputs.branch.replace('/', '.');
+const doMainStuff = async (branch: string, projectsGroupsApi: ProjectsGroups, sourceFilesApi: SourceFiles, tasksApi: Tasks, retry: number): Promise<number> => {
+	const branchName = '[SpringCare.arceus] ' + branch.replace('/', '.');
 	const projectId = await getProjectId(projectsGroupsApi);
 	const branchId = await getBranchId(sourceFilesApi, projectId, branchName);
 	const enLocaleDirId = await getEnDirectoryId(sourceFilesApi, projectId, branchId);
@@ -107,7 +107,7 @@ async function main (): Promise<void> {
 
 	// eslint-disable-next-line no-constant-condition
 	while (true) {
-		retry = await doMainStuff(inputs, projectsGroupsApi, sourceFilesApi, tasksApi, retry);
+		retry = await doMainStuff(inputs.branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry);
 		if (retry > 0) {
 			await sleep(2 * 60 * 1000);
 		} else {

@@ -13595,8 +13595,8 @@ function getTargetLanguages(projectsGroupsApi) {
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-const doMainStuff = (inputs, projectsGroupsApi, sourceFilesApi, tasksApi, retry) => __awaiter(void 0, void 0, void 0, function* () {
-    const branchName = '[SpringCare.arceus] ' + inputs.branch.replace('/', '.');
+const doMainStuff = (branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry) => __awaiter(void 0, void 0, void 0, function* () {
+    const branchName = '[SpringCare.arceus] ' + branch.replace('/', '.');
     const projectId = yield getProjectId(projectsGroupsApi);
     const branchId = yield getBranchId(sourceFilesApi, projectId, branchName);
     const enLocaleDirId = yield getEnDirectoryId(sourceFilesApi, projectId, branchId);
@@ -13629,7 +13629,7 @@ function main() {
         const { sourceFilesApi, projectsGroupsApi, tasksApi } = new crowdin.default({ token: inputs.crowdinToken });
         // eslint-disable-next-line no-constant-condition
         while (true) {
-            retry = yield doMainStuff(inputs, projectsGroupsApi, sourceFilesApi, tasksApi, retry);
+            retry = yield doMainStuff(inputs.branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry);
             if (retry > 0) {
                 yield sleep(2 * 60 * 1000);
             }
