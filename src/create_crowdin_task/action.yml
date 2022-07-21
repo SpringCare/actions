@@ -7,6 +7,9 @@ inputs:
   branch:
     required: false
     description: 'The base branch of the PR'
+  crowdin-token:
+    required: true
+    description: 'Crowdin API Token'
 branding:
   icon: 'git-pull-request'
   color: green

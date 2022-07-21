@@ -13624,10 +13624,9 @@ function main() {
         const inputs = {
             token: core.getInput('repo-token', { required: true }),
             branch: core.getInput('branch'),
+            crowdinToken: core.getInput('crowdin-token', { required: true }),
         };
-        // Todo: get the token from the env variable
-        const token = '';
-        const { sourceFilesApi, projectsGroupsApi, tasksApi } = new crowdin.default({ token });
+        const { sourceFilesApi, projectsGroupsApi, tasksApi } = new crowdin.default({ token: inputs.crowdinToken });
         // eslint-disable-next-line no-constant-condition
         while (true) {
             retry = yield doMainStuff(inputs, projectsGroupsApi, sourceFilesApi, tasksApi, retry);

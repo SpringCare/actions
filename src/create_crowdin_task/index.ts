@@ -92,18 +92,18 @@ async function main (): Promise<void> {
 	const inputs: {
 				token: string;
 				branch: string;
+				crowdinToken: string;
 			} = {
-				token  : core.getInput('repo-token', {required: true}),
-				branch : core.getInput('branch'),
+				token        : core.getInput('repo-token', {required: true}),
+				branch       : core.getInput('branch'),
+				crowdinToken : core.getInput('crowdin-token', {required: true}),
 			};
 
-	// Todo: get the token from the env variable
-	const token = '';
 	const {
 		sourceFilesApi,
 		projectsGroupsApi,
 		tasksApi
-	} = new crowdin.default({token});
+	} = new crowdin.default({token: inputs.crowdinToken});
 
 	// eslint-disable-next-line no-constant-condition
 	while (true) {
