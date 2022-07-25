@@ -1,10 +1,11 @@
-import {ProjectsGroups, SourceFiles, Tasks} from '@crowdin/crowdin-api-client';
+import {ProjectsGroups, ResponseList, SourceFiles, Tasks, TasksModel} from '@crowdin/crowdin-api-client';
 
 const core = require('@actions/core');
 const github = require('@actions/github');
 const crowdin = require('@crowdin/crowdin-api-client');
 
 import { Octokit } from '@octokit/core';
+import Task = TasksModel.Task;
 
 async function getProjectId(projectsGroupsApi: ProjectsGroups): Promise<number> {
 	const response = await projectsGroupsApi.listProjects();
@@ -35,10 +36,10 @@ async function getFileIds(sourceFilesApi: SourceFiles, projectId: number, enLoca
 	return files.data.map(elem => elem.data.id);
 }
 
-async function createTask(tasksApi: Tasks, projectId: number, filesIds: Array<number>, languages: string[]): Promise<void> {
+async function createTask(tasksApi: Tasks, projectId: number, filesIds: Array<number>, languages: string[], pullNumber: number): Promise<void> {
 	for (const lang of languages) {
 		await tasksApi.addTask(projectId, {
-			title                          : 'SH Internal Task',
+			title                          : `#${pullNumber} - SH Translation Task`,
 			type                           : 3,
 			fileIds                        : filesIds,
 			languageId                     : lang,
@@ -60,7 +61,7 @@ function sleep(ms: number): Promise<unknown> {
 	return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-const doMainStuff = async (branch: string, projectsGroupsApi: ProjectsGroups, sourceFilesApi: SourceFiles, tasksApi: Tasks, retry: number): Promise<number> => {
+const doMainStuff = async (branch: string, projectsGroupsApi: ProjectsGroups, sourceFilesApi: SourceFiles, tasksApi: Tasks, retry: number, pullNumber: number): Promise<number> => {
 	const branchName = '[SpringCare.arceus] ' + branch.replace('/', '.');
 	const projectId = await getProjectId(projectsGroupsApi);
 	const branchId = await getBranchId(sourceFilesApi, projectId, branchName);
@@ -75,7 +76,7 @@ const doMainStuff = async (branch: string, projectsGroupsApi: ProjectsGroups, so
 	const languages = await getTargetLanguages(projectsGroupsApi);
 
 	try {
-		await createTask(tasksApi, projectId, filesIds, languages);
+		await createTask(tasksApi, projectId, filesIds, languages, pullNumber);
 		retry = 0;
 	} catch (e) {
 		if (e.message === 'Language has no unapproved words')
@@ -105,13 +106,12 @@ async function main (): Promise<void> {
 		tasksApi
 	} = new crowdin.default({token: inputs.crowdinToken});
 
-	// eslint-disable-next-line no-constant-condition
-	while (true) {
-		retry = await doMainStuff(inputs.branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry);
+	const pullNumber = github.context.payload.pull_request.number;
+
+	while (retry > 0) {
+		retry = await doMainStuff(inputs.branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry, pullNumber);
 		if (retry > 0) {
 			await sleep(2 * 60 * 1000);
-		} else {
-			return;
 		}
 	}
 }

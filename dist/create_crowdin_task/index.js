@@ -13569,11 +13569,11 @@ function getFileIds(sourceFilesApi, projectId, enLocaleDirId) {
         return files.data.map(elem => elem.data.id);
     });
 }
-function createTask(tasksApi, projectId, filesIds, languages) {
+function createTask(tasksApi, projectId, filesIds, languages, pullNumber) {
     return __awaiter(this, void 0, void 0, function* () {
         for (const lang of languages) {
             yield tasksApi.addTask(projectId, {
-                title: 'SH Internal Task',
+                title: `#${pullNumber} - SH Translation Task`,
                 type: 3,
                 fileIds: filesIds,
                 languageId: lang,
@@ -13595,7 +13595,7 @@ function getTargetLanguages(projectsGroupsApi) {
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-const doMainStuff = (branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry) => __awaiter(void 0, void 0, void 0, function* () {
+const doMainStuff = (branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry, pullNumber) => __awaiter(void 0, void 0, void 0, function* () {
     const branchName = '[SpringCare.arceus] ' + branch.replace('/', '.');
     const projectId = yield getProjectId(projectsGroupsApi);
     const branchId = yield getBranchId(sourceFilesApi, projectId, branchName);
@@ -13607,7 +13607,7 @@ const doMainStuff = (branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry)
     const filesIds = yield getFileIds(sourceFilesApi, projectId, enLocaleDirId);
     const languages = yield getTargetLanguages(projectsGroupsApi);
     try {
-        yield createTask(tasksApi, projectId, filesIds, languages);
+        yield createTask(tasksApi, projectId, filesIds, languages, pullNumber);
         retry = 0;
     }
     catch (e) {
@@ -13627,14 +13627,11 @@ function main() {
             crowdinToken: core.getInput('crowdin-token', { required: true }),
         };
         const { sourceFilesApi, projectsGroupsApi, tasksApi } = new crowdin.default({ token: inputs.crowdinToken });
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-            retry = yield doMainStuff(inputs.branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry);
+        const pullNumber = github.context.payload.pull_request.number;
+        while (retry > 0) {
+            retry = yield doMainStuff(inputs.branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry, pullNumber);
             if (retry > 0) {
                 yield sleep(2 * 60 * 1000);
-            }
-            else {
-                return;
             }
         }
     });
