@@ -3,9 +3,10 @@ import {ProjectsGroups, ResponseList, SourceFiles, Tasks, TasksModel} from '@cro
 const core = require('@actions/core');
 const github = require('@actions/github');
 const crowdin = require('@crowdin/crowdin-api-client');
+import { addLabels } from '../utils/labeler';
 
 import { Octokit } from '@octokit/core';
-import Task = TasksModel.Task;
+import {GitHub} from '@actions/github';
 
 async function getProjectId(projectsGroupsApi: ProjectsGroups): Promise<number> {
 	const response = await projectsGroupsApi.listProjects();
@@ -61,7 +62,7 @@ function sleep(ms: number): Promise<unknown> {
 	return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-const doMainStuff = async (branch: string, projectsGroupsApi: ProjectsGroups, sourceFilesApi: SourceFiles, tasksApi: Tasks, retry: number, pullNumber: number): Promise<number> => {
+const trackSync = async (branch: string, projectsGroupsApi: ProjectsGroups, sourceFilesApi: SourceFiles, tasksApi: Tasks, retry: number, pullNumber: number, label = 'Manual Translations Needed'): Promise<object> => {
 	const branchName = '[SpringCare.arceus] ' + branch.replace('/', '.');
 	const projectId = await getProjectId(projectsGroupsApi);
 	const branchId = await getBranchId(sourceFilesApi, projectId, branchName);
@@ -77,6 +78,7 @@ const doMainStuff = async (branch: string, projectsGroupsApi: ProjectsGroups, so
 
 	try {
 		await createTask(tasksApi, projectId, filesIds, languages, pullNumber);
+		label = 'In Translation';
 		retry = 0;
 	} catch (e) {
 		if (e.message === 'Language has no unapproved words')
@@ -84,7 +86,7 @@ const doMainStuff = async (branch: string, projectsGroupsApi: ProjectsGroups, so
 		else
 			retry = 0;
 	}
-	return retry;
+	return {retry, label};
 };
 
 async function main (): Promise<void> {
@@ -106,14 +108,21 @@ async function main (): Promise<void> {
 		tasksApi
 	} = new crowdin.default({token: inputs.crowdinToken});
 
+	const client = new github.GitHub(inputs.token);
 	const pullNumber = github.context.payload.pull_request.number;
 
+	let label;
+
 	while (retry > 0) {
-		retry = await doMainStuff(inputs.branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry, pullNumber);
+		const foo = await trackSync(inputs.branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry, pullNumber, label);
+		retry = foo['retry'];
+		label = foo['label'];
 		if (retry > 0) {
 			await sleep(2 * 60 * 1000);
 		}
 	}
+
+	await addLabels(client, pullNumber, [label]);
 }
 
 main();
