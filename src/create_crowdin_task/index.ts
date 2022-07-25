@@ -1,12 +1,9 @@
-import {ProjectsGroups, ResponseList, SourceFiles, Tasks, TasksModel} from '@crowdin/crowdin-api-client';
+import {ProjectsGroups, SourceFiles, Tasks} from '@crowdin/crowdin-api-client';
 
 const core = require('@actions/core');
 const github = require('@actions/github');
 const crowdin = require('@crowdin/crowdin-api-client');
 import { addLabels } from '../utils/labeler';
-
-import { Octokit } from '@octokit/core';
-import {GitHub} from '@actions/github';
 
 async function getProjectId(projectsGroupsApi: ProjectsGroups): Promise<number> {
 	const response = await projectsGroupsApi.listProjects();
