@@ -13339,15 +13339,12 @@ function getTargetLanguages(projectsGroupsApi) {
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-const trackSync = (branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry, pullNumber, label = 'Manual Translations Needed') => create_crowdin_task_awaiter(void 0, void 0, void 0, function* () {
+const trackSync = (branch, crowdinAPIs, retry, pullNumber, label = 'Manual Translations Needed') => create_crowdin_task_awaiter(void 0, void 0, void 0, function* () {
+    const { projectsGroupsApi, sourceFilesApi, tasksApi } = crowdinAPIs;
     const branchName = '[SpringCare.arceus] ' + branch.replace('/', '.');
     const projectId = yield getProjectId(projectsGroupsApi);
     const branchId = yield getBranchId(sourceFilesApi, projectId, branchName);
     const enLocaleDirId = yield getEnDirectoryId(sourceFilesApi, projectId, branchId);
-    // Todo: get changed files
-    // What if?
-    //	- output changed files from translation diff action using `setOutput`
-    //	- filter out only the changed files
     const filesIds = yield getFileIds(sourceFilesApi, projectId, enLocaleDirId);
     const languages = yield getTargetLanguages(projectsGroupsApi);
     try {
@@ -13365,18 +13362,19 @@ const trackSync = (branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry, p
 });
 function main() {
     return create_crowdin_task_awaiter(this, void 0, void 0, function* () {
-        let retry = 2;
         const inputs = {
             token: core.getInput('repo-token', { required: true }),
             branch: core.getInput('branch'),
+            retry: core.getInput('retry', { required: true }),
             crowdinToken: core.getInput('crowdin-token', { required: true }),
         };
-        const { sourceFilesApi, projectsGroupsApi, tasksApi } = new crowdin.default({ token: inputs.crowdinToken });
+        const crowdinAPIs = new crowdin.default({ token: inputs.crowdinToken });
         const client = new create_crowdin_task_github.GitHub(inputs.token);
         const pullNumber = create_crowdin_task_github.context.payload.pull_request.number;
         let label;
+        let retry = inputs.retry;
         while (retry > 0) {
-            const foo = yield trackSync(inputs.branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry, pullNumber, label);
+            const foo = yield trackSync(inputs.branch, crowdinAPIs, retry, pullNumber);
             retry = foo['retry'];
             label = foo['label'];
             if (retry > 0) {

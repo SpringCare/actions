@@ -10,6 +10,9 @@ inputs:
   crowdin-token:
     required: true
     description: 'Crowdin API Token'
+  retry:
+    required: true
+    description: 'Number of retries'
 branding:
   icon: 'git-pull-request'
   color: green

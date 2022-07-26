@@ -59,16 +59,18 @@ function sleep(ms: number): Promise<unknown> {
 	return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-const trackSync = async (branch: string, projectsGroupsApi: ProjectsGroups, sourceFilesApi: SourceFiles, tasksApi: Tasks, retry: number, pullNumber: number, label = 'Manual Translations Needed'): Promise<object> => {
+const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber: number, label = 'Manual Translations Needed'): Promise<object> => {
+	const {
+		projectsGroupsApi,
+		sourceFilesApi,
+		tasksApi
+	} = crowdinAPIs;
+
 	const branchName = '[SpringCare.arceus] ' + branch.replace('/', '.');
 	const projectId = await getProjectId(projectsGroupsApi);
 	const branchId = await getBranchId(sourceFilesApi, projectId, branchName);
 	const enLocaleDirId = await getEnDirectoryId(sourceFilesApi, projectId, branchId);
 
-	// Todo: get changed files
-	// What if?
-	//	- output changed files from translation diff action using `setOutput`
-	//	- filter out only the changed files
 	const filesIds = await getFileIds(sourceFilesApi, projectId, enLocaleDirId);
 
 	const languages = await getTargetLanguages(projectsGroupsApi);
@@ -87,31 +89,28 @@ const trackSync = async (branch: string, projectsGroupsApi: ProjectsGroups, sour
 };
 
 async function main (): Promise<void> {
-	let retry = 2;
-
 	const inputs: {
 				token: string;
 				branch: string;
+				retry: number;
 				crowdinToken: string;
 			} = {
 				token        : core.getInput('repo-token', {required: true}),
 				branch       : core.getInput('branch'),
+				retry        : core.getInput('retry', {required: true}),
 				crowdinToken : core.getInput('crowdin-token', {required: true}),
 			};
 
-	const {
-		sourceFilesApi,
-		projectsGroupsApi,
-		tasksApi
-	} = new crowdin.default({token: inputs.crowdinToken});
+	const crowdinAPIs = new crowdin.default({token: inputs.crowdinToken});
 
 	const client = new github.GitHub(inputs.token);
 	const pullNumber = github.context.payload.pull_request.number;
 
 	let label;
+	let retry = inputs.retry;
 
 	while (retry > 0) {
-		const foo = await trackSync(inputs.branch, projectsGroupsApi, sourceFilesApi, tasksApi, retry, pullNumber, label);
+		const foo = await trackSync(inputs.branch, crowdinAPIs, retry, pullNumber);
 		retry = foo['retry'];
 		label = foo['label'];
 		if (retry > 0) {
