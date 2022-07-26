@@ -13,6 +13,9 @@ inputs:
   retry:
     required: true
     description: 'Number of retries'
+  changed-files:
+    required: true
+    description: 'Array of changed files'
 branding:
   icon: 'git-pull-request'
   color: green

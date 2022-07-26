@@ -94,13 +94,15 @@ async function main (): Promise<void> {
 				branch: string;
 				retry: number;
 				crowdinToken: string;
+				changedFiles: any;
 			} = {
 				token        : core.getInput('repo-token', {required: true}),
 				branch       : core.getInput('branch'),
 				retry        : core.getInput('retry', {required: true}),
 				crowdinToken : core.getInput('crowdin-token', {required: true}),
+				changedFiles : core.getInput('changed-files', {required: true}),
 			};
-
+	console.log('>>>>>>>>>>>>>>>Changed Files:', inputs.changedFiles);
 	const crowdinAPIs = new crowdin.default({token: inputs.crowdinToken});
 
 	const client = new github.GitHub(inputs.token);
