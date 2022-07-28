@@ -25,13 +25,12 @@ async function getBranchId(sourceFilesApi: SourceFiles, projectId: number, branc
 	return branches.data[0].data.id;
 }
 
-async function getFileIds(sourceFilesApi: SourceFiles, projectId: number, enLocaleDirId: number): Promise<Array<number>> {
+async function getFileIds(sourceFilesApi: SourceFiles, projectId: number, enLocaleDirId: number, translationFiles: Array<string>): Promise<Array<number>> {
 	const files = await sourceFilesApi.listProjectFiles(projectId, {
 		directoryId: enLocaleDirId
 	});
 
-	// Todo: filter only the files changed in the current PR
-	return files.data.map(elem => elem.data.id);
+	return files.data.filter(elem => translationFiles.includes(elem.data.name)).map(elem => elem.data.id);
 }
 
 async function createTask(tasksApi: Tasks, projectId: number, filesIds: Array<number>, languages: string[], pullNumber: number): Promise<void> {
@@ -59,7 +58,7 @@ function sleep(ms: number): Promise<unknown> {
 	return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber: number, label = 'Manual Translations Needed'): Promise<object> => {
+const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber: number, translationFiles: Array<string> ,label = 'Manual Translations Needed'): Promise<object> => {
 	const {
 		projectsGroupsApi,
 		sourceFilesApi,
@@ -71,7 +70,7 @@ const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber:
 	const branchId = await getBranchId(sourceFilesApi, projectId, branchName);
 	const enLocaleDirId = await getEnDirectoryId(sourceFilesApi, projectId, branchId);
 
-	const filesIds = await getFileIds(sourceFilesApi, projectId, enLocaleDirId);
+	const filesIds = await getFileIds(sourceFilesApi, projectId, enLocaleDirId, translationFiles);
 
 	const languages = await getTargetLanguages(projectsGroupsApi);
 
@@ -94,7 +93,7 @@ async function main (): Promise<void> {
 		branch: string;
 		retry: number;
 		crowdinToken: string;
-		changedFiles: any;
+		changedFiles: Record<string, string>;
 	} = {
 		token        : core.getInput('repo-token', {required: true}),
 		branch       : core.getInput('branch'),
@@ -107,12 +106,13 @@ async function main (): Promise<void> {
 
 	const client = new github.GitHub(inputs.token);
 	const pullNumber = github.context.payload.pull_request.number;
+	const translationFiles = Object.keys(inputs.changedFiles);
 
 	let label;
 	let retry = inputs.retry;
 
 	while (retry > 0) {
-		const foo = await trackSync(inputs.branch, crowdinAPIs, retry, pullNumber);
+		const foo = await trackSync(inputs.branch, crowdinAPIs, retry, pullNumber, translationFiles);
 		retry = foo['retry'];
 		label = foo['label'];
 		if (retry > 0) {

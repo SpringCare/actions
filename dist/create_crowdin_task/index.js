@@ -13304,13 +13304,12 @@ function getBranchId(sourceFilesApi, projectId, branchName) {
         return branches.data[0].data.id;
     });
 }
-function getFileIds(sourceFilesApi, projectId, enLocaleDirId) {
+function getFileIds(sourceFilesApi, projectId, enLocaleDirId, translationFiles) {
     return create_crowdin_task_awaiter(this, void 0, void 0, function* () {
         const files = yield sourceFilesApi.listProjectFiles(projectId, {
             directoryId: enLocaleDirId
         });
-        // Todo: filter only the files changed in the current PR
-        return files.data.map(elem => elem.data.id);
+        return files.data.filter(elem => translationFiles.includes(elem.data.name)).map(elem => elem.data.id);
     });
 }
 function createTask(tasksApi, projectId, filesIds, languages, pullNumber) {
@@ -13339,13 +13338,13 @@ function getTargetLanguages(projectsGroupsApi) {
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-const trackSync = (branch, crowdinAPIs, retry, pullNumber, label = 'Manual Translations Needed') => create_crowdin_task_awaiter(void 0, void 0, void 0, function* () {
+const trackSync = (branch, crowdinAPIs, retry, pullNumber, translationFiles, label = 'Manual Translations Needed') => create_crowdin_task_awaiter(void 0, void 0, void 0, function* () {
     const { projectsGroupsApi, sourceFilesApi, tasksApi } = crowdinAPIs;
     const branchName = '[SpringCare.arceus] ' + branch.replace('/', '.');
     const projectId = yield getProjectId(projectsGroupsApi);
     const branchId = yield getBranchId(sourceFilesApi, projectId, branchName);
     const enLocaleDirId = yield getEnDirectoryId(sourceFilesApi, projectId, branchId);
-    const filesIds = yield getFileIds(sourceFilesApi, projectId, enLocaleDirId);
+    const filesIds = yield getFileIds(sourceFilesApi, projectId, enLocaleDirId, translationFiles);
     const languages = yield getTargetLanguages(projectsGroupsApi);
     try {
         yield createTask(tasksApi, projectId, filesIds, languages, pullNumber);
@@ -13373,10 +13372,11 @@ function main() {
         const crowdinAPIs = new crowdin.default({ token: inputs.crowdinToken });
         const client = new create_crowdin_task_github.GitHub(inputs.token);
         const pullNumber = create_crowdin_task_github.context.payload.pull_request.number;
+        const translationFiles = Object.keys(inputs.changedFiles);
         let label;
         let retry = inputs.retry;
         while (retry > 0) {
-            const foo = yield trackSync(inputs.branch, crowdinAPIs, retry, pullNumber);
+            const foo = yield trackSync(inputs.branch, crowdinAPIs, retry, pullNumber, translationFiles);
             retry = foo['retry'];
             label = foo['label'];
             if (retry > 0) {
