@@ -11556,6 +11556,17 @@ function createLabel(octokit, inputs) {
         }
     });
 }
+function getLabels(client, prNumber) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Getting labels for ', prNumber);
+        const labels = yield client.issues.listLabelsOnIssue({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+        });
+        return labels.data.map(elem => elem.name);
+    });
+}
 
 // EXTERNAL MODULE: ./node_modules/axios/index.js
 var axios = __webpack_require__(53);

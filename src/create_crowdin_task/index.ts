@@ -1,9 +1,15 @@
 import {ProjectsGroups, SourceFiles, Tasks} from '@crowdin/crowdin-api-client';
-import {addLabels} from '../utils/labeler';
+import {addLabels, getLabels, removeLabel} from '../utils/labeler';
+import {GitHub} from '@actions/github';
 
 const core = require('@actions/core');
 const github = require('@actions/github');
 const crowdin = require('@crowdin/crowdin-api-client');
+
+enum labels {
+	ManualTranslations = 'Manual Translations Needed',
+	InProgress = 'Translations in-progress'
+}
 
 interface Sync {
 	retry: number;
@@ -64,7 +70,7 @@ function sleep(ms: number): Promise<unknown> {
 	return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber: number, translationFiles: Array<string> ,label = 'Manual Translations Needed'): Promise<Sync> => {
+const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber: number, translationFiles: Array<string> ,label = labels.ManualTranslations): Promise<Sync> => {
 	const {
 		projectsGroupsApi,
 		sourceFilesApi,
@@ -84,7 +90,7 @@ const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber:
 
 	try {
 		await createTask(tasksApi, projectId, filesIds, languages, pullNumber);
-		label = 'In Translation';
+		label = labels.InProgress;
 		retry = 0;
 	} catch (e) {
 		if (e.message === 'Language has no unapproved words')
@@ -96,6 +102,18 @@ const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber:
 	}
 	return {retry, label, failFlag};
 };
+
+async function addLabelstoPR(client: GitHub, pullNumber: number, label: string): Promise<void> {
+	const existingLabels = await getLabels(client, pullNumber);
+
+	if (label === labels.InProgress && existingLabels.includes(labels.ManualTranslations)) {
+		await removeLabel(client, pullNumber, labels.ManualTranslations);
+	} else if (label === labels.ManualTranslations && existingLabels.includes(labels.InProgress)) {
+		label = labels.InProgress;
+	}
+
+	await addLabels(client, pullNumber, [label]);
+}
 
 async function main (): Promise<void> {
 	const inputs: {
@@ -131,7 +149,7 @@ async function main (): Promise<void> {
 		}
 	}
 
-	await addLabels(client, pullNumber, [label]);
+	await addLabelstoPR(client, pullNumber, label);
 
 	failFlag && core.setFailed(label);
 }

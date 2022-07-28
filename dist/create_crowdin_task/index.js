@@ -13267,6 +13267,17 @@ function createLabel(octokit, inputs) {
         }
     });
 }
+function getLabels(client, prNumber) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Getting labels for ', prNumber);
+        const labels = yield client.issues.listLabelsOnIssue({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+        });
+        return labels.data.map(elem => elem.name);
+    });
+}
 
 // CONCATENATED MODULE: ./src/create_crowdin_task/index.ts
 var create_crowdin_task_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -13282,6 +13293,11 @@ var create_crowdin_task_awaiter = (undefined && undefined.__awaiter) || function
 const core = __webpack_require__(393);
 const create_crowdin_task_github = __webpack_require__(469);
 const crowdin = __webpack_require__(602);
+var labels;
+(function (labels) {
+    labels["ManualTranslations"] = "Manual Translations Needed";
+    labels["InProgress"] = "Translations in-progress";
+})(labels || (labels = {}));
 function getProjectId(projectsGroupsApi) {
     return create_crowdin_task_awaiter(this, void 0, void 0, function* () {
         const response = yield projectsGroupsApi.listProjects();
@@ -13338,7 +13354,7 @@ function getTargetLanguages(projectsGroupsApi) {
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-const trackSync = (branch, crowdinAPIs, retry, pullNumber, translationFiles, label = 'Manual Translations Needed') => create_crowdin_task_awaiter(void 0, void 0, void 0, function* () {
+const trackSync = (branch, crowdinAPIs, retry, pullNumber, translationFiles, label = labels.ManualTranslations) => create_crowdin_task_awaiter(void 0, void 0, void 0, function* () {
     const { projectsGroupsApi, sourceFilesApi, tasksApi } = crowdinAPIs;
     const branchName = '[SpringCare.arceus] ' + branch.replace('/', '.');
     const projectId = yield getProjectId(projectsGroupsApi);
@@ -13349,7 +13365,7 @@ const trackSync = (branch, crowdinAPIs, retry, pullNumber, translationFiles, lab
     let failFlag = false;
     try {
         yield createTask(tasksApi, projectId, filesIds, languages, pullNumber);
-        label = 'In Translation';
+        label = labels.InProgress;
         retry = 0;
     }
     catch (e) {
@@ -13362,6 +13378,18 @@ const trackSync = (branch, crowdinAPIs, retry, pullNumber, translationFiles, lab
     }
     return { retry, label, failFlag };
 });
+function addLabelstoPR(client, pullNumber, label) {
+    return create_crowdin_task_awaiter(this, void 0, void 0, function* () {
+        const existingLabels = yield getLabels(client, pullNumber);
+        if (label === labels.InProgress && existingLabels.includes(labels.ManualTranslations)) {
+            yield removeLabel(client, pullNumber, labels.ManualTranslations);
+        }
+        else if (label === labels.ManualTranslations && existingLabels.includes(labels.InProgress)) {
+            label = labels.InProgress;
+        }
+        yield addLabels(client, pullNumber, [label]);
+    });
+}
 function main() {
     return create_crowdin_task_awaiter(this, void 0, void 0, function* () {
         const inputs = {
@@ -13387,7 +13415,7 @@ function main() {
                 yield sleep(2 * 60 * 1000);
             }
         }
-        yield addLabels(client, pullNumber, [label]);
+        yield addLabelstoPR(client, pullNumber, label);
         failFlag && core.setFailed(label);
     });
 }

@@ -11126,6 +11126,17 @@ function createLabel(octokit, inputs) {
         }
     });
 }
+function getLabels(client, prNumber) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log('Getting labels for ', prNumber);
+        const labels = yield client.issues.listLabelsOnIssue({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+        });
+        return labels.data.map(elem => elem.name);
+    });
+}
 
 // CONCATENATED MODULE: ./src/changes_in_branch_labeler/index.ts
 var changes_in_branch_labeler_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
