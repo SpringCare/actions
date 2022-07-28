@@ -1,9 +1,9 @@
 import {ProjectsGroups, SourceFiles, Tasks} from '@crowdin/crowdin-api-client';
+import {addLabels} from '../utils/labeler';
 
 const core = require('@actions/core');
 const github = require('@actions/github');
 const crowdin = require('@crowdin/crowdin-api-client');
-import { addLabels } from '../utils/labeler';
 
 async function getProjectId(projectsGroupsApi: ProjectsGroups): Promise<number> {
 	const response = await projectsGroupsApi.listProjects();
@@ -93,7 +93,7 @@ async function main (): Promise<void> {
 		branch: string;
 		retry: number;
 		crowdinToken: string;
-		changedFiles: Record<string, string>;
+		changedFiles: string;
 	} = {
 		token        : core.getInput('repo-token', {required: true}),
 		branch       : core.getInput('branch'),
@@ -101,12 +101,11 @@ async function main (): Promise<void> {
 		crowdinToken : core.getInput('crowdin-token', {required: true}),
 		changedFiles : core.getInput('changed-files', {required: true}),
 	};
-	console.log('>>>>>>>>>>>>>>>Changed Files:', inputs.changedFiles);
 	const crowdinAPIs = new crowdin.default({token: inputs.crowdinToken});
 
 	const client = new github.GitHub(inputs.token);
 	const pullNumber = github.context.payload.pull_request.number;
-	const translationFiles = Object.keys(inputs.changedFiles);
+	const translationFiles = Object.keys(JSON.parse(inputs.changedFiles));
 
 	let label;
 	let retry = inputs.retry;
