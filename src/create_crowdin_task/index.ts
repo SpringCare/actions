@@ -90,18 +90,18 @@ const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber:
 
 async function main (): Promise<void> {
 	const inputs: {
-				token: string;
-				branch: string;
-				retry: number;
-				crowdinToken: string;
-				changedFiles: any;
-			} = {
-				token        : core.getInput('repo-token', {required: true}),
-				branch       : core.getInput('branch'),
-				retry        : core.getInput('retry', {required: true}),
-				crowdinToken : core.getInput('crowdin-token', {required: true}),
-				changedFiles : core.getInput('changed-files', {required: true}),
-			};
+		token: string;
+		branch: string;
+		retry: number;
+		crowdinToken: string;
+		changedFiles: any;
+	} = {
+		token        : core.getInput('repo-token', {required: true}),
+		branch       : core.getInput('branch'),
+		retry        : core.getInput('retry', {required: true}),
+		crowdinToken : core.getInput('crowdin-token', {required: true}),
+		changedFiles : core.getInput('changed-files', {required: true}),
+	};
 	console.log('>>>>>>>>>>>>>>>Changed Files:', inputs.changedFiles);
 	const crowdinAPIs = new crowdin.default({token: inputs.crowdinToken});
 

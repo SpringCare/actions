@@ -210,7 +210,7 @@ async function main (): Promise<void> {
 	}
 
 	if (failFlag) {
-		core.setOutput('changedFiles', allFiles['en']);
+		core.setOutput('changed-files', allFiles['en']);
 		core.setFailed('Translations out of sync!');
 	}
 }
