@@ -1,4 +1,4 @@
-name: Translations diff check
+name: Translations diff check and Crowdin Task Creation
 
 on: [pull_request]
 
@@ -6,10 +6,29 @@ jobs:
   translation-check:
     runs-on: ubuntu-latest
 
+    outputs:
+      changed-files: ${{ steps.translation-sync.outputs.changed-files }}
     steps:
-      - uses: SpringCare/actions/dist/translations_diff@feature/translation-diff
+      - id: translation-sync
+        name: translation-sync
+        uses: SpringCare/actions/dist/translations_diff@feature/automate-crowdin-task
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           base-branch: ${{ github.head_ref }}
           target-branch: ${{ github.base_ref }}
-          langs: 'es, pt'
+          langs: 'de, es'
+
+  create-crowdin-task:
+    needs: translation-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    if: always() && (needs.translation-check.result == 'failure')
+    steps:
+      - uses: SpringCare/actions/dist/create_crowdin_task@feature/automate-crowdin-task
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
+          crowdin-token: ${{ secrets.CROWDIN_TOKEN }}
+          changed-files: ${{ needs.translation-check.outputs.changed-files }}
+          retry: 2
