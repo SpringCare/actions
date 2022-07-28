@@ -5,6 +5,12 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const crowdin = require('@crowdin/crowdin-api-client');
 
+interface Sync {
+	retry: number;
+	label: string;
+	failFlag: boolean;
+}
+
 async function getProjectId(projectsGroupsApi: ProjectsGroups): Promise<number> {
 	const response = await projectsGroupsApi.listProjects();
 	return response.data[0].data.id;
@@ -58,7 +64,7 @@ function sleep(ms: number): Promise<unknown> {
 	return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber: number, translationFiles: Array<string> ,label = 'Manual Translations Needed'): Promise<object> => {
+const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber: number, translationFiles: Array<string> ,label = 'Manual Translations Needed'): Promise<Sync> => {
 	const {
 		projectsGroupsApi,
 		sourceFilesApi,
@@ -74,6 +80,8 @@ const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber:
 
 	const languages = await getTargetLanguages(projectsGroupsApi);
 
+	let failFlag = false;
+
 	try {
 		await createTask(tasksApi, projectId, filesIds, languages, pullNumber);
 		label = 'In Translation';
@@ -81,10 +89,12 @@ const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber:
 	} catch (e) {
 		if (e.message === 'Language has no unapproved words')
 			retry--;
-		else
+		else {
 			retry = 0;
+			failFlag = true;
+		}
 	}
-	return {retry, label};
+	return {retry, label, failFlag};
 };
 
 async function main (): Promise<void> {
@@ -109,17 +119,21 @@ async function main (): Promise<void> {
 
 	let label;
 	let retry = inputs.retry;
+	let failFlag;
 
 	while (retry > 0) {
-		const foo = await trackSync(inputs.branch, crowdinAPIs, retry, pullNumber, translationFiles);
-		retry = foo['retry'];
-		label = foo['label'];
+		const sync = await trackSync(inputs.branch, crowdinAPIs, retry, pullNumber, translationFiles);
+		retry = sync.retry;
+		label = sync.label;
+		failFlag = sync.failFlag;
 		if (retry > 0) {
 			await sleep(2 * 60 * 1000);
 		}
 	}
 
 	await addLabels(client, pullNumber, [label]);
+
+	failFlag && core.setFailed(label);
 }
 
 main();

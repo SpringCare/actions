@@ -13346,6 +13346,7 @@ const trackSync = (branch, crowdinAPIs, retry, pullNumber, translationFiles, lab
     const enLocaleDirId = yield getEnDirectoryId(sourceFilesApi, projectId, branchId);
     const filesIds = yield getFileIds(sourceFilesApi, projectId, enLocaleDirId, translationFiles);
     const languages = yield getTargetLanguages(projectsGroupsApi);
+    let failFlag = false;
     try {
         yield createTask(tasksApi, projectId, filesIds, languages, pullNumber);
         label = 'In Translation';
@@ -13354,10 +13355,12 @@ const trackSync = (branch, crowdinAPIs, retry, pullNumber, translationFiles, lab
     catch (e) {
         if (e.message === 'Language has no unapproved words')
             retry--;
-        else
+        else {
             retry = 0;
+            failFlag = true;
+        }
     }
-    return { retry, label };
+    return { retry, label, failFlag };
 });
 function main() {
     return create_crowdin_task_awaiter(this, void 0, void 0, function* () {
@@ -13374,15 +13377,18 @@ function main() {
         const translationFiles = Object.keys(JSON.parse(inputs.changedFiles));
         let label;
         let retry = inputs.retry;
+        let failFlag;
         while (retry > 0) {
-            const foo = yield trackSync(inputs.branch, crowdinAPIs, retry, pullNumber, translationFiles);
-            retry = foo['retry'];
-            label = foo['label'];
+            const sync = yield trackSync(inputs.branch, crowdinAPIs, retry, pullNumber, translationFiles);
+            retry = sync.retry;
+            label = sync.label;
+            failFlag = sync.failFlag;
             if (retry > 0) {
                 yield sleep(2 * 60 * 1000);
             }
         }
         yield addLabels(client, pullNumber, [label]);
+        failFlag && core.setFailed(label);
     });
 }
 main();
