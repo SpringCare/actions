@@ -103,13 +103,13 @@ const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber:
 	return {retry, label, failFlag};
 };
 
-async function addLabelstoPR(client: GitHub, pullNumber: number, label: string): Promise<void> {
+async function addLabelsToPR(client: GitHub, pullNumber: number, label: string): Promise<void> {
 	const existingLabels = await getLabels(client, pullNumber);
 
 	if (label === labels.InProgress && existingLabels.includes(labels.ManualTranslations)) {
 		await removeLabel(client, pullNumber, labels.ManualTranslations);
 	} else if (label === labels.ManualTranslations && existingLabels.includes(labels.InProgress)) {
-		label = labels.InProgress;
+		return;
 	}
 
 	await addLabels(client, pullNumber, [label]);
@@ -149,7 +149,7 @@ async function main (): Promise<void> {
 		}
 	}
 
-	await addLabelstoPR(client, pullNumber, label);
+	await addLabelsToPR(client, pullNumber, label);
 
 	failFlag && core.setFailed(label);
 }

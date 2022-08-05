@@ -13378,14 +13378,14 @@ const trackSync = (branch, crowdinAPIs, retry, pullNumber, translationFiles, lab
     }
     return { retry, label, failFlag };
 });
-function addLabelstoPR(client, pullNumber, label) {
+function addLabelsToPR(client, pullNumber, label) {
     return create_crowdin_task_awaiter(this, void 0, void 0, function* () {
         const existingLabels = yield getLabels(client, pullNumber);
         if (label === labels.InProgress && existingLabels.includes(labels.ManualTranslations)) {
             yield removeLabel(client, pullNumber, labels.ManualTranslations);
         }
         else if (label === labels.ManualTranslations && existingLabels.includes(labels.InProgress)) {
-            label = labels.InProgress;
+            return;
         }
         yield addLabels(client, pullNumber, [label]);
     });
@@ -13415,7 +13415,7 @@ function main() {
                 yield sleep(2 * 60 * 1000);
             }
         }
-        yield addLabelstoPR(client, pullNumber, label);
+        yield addLabelsToPR(client, pullNumber, label);
         failFlag && core.setFailed(label);
     });
 }
