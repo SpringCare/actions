@@ -1,8 +1,9 @@
+import {getFileContent, getFiles, objectPaths} from '../utils/pullRequest';
+import {Octokit} from '@octokit/core';
+import _ from 'lodash';
+
 const core = require('@actions/core');
 const github = require('@actions/github');
-
-import { Octokit } from '@octokit/core';
-import _ from 'lodash';
 
 const allFiles = {};
 
@@ -28,24 +29,6 @@ function extractKeys(patch: string): Array<string> {
 
 	return addedKeys.map(key => key.trim().replace(/"/g, '')).sort();
 }
-
-// returns an object with flattened keys
-const objectPaths = (object): Record<string, string> => {
-	const result = {};
-	_.forOwn(object, function (value, key) {
-		if (_.isPlainObject(value)) {
-			// Recursive step
-			const keys = objectPaths(value);
-			for (const subKey in keys) {
-				const finalKey = key + '.' + subKey;
-				result[finalKey] = keys[subKey];
-			}
-		} else {
-			result[key] = value;
-		}
-	});
-	return result;
-};
 
 function compareFiles(baseFile: string, targetFile: string): Array<string> {
 	const baseObject = objectPaths(baseFile);
@@ -133,22 +116,6 @@ function languageCheck(languages: Array<string>): Array<string> {
 	return langNotPresent;
 }
 
-async function getFileContent(octokit: Octokit, branch: string, repository: Record<string, any>, file: string) {
-	const content = await octokit.request(
-		'GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
-			headers: {
-				Accept: 'application/vnd.github.v3.raw',
-			},
-			owner         : repository.owner,
-			repo          : repository.repo,
-			path          : `en/${file}`,
-			target_branch : branch
-		}
-	);
-
-	return JSON.parse(content.data);
-}
-
 async function main (): Promise<void> {
 	const inputs: {
 		token: string;
@@ -163,18 +130,9 @@ async function main (): Promise<void> {
 	};
 
 	const pullNumber = github.context.payload.pull_request.number;
-	const repository = github.context.repo;
-
 	const octokit = new Octokit({ auth: inputs.token });
 
-	const response = await octokit.request(
-		'GET /repos/{owner}/{repo}/pulls/{pull_number}/files?per_page={per_page}', {
-			owner       : repository.owner,
-			repo        : repository.repo,
-			pull_number : pullNumber,
-			per_page    : 100
-		}
-	);
+	const response = getFiles(octokit, pullNumber);
 
 	transformResponse(response);
 
@@ -193,8 +151,8 @@ async function main (): Promise<void> {
 	}
 
 	for (const file in allFiles['en']) {
-		const baseFile = await getFileContent(octokit, inputs.base_branch, repository, file);
-		const targetFile = await getFileContent(octokit, inputs.target_branch, repository, file);
+		const baseFile = await getFileContent(octokit, inputs.base_branch, file);
+		const targetFile = await getFileContent(octokit, inputs.target_branch, file);
 
 		const keyDifference = compareFiles(baseFile, targetFile);
 		const absent = validateKeySync(keyDifference, file, languages);

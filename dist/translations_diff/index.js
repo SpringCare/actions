@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(618);
+/******/ 		return __webpack_require__(787);
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -4085,7 +4085,7 @@ function register(state, name, method, options) {
 
 module.exports = authenticationRequestError;
 
-const { RequestError } = __webpack_require__(497);
+const { RequestError } = __webpack_require__(463);
 
 function authenticationRequestError(state, error, options) {
   if (!error.headers) throw error;
@@ -4506,7 +4506,7 @@ function hasLastPage (link) {
 
 module.exports = validate;
 
-const { RequestError } = __webpack_require__(497);
+const { RequestError } = __webpack_require__(463);
 const get = __webpack_require__(854);
 const set = __webpack_require__(883);
 
@@ -4662,7 +4662,7 @@ function validate(octokit, options) {
 
 module.exports = authenticationRequestError;
 
-const { RequestError } = __webpack_require__(497);
+const { RequestError } = __webpack_require__(463);
 
 function authenticationRequestError(state, error, options) {
   /* istanbul ignore next */
@@ -8437,69 +8437,6 @@ function validateAuth(auth) {
 
   throw new Error(`Invalid "auth" option: ${JSON.stringify(auth)}`);
 }
-
-
-/***/ }),
-
-/***/ 497:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var deprecation = __webpack_require__(692);
-var once = _interopDefault(__webpack_require__(969));
-
-const logOnce = once(deprecation => console.warn(deprecation));
-/**
- * Error with extra properties to help with debugging
- */
-
-class RequestError extends Error {
-  constructor(message, statusCode, options) {
-    super(message); // Maintains proper stack trace (only available on V8)
-
-    /* istanbul ignore next */
-
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
-
-    this.name = "HttpError";
-    this.status = statusCode;
-    Object.defineProperty(this, "code", {
-      get() {
-        logOnce(new deprecation.Deprecation("[@octokit/request-error] `error.code` is deprecated, use `error.status`."));
-        return statusCode;
-      }
-
-    });
-    this.headers = options.headers || {}; // redact request credentials without mutating original request options
-
-    const requestCopy = Object.assign({}, options.request);
-
-    if (options.request.headers.authorization) {
-      requestCopy.headers = Object.assign({}, options.request.headers, {
-        authorization: options.request.headers.authorization.replace(/ .*$/, " [REDACTED]")
-      });
-    }
-
-    requestCopy.url = requestCopy.url // client_id & client_secret can be passed as URL query parameters to increase rate limit
-    // see https://developer.github.com/v3/#increasing-the-unauthenticated-rate-limit-for-oauth-applications
-    .replace(/\bclient_secret=\w+/g, "client_secret=[REDACTED]") // OAuth tokens can be passed as URL query parameters, although it is not recommended
-    // see https://developer.github.com/v3/#oauth2-token-sent-in-a-header
-    .replace(/\baccess_token=\w+/g, "access_token=[REDACTED]");
-    this.request = requestCopy;
-  }
-
-}
-
-exports.RequestError = RequestError;
-//# sourceMappingURL=index.js.map
 
 
 /***/ }),
@@ -28145,208 +28082,6 @@ module.exports = require("events");
 
 /***/ }),
 
-/***/ 618:
-/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _octokit_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(448);
-/* harmony import */ var _octokit_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_octokit_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(557);
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-const core = __webpack_require__(470);
-const github = __webpack_require__(469);
-
-
-const allFiles = {};
-function compareKeys(enKeys, otherKeys) {
-    const keyNotPresent = [];
-    for (let element of enKeys) {
-        if (element.includes('.')) {
-            element = element.split('.').slice(-1)[0];
-        }
-        if (otherKeys.includes(element)) {
-            otherKeys.splice(otherKeys.indexOf(element), 1);
-        }
-        else {
-            keyNotPresent.push(element);
-        }
-    }
-    return keyNotPresent;
-}
-function extractKeys(patch) {
-    const regExpPlus = /(?<=\+).*?(?=:)/g;
-    const addedKeys = patch.match(regExpPlus);
-    return addedKeys.map(key => key.trim().replace(/"/g, '')).sort();
-}
-// returns an object with flattened keys
-const objectPaths = (object) => {
-    const result = {};
-    lodash__WEBPACK_IMPORTED_MODULE_1___default().forOwn(object, function (value, key) {
-        if (lodash__WEBPACK_IMPORTED_MODULE_1___default().isPlainObject(value)) {
-            // Recursive step
-            const keys = objectPaths(value);
-            for (const subKey in keys) {
-                const finalKey = key + '.' + subKey;
-                result[finalKey] = keys[subKey];
-            }
-        }
-        else {
-            result[key] = value;
-        }
-    });
-    return result;
-};
-function compareFiles(baseFile, targetFile) {
-    const baseObject = objectPaths(baseFile);
-    const targetObject = objectPaths(targetFile);
-    // if all the keys from base are present in targetObject
-    // compare keys and values
-    const difference = [];
-    for (const key in baseObject) {
-        if (!(key in targetObject)) {
-            difference.push(key);
-        }
-        else if (baseObject[key] !== targetObject[key]) {
-            difference.push(key);
-        }
-    }
-    return difference.sort();
-}
-function validateKeySync(keyDifference, fileName, languages) {
-    const fileNotPresent = [];
-    const keyNotPresent = [];
-    for (const lang of languages) {
-        if (allFiles[lang] === undefined)
-            continue;
-        if (allFiles[lang][fileName] === undefined) {
-            fileNotPresent.push(lang);
-            continue;
-        }
-        const patchedKeys = extractKeys(allFiles[lang][fileName]);
-        const notSynced = compareKeys(keyDifference, patchedKeys);
-        if (notSynced.length !== 0)
-            keyNotPresent.push({ [lang]: notSynced });
-    }
-    return {
-        'fileNotPresent': fileNotPresent,
-        'keyNotPresent': keyNotPresent
-    };
-}
-// returns a file: patch object for lang keys
-/**
-* {
-*  en: {
-*    file_name1: raw_url1,
-*    file_name2: raw_url2
-*  },
-* es: {
-*    file_name1: patch1
-*  }
-* }
-*/
-function transformResponse(response) {
-    const filesFromResponse = response.data.filter(elem => new RegExp('.*/locales/.*.json').test(elem.filename));
-    filesFromResponse.forEach(element => {
-        const path = element.filename.split('/');
-        const lang = path.slice(-2)[0];
-        const filename = path.slice(-1)[0];
-        if (!(lang in allFiles)) {
-            allFiles[lang] = {};
-        }
-        let store = '';
-        if (lang === 'en')
-            store = element.raw_url;
-        else
-            store = element.patch;
-        allFiles[lang][filename] = store;
-    });
-}
-function languageCheck(languages) {
-    const langNotPresent = [];
-    for (const lang of languages) {
-        if (allFiles[lang] === undefined) {
-            langNotPresent.push(lang);
-        }
-    }
-    return langNotPresent;
-}
-function getFileContent(octokit, branch, repository, file) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const content = yield octokit.request('GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
-            headers: {
-                Accept: 'application/vnd.github.v3.raw',
-            },
-            owner: repository.owner,
-            repo: repository.repo,
-            path: `en/${file}`,
-            target_branch: branch
-        });
-        return JSON.parse(content.data);
-    });
-}
-function main() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const inputs = {
-            token: core.getInput('repo-token', { required: true }),
-            base_branch: core.getInput('base-branch'),
-            target_branch: core.getInput('target-branch'),
-            langs: core.getInput('langs')
-        };
-        const pullNumber = github.context.payload.pull_request.number;
-        const repository = github.context.repo;
-        const octokit = new _octokit_core__WEBPACK_IMPORTED_MODULE_0__.Octokit({ auth: inputs.token });
-        const response = yield octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files?per_page={per_page}', {
-            owner: repository.owner,
-            repo: repository.repo,
-            pull_number: pullNumber,
-            per_page: 100
-        });
-        transformResponse(response);
-        if (allFiles['en'] === undefined) {
-            console.log('No modified/added keys in english locale');
-            return;
-        }
-        const languages = inputs.langs.split(',').map(elem => elem.trim());
-        let failFlag = false;
-        const langNotPresent = languageCheck(languages);
-        if (langNotPresent.length !== 0) {
-            console.log('Languages not present: ', langNotPresent);
-            failFlag = true;
-        }
-        for (const file in allFiles['en']) {
-            const baseFile = yield getFileContent(octokit, inputs.base_branch, repository, file);
-            const targetFile = yield getFileContent(octokit, inputs.target_branch, repository, file);
-            const keyDifference = compareFiles(baseFile, targetFile);
-            const absent = validateKeySync(keyDifference, file, languages);
-            if (!lodash__WEBPACK_IMPORTED_MODULE_1___default().isEmpty(absent['fileNotPresent'])) {
-                console.log(file + ' not available for following languages: ' + absent['fileNotPresent']);
-                failFlag = true;
-            }
-            if (!lodash__WEBPACK_IMPORTED_MODULE_1___default().isEmpty(absent['keyNotPresent'])) {
-                console.log(file + ' is missing following keys: \n' + JSON.stringify(absent['keyNotPresent']));
-                failFlag = true;
-            }
-        }
-        if (failFlag) {
-            core.setFailed('Translations out of sync!');
-        }
-    });
-}
-main();
-
-
-/***/ }),
-
 /***/ 621:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -29293,6 +29028,240 @@ const getPage = __webpack_require__(265)
 function getFirstPage (octokit, link, headers) {
   return getPage(octokit, link, 'first', headers)
 }
+
+
+/***/ }),
+
+/***/ 787:
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: ./node_modules/lodash/lodash.js
+var lodash = __webpack_require__(557);
+var lodash_default = /*#__PURE__*/__webpack_require__.n(lodash);
+
+// CONCATENATED MODULE: ./src/utils/pullRequest.ts
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+const github = __webpack_require__(469);
+function getFiles(octokit, pullNumber) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files?per_page={per_page}', {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            pull_number: pullNumber,
+            per_page: 100
+        });
+    });
+}
+function getFileContent(octokit, branch, file) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const content = yield octokit.request('GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
+            headers: {
+                Accept: 'application/vnd.github.v3.raw',
+            },
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            path: `en/${file}`,
+            target_branch: branch
+        });
+        return JSON.parse(content.data);
+    });
+}
+// returns an object with flattened keys
+const objectPaths = (object) => {
+    const result = {};
+    lodash_default().forOwn(object, function (value, key) {
+        if (lodash_default().isPlainObject(value)) {
+            // Recursive step
+            const keys = objectPaths(value);
+            for (const subKey in keys) {
+                const finalKey = key + '.' + subKey;
+                result[finalKey] = keys[subKey];
+            }
+        }
+        else {
+            result[key] = value;
+        }
+    });
+    return result;
+};
+function getPRs(octokit, branch) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield octokit.request('GET /repos/{owner}/{repo}/pulls', {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            base: branch
+        });
+    });
+}
+
+// EXTERNAL MODULE: ./node_modules/@octokit/core/dist-node/index.js
+var dist_node = __webpack_require__(448);
+
+// CONCATENATED MODULE: ./src/translations_diff/index.ts
+var translations_diff_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+
+const core = __webpack_require__(470);
+const translations_diff_github = __webpack_require__(469);
+const allFiles = {};
+function compareKeys(enKeys, otherKeys) {
+    const keyNotPresent = [];
+    for (let element of enKeys) {
+        if (element.includes('.')) {
+            element = element.split('.').slice(-1)[0];
+        }
+        if (otherKeys.includes(element)) {
+            otherKeys.splice(otherKeys.indexOf(element), 1);
+        }
+        else {
+            keyNotPresent.push(element);
+        }
+    }
+    return keyNotPresent;
+}
+function extractKeys(patch) {
+    const regExpPlus = /(?<=\+).*?(?=:)/g;
+    const addedKeys = patch.match(regExpPlus);
+    return addedKeys.map(key => key.trim().replace(/"/g, '')).sort();
+}
+function compareFiles(baseFile, targetFile) {
+    const baseObject = objectPaths(baseFile);
+    const targetObject = objectPaths(targetFile);
+    // if all the keys from base are present in targetObject
+    // compare keys and values
+    const difference = [];
+    for (const key in baseObject) {
+        if (!(key in targetObject)) {
+            difference.push(key);
+        }
+        else if (baseObject[key] !== targetObject[key]) {
+            difference.push(key);
+        }
+    }
+    return difference.sort();
+}
+function validateKeySync(keyDifference, fileName, languages) {
+    const fileNotPresent = [];
+    const keyNotPresent = [];
+    for (const lang of languages) {
+        if (allFiles[lang] === undefined)
+            continue;
+        if (allFiles[lang][fileName] === undefined) {
+            fileNotPresent.push(lang);
+            continue;
+        }
+        const patchedKeys = extractKeys(allFiles[lang][fileName]);
+        const notSynced = compareKeys(keyDifference, patchedKeys);
+        if (notSynced.length !== 0)
+            keyNotPresent.push({ [lang]: notSynced });
+    }
+    return {
+        'fileNotPresent': fileNotPresent,
+        'keyNotPresent': keyNotPresent
+    };
+}
+// returns a file: patch object for lang keys
+/**
+* {
+*  en: {
+*    file_name1: raw_url1,
+*    file_name2: raw_url2
+*  },
+* es: {
+*    file_name1: patch1
+*  }
+* }
+*/
+function transformResponse(response) {
+    const filesFromResponse = response.data.filter(elem => new RegExp('.*/locales/.*.json').test(elem.filename));
+    filesFromResponse.forEach(element => {
+        const path = element.filename.split('/');
+        const lang = path.slice(-2)[0];
+        const filename = path.slice(-1)[0];
+        if (!(lang in allFiles)) {
+            allFiles[lang] = {};
+        }
+        let store = '';
+        if (lang === 'en')
+            store = element.raw_url;
+        else
+            store = element.patch;
+        allFiles[lang][filename] = store;
+    });
+}
+function languageCheck(languages) {
+    const langNotPresent = [];
+    for (const lang of languages) {
+        if (allFiles[lang] === undefined) {
+            langNotPresent.push(lang);
+        }
+    }
+    return langNotPresent;
+}
+function main() {
+    return translations_diff_awaiter(this, void 0, void 0, function* () {
+        const inputs = {
+            token: core.getInput('repo-token', { required: true }),
+            base_branch: core.getInput('base-branch'),
+            target_branch: core.getInput('target-branch'),
+            langs: core.getInput('langs')
+        };
+        const pullNumber = translations_diff_github.context.payload.pull_request.number;
+        const octokit = new dist_node.Octokit({ auth: inputs.token });
+        const response = getFiles(octokit, pullNumber);
+        transformResponse(response);
+        if (allFiles['en'] === undefined) {
+            console.log('No modified/added keys in english locale');
+            return;
+        }
+        const languages = inputs.langs.split(',').map(elem => elem.trim());
+        let failFlag = false;
+        const langNotPresent = languageCheck(languages);
+        if (langNotPresent.length !== 0) {
+            console.log('Languages not present: ', langNotPresent);
+            failFlag = true;
+        }
+        for (const file in allFiles['en']) {
+            const baseFile = yield getFileContent(octokit, inputs.base_branch, file);
+            const targetFile = yield getFileContent(octokit, inputs.target_branch, file);
+            const keyDifference = compareFiles(baseFile, targetFile);
+            const absent = validateKeySync(keyDifference, file, languages);
+            if (!lodash_default().isEmpty(absent['fileNotPresent'])) {
+                console.log(file + ' not available for following languages: ' + absent['fileNotPresent']);
+                failFlag = true;
+            }
+            if (!lodash_default().isEmpty(absent['keyNotPresent'])) {
+                console.log(file + ' is missing following keys: \n' + JSON.stringify(absent['keyNotPresent']));
+                failFlag = true;
+            }
+        }
+        if (failFlag) {
+            core.setFailed('Translations out of sync!');
+        }
+    });
+}
+main();
 
 
 /***/ }),
@@ -34757,40 +34726,6 @@ function register (state, name, method, options) {
 /******/ function(__webpack_require__) { // webpackRuntimeModules
 /******/ 	"use strict";
 /******/ 
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	!function() {
-/******/ 		// define __esModule on exports
-/******/ 		__webpack_require__.r = function(exports) {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	}();
-/******/ 	
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	!function() {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = function(module) {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				function getDefault() { return module['default']; } :
-/******/ 				function getModuleExports() { return module; };
-/******/ 			__webpack_require__.d(getter, 'a', getter);
-/******/ 			return getter;
-/******/ 		};
-/******/ 	}();
-/******/ 	
-/******/ 	/* webpack/runtime/define property getter */
-/******/ 	!function() {
-/******/ 		// define getter function for harmony exports
-/******/ 		var hasOwnProperty = Object.prototype.hasOwnProperty;
-/******/ 		__webpack_require__.d = function(exports, name, getter) {
-/******/ 			if(!hasOwnProperty.call(exports, name)) {
-/******/ 				Object.defineProperty(exports, name, { enumerable: true, get: getter });
-/******/ 			}
-/******/ 		};
-/******/ 	}();
-/******/ 	
 /******/ 	/* webpack/runtime/node module decorator */
 /******/ 	!function() {
 /******/ 		__webpack_require__.nmd = function(module) {
@@ -34805,6 +34740,59 @@ function register (state, name, method, options) {
 /******/ 				get: function() { return module.i; }
 /******/ 			});
 /******/ 			return module;
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	!function() {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = function(exports) {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getter */
+/******/ 	!function() {
+/******/ 		// define getter function for harmony exports
+/******/ 		var hasOwnProperty = Object.prototype.hasOwnProperty;
+/******/ 		__webpack_require__.d = function(exports, name, getter) {
+/******/ 			if(!hasOwnProperty.call(exports, name)) {
+/******/ 				Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 			}
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/create fake namespace object */
+/******/ 	!function() {
+/******/ 		// create a fake namespace object
+/******/ 		// mode & 1: value is a module id, require it
+/******/ 		// mode & 2: merge all properties of value into the ns
+/******/ 		// mode & 4: return value when already ns object
+/******/ 		// mode & 8|1: behave like require
+/******/ 		__webpack_require__.t = function(value, mode) {
+/******/ 			if(mode & 1) value = this(value);
+/******/ 			if(mode & 8) return value;
+/******/ 			if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 			var ns = Object.create(null);
+/******/ 			__webpack_require__.r(ns);
+/******/ 			Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 			if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 			return ns;
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	!function() {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = function(module) {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				function getDefault() { return module['default']; } :
+/******/ 				function getModuleExports() { return module; };
+/******/ 			__webpack_require__.d(getter, 'a', getter);
+/******/ 			return getter;
 /******/ 		};
 /******/ 	}();
 /******/ 	
