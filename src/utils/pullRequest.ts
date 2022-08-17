@@ -14,7 +14,7 @@ export async function getFiles(octokit: Octokit, pullNumber: number): Promise<an
 	);
 }
 
-export async function getFileContent(octokit: Octokit, branch: string, file: string) {
+export async function getFileContent(octokit: Octokit, branch: string, file: string, locale = 'en') {
 	const content = await octokit.request(
 		'GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
 			headers: {
@@ -22,7 +22,7 @@ export async function getFileContent(octokit: Octokit, branch: string, file: str
 			},
 			owner         : github.context.repo.owner,
 			repo          : github.context.repo.repo,
-			path          : `en/${file}`,
+			path          : `${locale}/${file}`,
 			target_branch : branch
 		}
 	);

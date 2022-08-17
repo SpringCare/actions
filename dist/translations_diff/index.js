@@ -29064,7 +29064,7 @@ function getFiles(octokit, pullNumber) {
         });
     });
 }
-function getFileContent(octokit, branch, file) {
+function getFileContent(octokit, branch, file, locale = 'en') {
     return __awaiter(this, void 0, void 0, function* () {
         const content = yield octokit.request('GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
             headers: {
@@ -29072,7 +29072,7 @@ function getFileContent(octokit, branch, file) {
             },
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
-            path: `en/${file}`,
+            path: `${locale}/${file}`,
             target_branch: branch
         });
         return JSON.parse(content.data);

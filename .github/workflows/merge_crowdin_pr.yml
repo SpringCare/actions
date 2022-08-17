@@ -1,0 +1,21 @@
+name: Automated Crowdin PR Merge
+
+on: [pull_request]
+
+jobs:
+  merge_crowdin_pr:
+    runs-on: ubuntu-latest
+
+    if: always() && !contains('
+      refs/heads/dev
+      refs/heads/staging
+      refs/heads/production
+      ', github.ref
+      )
+    steps:
+      - uses: SpringCare/actions/dist/merge_crowdin_pr@feature/gt-34-merge-crowdin-pr
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          base-branch: ${{ github.head_ref }}
+          target-branch: ${{ github.base_ref }}
+          langs: 'es, pt'
