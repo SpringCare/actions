@@ -1,6 +1,11 @@
 name: Automated Crowdin PR Merge
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - 'l10n_*'
+    branches-ignore:
+      - 'l10n_master'
 
 jobs:
   merge_crowdin_pr:
