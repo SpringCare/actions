@@ -13,9 +13,21 @@ async function getChangedENFilesFromTargetBranch(octokit: Octokit, target_branch
 }
 
 async function getFilesFromCurrentPR(octokit: Octokit, pullNumber: number) {
-	const changedFiles = await getFiles(octokit, pullNumber);
-	const filteredFiles = changedFiles.data.filter(elem => new RegExp('.*/locales/.*.json').test(elem.filename)).map(file => file.split('/').slice(-1)[0]);
-	return [...new Set(filteredFiles)];
+	const changedFiles = await getFiles(octokit, pullNumber),
+		filteredFiles = changedFiles.data.filter(elem => new RegExp('.*/locales/.*.json').test(elem.filename)),
+		filesStructured: Record<string, Array<string>> = {};
+
+	for (const file in filteredFiles) {
+		const split = file.split('/').slice(-2);
+		const locale = split[0];
+		const fileName = split[1];
+
+		if (filesStructured[locale] === undefined)
+			filesStructured[locale] = [];
+
+		filesStructured[locale].push(fileName);
+	}
+	return filesStructured;
 }
 
 async function compareFiles(octokit: Octokit, file: string, inputs: { token: string; target_branch: string; base_branch: string; languages: string }): Promise<boolean> {
@@ -29,6 +41,16 @@ async function compareFiles(octokit: Octokit, file: string, inputs: { token: str
 		if (JSON.stringify(enKeys) !== JSON.stringify(otherKeys))
 			return false;
 	}
+	return true;
+}
+
+function fileExists(files: Record<string, Array<string>>, file: string, languages: string) {
+	for (const lang of languages) {
+		if (files[lang] === undefined || !files[lang].includes(file)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 async function main (): Promise<void> {
@@ -54,7 +76,7 @@ async function main (): Promise<void> {
 	const files = await getFilesFromCurrentPR(octokit, pullNumber);
 
 	for (const file in changedENFiles) {
-		if (!files.includes(file) || !await compareFiles(octokit, file, inputs)) {
+		if (!fileExists(files, file, inputs.languages) || !await compareFiles(octokit, file, inputs)) {
 			core.setFailed('Translations in progress!');
 			return;
 		}
