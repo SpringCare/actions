@@ -48,7 +48,7 @@ export const objectPaths = (object): Record<string, string> => {
 	return result;
 };
 export async function getPRs(octokit: Octokit, branch: string): Promise<Record<string, any>> {
-	return await octokit.request('GET /repos/{owner}/{repo}/pulls', {
+	return await octokit.request('GET /repos/{owner}/{repo}/pulls?base={base}', {
 		owner : github.context.repo.owner,
 		repo  : github.context.repo.repo,
 		base  : branch

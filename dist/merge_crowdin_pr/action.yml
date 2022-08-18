@@ -4,12 +4,9 @@ inputs:
   repo-token:
     required: true
     description: 'The GITHUB_TOKEN secret'
-  target-branch:
+  head-branch:
     required: true
-    description: 'The target branch of the PR'
-  base-branch:
-    required: true
-    description: 'The base branch of the PR'
+    description: 'The head branch of the PR'
   langs:
     required: true
     description: A list of languages to check against

@@ -4519,7 +4519,7 @@ const objectPaths = (object) => {
 };
 function getPRs(octokit, branch) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield octokit.request('GET /repos/{owner}/{repo}/pulls', {
+        return yield octokit.request('GET /repos/{owner}/{repo}/pulls?base={base}', {
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
             base: branch
@@ -4544,9 +4544,9 @@ var merge_crowdin_pr_awaiter = (undefined && undefined.__awaiter) || function (t
 
 const core = __webpack_require__(470);
 const merge_crowdin_pr_github = __webpack_require__(469);
-function getChangedENFilesFromTargetBranch(octokit, target_branch) {
+function getChangedENFilesFromBaseBranch(octokit, base_branch) {
     return merge_crowdin_pr_awaiter(this, void 0, void 0, function* () {
-        const pullRequest = yield getPRs(octokit, target_branch);
+        const pullRequest = yield getPRs(octokit, base_branch);
         const pullNumber = pullRequest.data.number;
         const changedFiles = yield getFiles(octokit, pullNumber);
         return changedFiles.data.filter(elem => new RegExp('.*/locales/en/.*.json').test(elem.filename)).map(file => file.split('/').slice(-1)[0]);
@@ -4566,11 +4566,11 @@ function getFilesFromCurrentPR(octokit, pullNumber) {
         return filesStructured;
     });
 }
-function compareFiles(octokit, file, inputs) {
+function compareFiles(octokit, file, base_branch, inputs) {
     return merge_crowdin_pr_awaiter(this, void 0, void 0, function* () {
         for (const lang of inputs.languages) {
-            const enFile = yield getFileContent(octokit, inputs.target_branch, file);
-            const otherFile = yield getFileContent(octokit, inputs.base_branch, file, lang);
+            const enFile = yield getFileContent(octokit, base_branch, file);
+            const otherFile = yield getFileContent(octokit, inputs.head_branch, file, lang);
             const enKeys = Object.keys(objectPaths(enFile)).sort();
             const otherKeys = Object.keys(objectPaths(otherFile)).sort();
             if (JSON.stringify(enKeys) !== JSON.stringify(otherKeys))
@@ -4591,24 +4591,24 @@ function main() {
     return merge_crowdin_pr_awaiter(this, void 0, void 0, function* () {
         const inputs = {
             token: core.getInput('repo-token', { required: true }),
-            target_branch: core.getInput('target-branch'),
-            base_branch: core.getInput('base-branch'),
+            head_branch: core.getInput('head-branch'),
             languages: core.getInput('langs')
         };
-        const pullNumber = merge_crowdin_pr_github.context.payload.pull_request.number;
-        const repository = merge_crowdin_pr_github.context.repo;
         const octokit = new dist_node.Octokit({ auth: inputs.token });
-        const changedENFiles = yield getChangedENFilesFromTargetBranch(octokit, inputs.target_branch);
+        const crowdinPR = yield getPRs(octokit, inputs.head_branch);
+        const pullNumber = crowdinPR.data.number;
+        const base_branch = crowdinPR.data.base.ref;
+        const changedENFiles = yield getChangedENFilesFromBaseBranch(octokit, base_branch);
         const files = yield getFilesFromCurrentPR(octokit, pullNumber);
         for (const file in changedENFiles) {
-            if (!fileExists(files, file, inputs.languages) || !(yield compareFiles(octokit, file, inputs))) {
+            if (!fileExists(files, file, inputs.languages) || !(yield compareFiles(octokit, file, base_branch, inputs))) {
                 core.setFailed('Translations in progress!');
                 return;
             }
         }
         yield octokit.request('PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge', {
-            owner: repository.owner,
-            repo: repository.repo,
+            owner: merge_crowdin_pr_github.context.repo.owner,
+            repo: merge_crowdin_pr_github.context.repo.repo,
             pull_number: pullNumber,
         });
     });

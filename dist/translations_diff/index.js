@@ -29098,7 +29098,7 @@ const objectPaths = (object) => {
 };
 function getPRs(octokit, branch) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield octokit.request('GET /repos/{owner}/{repo}/pulls', {
+        return yield octokit.request('GET /repos/{owner}/{repo}/pulls?base={base}', {
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
             base: branch
