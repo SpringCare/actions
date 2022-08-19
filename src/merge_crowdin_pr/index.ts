@@ -6,7 +6,7 @@ const github = require('@actions/github');
 
 async function getChangedENFilesFromBaseBranch(octokit: Octokit, base_branch: string): Promise<Array<string>> {
 	const pullRequest = await getPRs(octokit, base_branch);
-	const pullNumber = pullRequest.data.number;
+	const pullNumber = pullRequest.data[0].number;
 
 	const changedFiles = await getFiles(octokit, pullNumber);
 	return changedFiles.data.filter(elem => new RegExp('.*/locales/en/.*.json').test(elem.filename)).map(file => file.split('/').slice(-1)[0]);
@@ -67,8 +67,8 @@ async function main (): Promise<void> {
 	const octokit = new Octokit({ auth: inputs.token });
 
 	const crowdinPR = await getPRs(octokit, inputs.head_branch);
-	const pullNumber = crowdinPR.data.number;
-	const base_branch = crowdinPR.data.base.ref;
+	const pullNumber = crowdinPR.data[0].number;
+	const base_branch = crowdinPR.data[0].base.ref; //filter on branch
 
 	const changedENFiles = await getChangedENFilesFromBaseBranch(octokit, base_branch);
 

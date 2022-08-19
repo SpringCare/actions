@@ -4547,7 +4547,7 @@ const merge_crowdin_pr_github = __webpack_require__(469);
 function getChangedENFilesFromBaseBranch(octokit, base_branch) {
     return merge_crowdin_pr_awaiter(this, void 0, void 0, function* () {
         const pullRequest = yield getPRs(octokit, base_branch);
-        const pullNumber = pullRequest.data.number;
+        const pullNumber = pullRequest.data[0].number;
         const changedFiles = yield getFiles(octokit, pullNumber);
         return changedFiles.data.filter(elem => new RegExp('.*/locales/en/.*.json').test(elem.filename)).map(file => file.split('/').slice(-1)[0]);
     });
@@ -4596,8 +4596,8 @@ function main() {
         };
         const octokit = new dist_node.Octokit({ auth: inputs.token });
         const crowdinPR = yield getPRs(octokit, inputs.head_branch);
-        const pullNumber = crowdinPR.data.number;
-        const base_branch = crowdinPR.data.base.ref;
+        const pullNumber = crowdinPR.data[0].number;
+        const base_branch = crowdinPR.data[0].base.ref; //filter on branch
         const changedENFiles = yield getChangedENFilesFromBaseBranch(octokit, base_branch);
         const files = yield getFilesFromCurrentPR(octokit, pullNumber);
         for (const file in changedENFiles) {
