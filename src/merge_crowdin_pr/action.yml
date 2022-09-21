@@ -1,0 +1,15 @@
+name: Translations diff check
+description: "a GH Action to check difference in translation files"
+inputs:
+  repo-token:
+    required: true
+    description: 'The GITHUB_TOKEN secret'
+  head-branch:
+    required: true
+    description: 'The head branch of the PR'
+  langs:
+    required: true
+    description: A list of languages to check against
+runs:
+  using: 'node12'
+  main: 'index.js'

@@ -1,0 +1,19 @@
+name: Automated Crowdin PR Merge
+
+on:
+  push:
+    branches:
+      - 'l10n_*'
+    branches-ignore:
+      - 'l10n_master'
+
+jobs:
+  merge_crowdin_pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: SpringCare/actions/dist/merge_crowdin_pr@feature/gt-34-merge-crowdin-pr
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          head-branch: ${{ github.ref_name }}
+          langs: 'es, pt'
