@@ -9,7 +9,9 @@ inputs:
     description: 'The head branch of the PR'
   langs:
     required: true
-    description: A list of languages to check against
+    description: 'A list of languages to check against'
+  is-backend:
+    description: 'true if running the action on backend'
 runs:
   using: 'node12'
   main: 'index.js'

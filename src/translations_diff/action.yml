@@ -9,6 +9,8 @@ inputs:
     description: 'The target branch of the PR'
   langs:
     description: 'List of languages to check for'
+  is-backend:
+    description: 'true if running the action on backend'
 branding:
   icon: 'git-pull-request'
   color: green
