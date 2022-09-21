@@ -29229,7 +29229,7 @@ function main() {
         };
         const pullNumber = translations_diff_github.context.payload.pull_request.number;
         const octokit = new dist_node.Octokit({ auth: inputs.token });
-        const response = getFiles(octokit, pullNumber);
+        const response = yield getFiles(octokit, pullNumber);
         transformResponse(response);
         if (allFiles['en'] === undefined) {
             console.log('No modified/added keys in english locale');

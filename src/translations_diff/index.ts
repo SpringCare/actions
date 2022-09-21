@@ -132,7 +132,7 @@ async function main (): Promise<void> {
 	const pullNumber = github.context.payload.pull_request.number;
 	const octokit = new Octokit({ auth: inputs.token });
 
-	const response = getFiles(octokit, pullNumber);
+	const response = await getFiles(octokit, pullNumber);
 
 	transformResponse(response);
 
