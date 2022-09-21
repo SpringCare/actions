@@ -4,17 +4,17 @@ import {Octokit} from '@octokit/core';
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-async function getChangedENFilesFromBaseBranch(octokit: Octokit, base_branch: string): Promise<Array<string>> {
+async function getChangedEnFilesFromBaseBranch(octokit: Octokit, base_branch: string, enFilesRegex: string): Promise<Array<string>> {
 	const pullRequest = await getPRs(octokit, base_branch);
 	const pullNumber = pullRequest.data[0].number;
 
 	const changedFiles = await getFiles(octokit, pullNumber);
-	return changedFiles.data.filter(elem => new RegExp('.*/locales/en/.*.json').test(elem.filename)).map(file => file.split('/').slice(-1)[0]);
+	return changedFiles.data.filter(elem => new RegExp(enFilesRegex).test(elem.filename)).map(file => file.split('/').slice(-1)[0]);
 }
 
-async function getFilesFromCurrentPR(octokit: Octokit, pullNumber: number) {
+async function getFilesFromCurrentPR(octokit: Octokit, pullNumber: number, fileRegex: string) {
 	const changedFiles = await getFiles(octokit, pullNumber),
-		filteredFiles = changedFiles.data.filter(elem => new RegExp('.*/locales/.*.json').test(elem.filename)),
+		filteredFiles = changedFiles.data.filter(elem => new RegExp(fileRegex).test(elem.filename)),
 		filesStructured: Record<string, Array<string>> = {};
 
 	for (const file in filteredFiles) {
@@ -30,10 +30,10 @@ async function getFilesFromCurrentPR(octokit: Octokit, pullNumber: number) {
 	return filesStructured;
 }
 
-async function compareFiles(octokit: Octokit, file: string, base_branch: string, inputs: { token: string; head_branch: string; languages: string }): Promise<boolean> {
+async function compareFiles(octokit: Octokit, file: string, base_branch: string, inputs: { token: string; head_branch: string; languages: string, is_backend: boolean }): Promise<boolean> {
 	for (const lang of inputs.languages) {
-		const enFile = await getFileContent(octokit, base_branch, file);
-		const otherFile = await getFileContent(octokit, inputs.head_branch, file, lang);
+		const enFile = await getFileContent(octokit, base_branch, file, 'en', inputs.is_backend);
+		const otherFile = await getFileContent(octokit, inputs.head_branch, file, lang, inputs.is_backend);
 
 		const enKeys = Object.keys(objectPaths(enFile)).sort();
 		const otherKeys = Object.keys(objectPaths(otherFile)).sort();
@@ -58,10 +58,12 @@ async function main (): Promise<void> {
 		token: string;
 		head_branch: string;
 		languages: string;
+		is_backend: boolean;
 	} = {
 		token       : core.getInput('repo-token', { required: true }),
 		head_branch : core.getInput('head-branch'),
-		languages   : core.getInput('langs')
+		languages   : core.getInput('langs'),
+		is_backend  : core.getInput('is-backend') || false
 	};
 
 	const octokit = new Octokit({ auth: inputs.token });
@@ -69,12 +71,14 @@ async function main (): Promise<void> {
 	const crowdinPR = await getPRs(octokit, inputs.head_branch);
 	const pullNumber = crowdinPR.data[0].number;
 	const base_branch = crowdinPR.data[0].base.ref; //filter on branch
+	const filesRegex = inputs.is_backend? '.*/locales/.*.yml' : '.*/locales/.*.json';
+	const enFilesRegex = inputs.is_backend? '.*/locales/en/.*.yml' : '.*/locales/en/.*.json';
 
-	const changedENFiles = await getChangedENFilesFromBaseBranch(octokit, base_branch);
+	const changedEnFiles = await getChangedEnFilesFromBaseBranch(octokit, base_branch, enFilesRegex);
 
-	const files = await getFilesFromCurrentPR(octokit, pullNumber);
+	const files = await getFilesFromCurrentPR(octokit, pullNumber, filesRegex);
 
-	for (const file in changedENFiles) {
+	for (const file in changedEnFiles) {
 		if (!fileExists(files, file, inputs.languages) || !await compareFiles(octokit, file, base_branch, inputs)) {
 			core.setFailed('Translations in progress!');
 			return;

@@ -85,9 +85,10 @@ function validateKeySync(keyDifference: Array<string>, fileName: string, languag
 *  }
 * }
 */
-function transformResponse(response: Record<string, any>): void {
+function transformResponse(response: Record<string, any>, isBackend: boolean): void {
+	const fileRegex = isBackend? '.*/locales/.*.yml' : '.*/locales/.*.json';
 
-	const filesFromResponse = response.data.filter(elem => new RegExp('.*/locales/.*.json').test(elem.filename));
+	const filesFromResponse = response.data.filter(elem => new RegExp(fileRegex).test(elem.filename));
 
 	filesFromResponse.forEach(element => {
 		const path = element.filename.split('/');
@@ -122,11 +123,13 @@ async function main (): Promise<void> {
 		base_branch: string;
 		target_branch: string;
 		langs: string;
+        is_backend: boolean;
 	} = {
 		token         : core.getInput('repo-token', { required: true }),
 		base_branch   : core.getInput('base-branch'),
 		target_branch : core.getInput('target-branch'),
-		langs         : core.getInput('langs')
+		langs         : core.getInput('langs'),
+		is_backend    : core.getInput('is-backend') || false
 	};
 
 	const pullNumber = github.context.payload.pull_request.number;
@@ -134,7 +137,7 @@ async function main (): Promise<void> {
 
 	const response = await getFiles(octokit, pullNumber);
 
-	transformResponse(response);
+	transformResponse(response, inputs.is_backend);
 
 	if (allFiles['en'] === undefined) {
 		console.log('No modified/added keys in english locale');
@@ -151,8 +154,8 @@ async function main (): Promise<void> {
 	}
 
 	for (const file in allFiles['en']) {
-		const baseFile = await getFileContent(octokit, inputs.base_branch, file);
-		const targetFile = await getFileContent(octokit, inputs.target_branch, file);
+		const baseFile = await getFileContent(octokit, inputs.base_branch, file, 'en', inputs.is_backend);
+		const targetFile = await getFileContent(octokit, inputs.target_branch, file, 'en', inputs.is_backend);
 
 		const keyDifference = compareFiles(baseFile, targetFile);
 		const absent = validateKeySync(keyDifference, file, languages);
