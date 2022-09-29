@@ -5,7 +5,7 @@ import { changesRequested } from './changesRequested';
 import { pullRequestUnlabeled } from './pullRequestUnlabeled';
 
 
-async function main(): Promise<{}> {
+async function main(): Promise<Record<string, unknown>> {
 
 	// Get a few inputs from the GitHub event.
 	const inputs = {
