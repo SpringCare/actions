@@ -47,6 +47,8 @@ export default function ChangesInTargetBranchLabeler(inputs: BranchLabelerInputs
 			const pullNumber = pr.number;
 			const prLabels = pr.labels.map((label: Label) => label.name);
 
+			console.log('BRANCH COMMITS: ', branchCommits);
+
 			if (branchCommits) {
 				for (const branchCommit of branchCommits) {
 
