@@ -9,8 +9,6 @@ inputs:
     description: 'Whether to label WIP PRs automatically'
   target-branch:
     description: 'The branch for which the label needs to be added'
-  label:
-    description: 'The label to be added'
   color:
     description: 'The color of the label'
 branding:
