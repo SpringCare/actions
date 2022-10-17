@@ -1,7 +1,6 @@
 export interface BranchLabelerInputs {
     token: string;
-	branch: string;
-	label: string;
+	branches: string;
 	color: string;
 }
 
@@ -47,4 +46,9 @@ export interface Commit {
     sha: string;
     commit: CommitMetaData;
     parents: Array<Commit>;
+}
+
+export interface BranchCommits {
+	branch: string;
+	commits: [Commit];
 }

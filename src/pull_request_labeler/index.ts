@@ -4,7 +4,7 @@ const github = require('@actions/github');
 import { addLabels, removeLabel } from '../utils/labeler';
 import { parseReviews } from '../utils/parseReviews';
 import { getReviews } from '../utils/getReviews';
-import makePrInBranchLabelManager from '../utils/prInBranchLabelManager';
+import ChangesInTargetBranchLabeler from '../utils/changesInTargetBranchLabeler';
 import { Pr, PrLabelerInputs, Client, BranchLabelerInputs } from '../utils/types';
 
 const handleReviewCountLabel = async (
@@ -60,11 +60,9 @@ const handleWIPLabel = (inputs: PrLabelerInputs, client: Client, pr: Pr): void =
 };
 
 const handleBranchLabel = async (inputs: PrLabelerInputs, pr: Pr): Promise<void> => {
-	const prInBranchLabelManager = makePrInBranchLabelManager(inputs as BranchLabelerInputs);
+	const prInBranchLabelManager = ChangesInTargetBranchLabeler(inputs as BranchLabelerInputs);
 
-	const branchCommits = await prInBranchLabelManager.getBranchCommits(inputs.branch);
-
-	prInBranchLabelManager.addOrRemoveBranchLabel(pr, branchCommits);
+	prInBranchLabelManager.manageLabel(pr);
 };
 
 async function main(): Promise<void> {
@@ -73,8 +71,7 @@ async function main(): Promise<void> {
 		token           : core.getInput('repo-token', { required: true }),
 		requiredReviews : core.getInput('required'),
 		labelWIP        : core.getInput('wip'),
-		branch          : core.getInput('target-branch'),
-		label           : core.getInput('label'),
+		branches        : core.getInput('target-branch'),
 		color           : core.getInput('color'),
 	};
 

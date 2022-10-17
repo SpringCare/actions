@@ -1,24 +1,24 @@
+import GithubAPI from '../utils/githubAPI';
+
 const core = require('@actions/core');
 
-import makePrInBranchLabelManager from '../utils/prInBranchLabelManager';
-import { Commit, BranchLabelerInputs } from '../utils/types';
+import ChangesInTargetBranchLabeler from '../utils/changesInTargetBranchLabeler';
+import { BranchLabelerInputs } from '../utils/types';
 
 async function main(): Promise<void> {
 	const inputs: BranchLabelerInputs = {
-		token  : core.getInput('repo-token', { required: true }),
-		branch : core.getInput('target-branch'),
-		label  : core.getInput('label'),
-		color  : core.getInput('color'),
+		token    : core.getInput('repo-token', { required: true }),
+		branches : core.getInput('target-branch'),
+		color    : core.getInput('color'),
 	};
+	const gitAPI = GithubAPI(inputs.token);
 
-	const prInBranchLabelManager = makePrInBranchLabelManager(inputs);
+	const changesInTargetBranchLabeler = ChangesInTargetBranchLabeler(inputs);
 
-	const openPrs = await prInBranchLabelManager.getOpenPrs();
-
-	const branchCommits: Commit[] = await prInBranchLabelManager.getBranchCommits(inputs.branch);
+	const openPrs = await gitAPI.openPRs();
 
 	for (const pr of openPrs) {
-		prInBranchLabelManager.addOrRemoveBranchLabel(pr, branchCommits);
+		changesInTargetBranchLabeler.manageLabel(pr);
 	}
 }
 
