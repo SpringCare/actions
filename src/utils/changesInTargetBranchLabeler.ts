@@ -9,17 +9,13 @@ export default function ChangesInTargetBranchLabeler(inputs: BranchLabelerInputs
 } {
 	const gitAPI = GithubAPI(inputs.token);
 	const client = new github.GitHub(inputs.token);
+	const allBranchCommits = new Array<BranchCommits>();
 
-	// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-	// @ts-ignore
-	const branchCommits: [BranchCommits] = [];
-
-	function getBranchCommits(): void {
+	function getAllBranchCommits(): void {
 		const branches = inputs.branches.split(',');
 		for (const branch of branches) {
-			gitAPI.commitsInBranch(branch.trim()).then(
-				(commits: [Commit]) => branchCommits.push({branch, commits})
-			);
+			const commits: Promise<Array<Commit>> = gitAPI.commitsInBranch(branch.trim());
+			allBranchCommits.push({branch, commits});
 		}
 	}
 
@@ -36,7 +32,7 @@ export default function ChangesInTargetBranchLabeler(inputs: BranchLabelerInputs
 		);
 	}
 
-	getBranchCommits();
+	getAllBranchCommits();
 
 	return {
 		async manageLabel(
@@ -47,12 +43,11 @@ export default function ChangesInTargetBranchLabeler(inputs: BranchLabelerInputs
 			const pullNumber = pr.number;
 			const prLabels = pr.labels.map((label: Label) => label.name);
 
-			console.log('BRANCH COMMITS: ', branchCommits);
+			if (allBranchCommits) {
+				for (const branchCommit of allBranchCommits) {
 
-			if (branchCommits) {
-				for (const branchCommit of branchCommits) {
-
-					const showBranchLabel = isEveryPRCommitInBranch(prCommits, branchCommit.commits);
+					const branchCommits = await branchCommit.commits;
+					const showBranchLabel = isEveryPRCommitInBranch(prCommits, branchCommits);
 
 					const label = `Changes in ${branchCommit.branch}`;
 					await createLabel(gitAPI.octokit, label, inputs.color);

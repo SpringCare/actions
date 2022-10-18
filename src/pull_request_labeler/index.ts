@@ -60,9 +60,9 @@ const handleWIPLabel = (inputs: PrLabelerInputs, client: Client, pr: Pr): void =
 };
 
 const handleBranchLabel = async (inputs: PrLabelerInputs, pr: Pr): Promise<void> => {
-	const prInBranchLabelManager = ChangesInTargetBranchLabeler(inputs as BranchLabelerInputs);
+	const changesInTargetBranchLabeler = ChangesInTargetBranchLabeler(inputs as BranchLabelerInputs);
 
-	prInBranchLabelManager.manageLabel(pr);
+	changesInTargetBranchLabeler.manageLabel(pr);
 };
 
 async function main(): Promise<void> {

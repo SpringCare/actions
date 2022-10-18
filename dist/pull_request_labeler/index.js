@@ -5087,13 +5087,12 @@ const changesInTargetBranchLabeler_github = __webpack_require__(469);
 function ChangesInTargetBranchLabeler(inputs) {
     const gitAPI = GithubAPI(inputs.token);
     const client = new changesInTargetBranchLabeler_github.GitHub(inputs.token);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
-    const branchCommits = [];
-    function getBranchCommits() {
+    const allBranchCommits = new Array();
+    function getAllBranchCommits() {
         const branches = inputs.branches.split(',');
         for (const branch of branches) {
-            gitAPI.commitsInBranch(branch.trim()).then((commits) => branchCommits.push({ branch, commits }));
+            const commits = gitAPI.commitsInBranch(branch.trim());
+            allBranchCommits.push({ branch, commits });
         }
     }
     function isEveryPRCommitInBranch(prCommits, branchCommits) {
@@ -5103,17 +5102,17 @@ function ChangesInTargetBranchLabeler(inputs) {
                     .map((parent) => parent.sha)
                     .includes(prCommit.sha))));
     }
-    getBranchCommits();
+    getAllBranchCommits();
     return {
         manageLabel(pr) {
             return changesInTargetBranchLabeler_awaiter(this, void 0, void 0, function* () {
                 const prCommits = yield gitAPI.commitsInPR(pr.commits_url);
                 const pullNumber = pr.number;
                 const prLabels = pr.labels.map((label) => label.name);
-                console.log('BRANCH COMMITS: ', branchCommits);
-                if (branchCommits) {
-                    for (const branchCommit of branchCommits) {
-                        const showBranchLabel = isEveryPRCommitInBranch(prCommits, branchCommit.commits);
+                if (allBranchCommits) {
+                    for (const branchCommit of allBranchCommits) {
+                        const branchCommits = yield branchCommit.commits;
+                        const showBranchLabel = isEveryPRCommitInBranch(prCommits, branchCommits);
                         const label = `Changes in ${branchCommit.branch}`;
                         yield createLabel(gitAPI.octokit, label, inputs.color);
                         if (!showBranchLabel && prLabels.includes(label)) {
@@ -5183,8 +5182,8 @@ const handleWIPLabel = (inputs, client, pr) => {
     }
 };
 const handleBranchLabel = (inputs, pr) => pull_request_labeler_awaiter(void 0, void 0, void 0, function* () {
-    const prInBranchLabelManager = ChangesInTargetBranchLabeler(inputs);
-    prInBranchLabelManager.manageLabel(pr);
+    const changesInTargetBranchLabeler = ChangesInTargetBranchLabeler(inputs);
+    changesInTargetBranchLabeler.manageLabel(pr);
 });
 function main() {
     return pull_request_labeler_awaiter(this, void 0, void 0, function* () {

@@ -50,5 +50,5 @@ export interface Commit {
 
 export interface BranchCommits {
 	branch: string;
-	commits: [Commit];
+	commits: Promise<Array<Commit>>;
 }
