@@ -2,19 +2,19 @@ import GithubAPI from './githubAPI';
 
 const github = require('@actions/github');
 import {Commit, Pr, Label, BranchLabelerInputs, BranchCommits} from './types';
-import { addLabels, removeLabel, createLabel } from './labeler';
+import { addLabels, removeLabel } from './labeler';
 
 export default function ChangesInTargetBranchLabeler(inputs: BranchLabelerInputs): {
 	manageLabel: (pr: Pr) => Promise<void>;
 } {
-	const gitAPI = GithubAPI(inputs.token);
+	const githubAPI = GithubAPI(inputs.token);
 	const client = new github.GitHub(inputs.token);
 	const allBranchCommits = new Array<BranchCommits>();
 
 	function getAllBranchCommits(): void {
 		const branches = inputs.branches.split(',');
 		for (const branch of branches) {
-			const commits: Promise<Array<Commit>> = gitAPI.commitsInBranch(branch.trim());
+			const commits: Promise<Array<Commit>> = githubAPI.commitsInBranch(branch.trim());
 			allBranchCommits.push({branch, commits});
 		}
 	}
@@ -37,7 +37,7 @@ export default function ChangesInTargetBranchLabeler(inputs: BranchLabelerInputs
 	return {
 		async manageLabel(
 			pr: Pr): Promise<void> {
-			const prCommits: Commit[] = await gitAPI.commitsInPR(
+			const prCommits: Commit[] = await githubAPI.commitsInPR(
 				pr.commits_url
 			);
 			const pullNumber = pr.number;
@@ -49,15 +49,15 @@ export default function ChangesInTargetBranchLabeler(inputs: BranchLabelerInputs
 					const branchCommits = await branchCommit.commits;
 					const showBranchLabel = isEveryPRCommitInBranch(prCommits, branchCommits);
 
-					const label = `Changes in ${branchCommit.branch}`;
-					await createLabel(gitAPI.octokit, label, inputs.color);
+					const labelText = `Changes in ${branchCommit.branch}`;
+					await githubAPI.createPRLabel(labelText, inputs.color);
 
-					if (!showBranchLabel && prLabels.includes(label)) {
-						removeLabel(client, pullNumber, label);
+					if (!showBranchLabel && prLabels.includes(labelText)) {
+						removeLabel(client, pullNumber, labelText);
 					}
 
 					if (showBranchLabel) {
-						addLabels(client, pullNumber, [label]);
+						addLabels(client, pullNumber, [labelText]);
 					}
 				}
 			}

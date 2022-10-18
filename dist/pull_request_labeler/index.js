@@ -4918,29 +4918,6 @@ function removeLabel(client, prNumber, label) {
         });
     });
 }
-function createLabel(octokit, name, color) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            console.log(`Check if label ${name} exists`);
-            yield octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                name,
-            });
-            console.log(`Label ${name} already exists.`);
-        }
-        catch (error) {
-            console.log(`Label ${name} doesn't exist.`);
-            yield octokit.request('POST /repos/{owner}/{repo}/labels', {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                name,
-                color,
-            });
-            console.log(`Created label ${name} with color ${color}.`);
-        }
-    });
-}
 
 // CONCATENATED MODULE: ./src/utils/parseReviews.ts
 function parseReviews(reviews = []) {
@@ -5012,7 +4989,6 @@ function GithubAPI(token) {
     const octokit = new dist_node.Octokit({ auth: token });
     const repository = githubAPI_github.context.repo;
     return {
-        octokit,
         openPRs() {
             return githubAPI_awaiter(this, void 0, void 0, function* () {
                 try {
@@ -5068,6 +5044,29 @@ function GithubAPI(token) {
                 }
             });
         },
+        createPRLabel(name, color) {
+            return githubAPI_awaiter(this, void 0, void 0, function* () {
+                try {
+                    console.log(`Checking if label ${name} exists...`);
+                    yield octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
+                        owner: githubAPI_github.context.repo.owner,
+                        repo: githubAPI_github.context.repo.repo,
+                        name,
+                    });
+                    console.log(`Label ${name} already exists.`);
+                }
+                catch (error) {
+                    console.log(`Label ${name} doesn't exist.`);
+                    yield octokit.request('POST /repos/{owner}/{repo}/labels', {
+                        owner: githubAPI_github.context.repo.owner,
+                        repo: githubAPI_github.context.repo.repo,
+                        name,
+                        color,
+                    });
+                    console.log(`Created label ${name} with color ${color}.`);
+                }
+            });
+        }
     };
 }
 
@@ -5085,13 +5084,13 @@ var changesInTargetBranchLabeler_awaiter = (undefined && undefined.__awaiter) ||
 const changesInTargetBranchLabeler_github = __webpack_require__(469);
 
 function ChangesInTargetBranchLabeler(inputs) {
-    const gitAPI = GithubAPI(inputs.token);
+    const githubAPI = GithubAPI(inputs.token);
     const client = new changesInTargetBranchLabeler_github.GitHub(inputs.token);
     const allBranchCommits = new Array();
     function getAllBranchCommits() {
         const branches = inputs.branches.split(',');
         for (const branch of branches) {
-            const commits = gitAPI.commitsInBranch(branch.trim());
+            const commits = githubAPI.commitsInBranch(branch.trim());
             allBranchCommits.push({ branch, commits });
         }
     }
@@ -5106,20 +5105,20 @@ function ChangesInTargetBranchLabeler(inputs) {
     return {
         manageLabel(pr) {
             return changesInTargetBranchLabeler_awaiter(this, void 0, void 0, function* () {
-                const prCommits = yield gitAPI.commitsInPR(pr.commits_url);
+                const prCommits = yield githubAPI.commitsInPR(pr.commits_url);
                 const pullNumber = pr.number;
                 const prLabels = pr.labels.map((label) => label.name);
                 if (allBranchCommits) {
                     for (const branchCommit of allBranchCommits) {
                         const branchCommits = yield branchCommit.commits;
                         const showBranchLabel = isEveryPRCommitInBranch(prCommits, branchCommits);
-                        const label = `Changes in ${branchCommit.branch}`;
-                        yield createLabel(gitAPI.octokit, label, inputs.color);
-                        if (!showBranchLabel && prLabels.includes(label)) {
-                            removeLabel(client, pullNumber, label);
+                        const labelText = `Changes in ${branchCommit.branch}`;
+                        yield githubAPI.createPRLabel(labelText, inputs.color);
+                        if (!showBranchLabel && prLabels.includes(labelText)) {
+                            removeLabel(client, pullNumber, labelText);
                         }
                         if (showBranchLabel) {
-                            addLabels(client, pullNumber, [label]);
+                            addLabels(client, pullNumber, [labelText]);
                         }
                     }
                 }

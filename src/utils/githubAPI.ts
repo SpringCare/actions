@@ -3,16 +3,15 @@ import {Octokit} from '@octokit/core';
 const github = require('@actions/github');
 
 export default function GithubAPI(token: string): {
-	octokit: Octokit;
 	openPRs: () => Promise<Array<Pr>>;
 	commitsInPR: (url: string) => Promise<Array<Commit>>;
 	commitsInBranch: (targetBranch: string) => Promise<Array<Commit>>;
+	createPRLabel(name: string, color: string): Promise<void>;
 } {
 	const octokit = new Octokit({ auth: token });
 	const repository = github.context.repo;
 
 	return {
-		octokit,
 		async openPRs(): Promise<Array<Pr>> {
 			try {
 				const openPrsResponse = await octokit.request(
@@ -65,5 +64,25 @@ export default function GithubAPI(token: string): {
 				process.exit(1);
 			}
 		},
+		async createPRLabel(name: string , color: string): Promise<void> {
+			try {
+				console.log(`Checking if label ${name} exists...`);
+				await octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
+					owner : github.context.repo.owner,
+					repo  : github.context.repo.repo,
+					name,
+				});
+				console.log(`Label ${name} already exists.`);
+			} catch (error) {
+				console.log(`Label ${name} doesn't exist.`);
+				await octokit.request('POST /repos/{owner}/{repo}/labels', {
+					owner : github.context.repo.owner,
+					repo  : github.context.repo.repo,
+					name,
+					color,
+				});
+				console.log(`Created label ${name} with color ${color}.`);
+			}
+		}
 	};
 }

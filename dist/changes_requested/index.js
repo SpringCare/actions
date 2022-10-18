@@ -11535,29 +11535,6 @@ function removeLabel(client, prNumber, label) {
         });
     });
 }
-function createLabel(octokit, name, color) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            console.log(`Check if label ${name} exists`);
-            yield octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                name,
-            });
-            console.log(`Label ${name} already exists.`);
-        }
-        catch (error) {
-            console.log(`Label ${name} doesn't exist.`);
-            yield octokit.request('POST /repos/{owner}/{repo}/labels', {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                name,
-                color,
-            });
-            console.log(`Created label ${name} with color ${color}.`);
-        }
-    });
-}
 
 // EXTERNAL MODULE: ./node_modules/axios/index.js
 var axios = __webpack_require__(53);

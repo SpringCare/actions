@@ -22,24 +22,3 @@ export async function removeLabel(client, prNumber, label): Promise<void> {
 		name         : label
 	});
 }
-
-export async function createLabel(octokit, name, color): Promise<void> {
-	try {
-		console.log(`Check if label ${name} exists`);
-		await octokit.request('GET /repos/{owner}/{repo}/labels/{name}', {
-			owner : github.context.repo.owner,
-			repo  : github.context.repo.repo,
-			name,
-		});
-		console.log(`Label ${name} already exists.`);
-	} catch (error) {
-		console.log(`Label ${name} doesn't exist.`);
-		await octokit.request('POST /repos/{owner}/{repo}/labels', {
-			owner : github.context.repo.owner,
-			repo  : github.context.repo.repo,
-			name,
-			color,
-		});
-		console.log(`Created label ${name} with color ${color}.`);
-	}
-}
