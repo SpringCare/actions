@@ -1,8 +1,8 @@
+import {Octokit} from '@octokit/core';
+import _ from 'lodash';
+
 const core = require('@actions/core');
 const github = require('@actions/github');
-
-import { Octokit } from '@octokit/core';
-import _ from 'lodash';
 
 const allFiles = {};
 
@@ -185,6 +185,7 @@ async function main (): Promise<void> {
 
 	const languages = inputs.langs.split(',').map(elem => elem.trim());
 	let failFlag = false;
+	let jsonErrorFlag = false;
 
 	const langNotPresent = languageCheck(languages);
 	if (langNotPresent.length !== 0) {
@@ -193,8 +194,10 @@ async function main (): Promise<void> {
 	}
 
 	for (const file in allFiles['en']) {
-		const baseFile = await getFileContent(octokit, inputs.base_branch, repository, file);
-		const targetFile = await getFileContent(octokit, inputs.target_branch, repository, file);
+		const baseFile = await getFileContent(octokit, inputs.base_branch, repository, file).catch((error) => jsonErrorFlag = true);
+		const targetFile = await getFileContent(octokit, inputs.target_branch, repository, file).catch((error) => jsonErrorFlag = true);
+
+		console.log('Here');
 
 		const keyDifference = compareFiles(baseFile, targetFile);
 		const absent = validateKeySync(keyDifference, file, languages);
@@ -213,6 +216,10 @@ async function main (): Promise<void> {
 	if (failFlag) {
 		core.setOutput('changed-files', allFiles['en']);
 		core.setFailed('Translations out of sync!');
+	}
+
+	if (jsonErrorFlag) {
+		core.setFailed('Syntax Error in JSON file');
 	}
 }
 
