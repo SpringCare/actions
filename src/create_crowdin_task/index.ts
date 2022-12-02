@@ -118,41 +118,22 @@ async function addLabelsToPR(client: GitHub, pullNumber: number, label: string):
 async function main (): Promise<void> {
 	const inputs: {
 		token: string;
-		branch: string;
-		retry: number;
 		crowdinToken: string;
-		changedFiles: string;
+		github_object: string;
 	} = {
-		token        : core.getInput('repo-token', {required: true}),
-		branch       : core.getInput('branch'),
-		retry        : core.getInput('retry', {required: true}),
-		crowdinToken : core.getInput('crowdin-token', {required: true}),
-		changedFiles : core.getInput('changed-files', {required: true}),
+		token         : core.getInput('repo-token', {required: true}),
+		crowdinToken  : core.getInput('crowdin-token', {required: true}),
+		github_object : core.getInput('github_context', {required: true}),
 	};
+
 	const crowdinAPIs = new crowdin.default({token: inputs.crowdinToken});
+
+	const payload = JSON.parse(inputs.github_object);
+
+	console.log('Github Object: ', typeof payload, ' ', payload);
 
 	const client = new github.GitHub(inputs.token);
 	const pullNumber = github.context.payload.pull_request.number;
-	const translationFiles = Object.keys(JSON.parse(inputs.changedFiles));
-
-	let label;
-	let retry = inputs.retry;
-	let failFlag;
-
-	while (retry > 0) {
-		await sleep(2 * 60 * 1000); // wait till sync is completed
-		const sync = await trackSync(inputs.branch, crowdinAPIs, retry, pullNumber, translationFiles);
-		retry = sync.retry;
-		label = sync.label;
-		failFlag = sync.failFlag;
-		if (retry > 0) {
-			await sleep(2 * 60 * 1000); // Todo: change the wait value to what is in the config
-		}
-	}
-
-	await addLabelsToPR(client, pullNumber, label);
-
-	failFlag && core.setFailed(label);
 }
 
 main();

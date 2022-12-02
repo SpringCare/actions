@@ -14687,30 +14687,14 @@ function main() {
     return create_crowdin_task_awaiter(this, void 0, void 0, function* () {
         const inputs = {
             token: core.getInput('repo-token', { required: true }),
-            branch: core.getInput('branch'),
-            retry: core.getInput('retry', { required: true }),
             crowdinToken: core.getInput('crowdin-token', { required: true }),
-            changedFiles: core.getInput('changed-files', { required: true }),
+            github_object: core.getInput('github_context', { required: true }),
         };
         const crowdinAPIs = new crowdin.default({ token: inputs.crowdinToken });
+        const payload = JSON.parse(inputs.github_object);
+        console.log('Github Object: ', typeof payload, ' ', payload);
         const client = new create_crowdin_task_github.GitHub(inputs.token);
         const pullNumber = create_crowdin_task_github.context.payload.pull_request.number;
-        const translationFiles = Object.keys(JSON.parse(inputs.changedFiles));
-        let label;
-        let retry = inputs.retry;
-        let failFlag;
-        while (retry > 0) {
-            yield sleep(2 * 60 * 1000); // wait till sync is completed
-            const sync = yield trackSync(inputs.branch, crowdinAPIs, retry, pullNumber, translationFiles);
-            retry = sync.retry;
-            label = sync.label;
-            failFlag = sync.failFlag;
-            if (retry > 0) {
-                yield sleep(2 * 60 * 1000); // Todo: change the wait value to what is in the config
-            }
-        }
-        yield addLabelsToPR(client, pullNumber, label);
-        failFlag && core.setFailed(label);
     });
 }
 main();
