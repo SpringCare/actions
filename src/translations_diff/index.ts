@@ -104,7 +104,7 @@ function validateKeySync(keyDifference: Array<string>, fileName: string, languag
 * }
 */
 function transformResponse(response: Record<string, any>, isBackend: boolean): void {
-    const fileRegex = isBackend? '.*/locales/.*.yml' : '.*/locales/.*.json';
+	const fileRegex = isBackend? '.*/locales/.*.yml' : '.*/locales/.*.json';
 	const filesFromResponse = response.data.filter(elem => new RegExp(fileRegex).test(elem.filename));
 
 	filesFromResponse.forEach(element => {
@@ -135,7 +135,7 @@ function languageCheck(languages: Array<string>): Array<string> {
 }
 
 async function getFileContent(octokit: Octokit, branch: string, repository: Record<string, any>, file: string, isBackend: boolean, locale = 'en') {
-    const localesDir = isBackend? 'config/locales' : 'packages/cherrim/src/public/locales';
+	const localesDir = isBackend? 'config/locales' : 'packages/cherrim/src/public/locales';
 	const content = await octokit.request(
 		'GET /repos/{owner}/{repo}/contents/packages/{path}?ref={target_branch}', {
 			headers: {
@@ -143,12 +143,12 @@ async function getFileContent(octokit: Octokit, branch: string, repository: Reco
 			},
 			owner         : repository.owner,
 			repo          : repository.repo,
-            path : `${localesDir}/${locale}/${file}`,
+			path          : `${localesDir}/${locale}/${file}`,
 			target_branch : branch
 		}
 	);
 
-    const fileContent = isBackend? yaml.load(content.data)[locale] : JSON.parse(content.data);
+	const fileContent = isBackend? yaml.load(content.data)[locale] : JSON.parse(content.data);
 	return fileContent;
 }
 
@@ -198,7 +198,7 @@ async function main (): Promise<void> {
 	}
 
 	for (const file in allFiles['en']) {
-		const baseFile = await getFileContent(octokit, inputs.base_branch,  repository, file, inputs.is_backend);
+		const baseFile = await getFileContent(octokit, inputs.base_branch, repository, file, inputs.is_backend);
 		const targetFile = await getFileContent(octokit, inputs.target_branch, repository, file, inputs.is_backend);
 
 		const keyDifference = compareFiles(baseFile, targetFile);
