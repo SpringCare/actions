@@ -1,5 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
+const yaml = require('js-yaml');
 
 import { Octokit } from '@octokit/core';
 import _ from 'lodash';
@@ -102,9 +103,9 @@ function validateKeySync(keyDifference: Array<string>, fileName: string, languag
 *  }
 * }
 */
-function transformResponse(response: Record<string, any>): void {
-
-	const filesFromResponse = response.data.filter(elem => new RegExp('.*/locales/.*.json').test(elem.filename));
+function transformResponse(response: Record<string, any>, isBackend: boolean): void {
+    const fileRegex = isBackend? '.*/locales/.*.yml' : '.*/locales/.*.json';
+	const filesFromResponse = response.data.filter(elem => new RegExp(fileRegex).test(elem.filename));
 
 	filesFromResponse.forEach(element => {
 		const path = element.filename.split('/');
@@ -133,20 +134,22 @@ function languageCheck(languages: Array<string>): Array<string> {
 	return langNotPresent;
 }
 
-async function getFileContent(octokit: Octokit, branch: string, repository: Record<string, any>, file: string) {
+async function getFileContent(octokit: Octokit, branch: string, repository: Record<string, any>, file: string, isBackend: boolean, locale = 'en') {
+    const localesDir = isBackend? 'config/locales' : 'packages/cherrim/src/public/locales';
 	const content = await octokit.request(
-		'GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
+		'GET /repos/{owner}/{repo}/contents/packages/{path}?ref={target_branch}', {
 			headers: {
 				Accept: 'application/vnd.github.v3.raw',
 			},
 			owner         : repository.owner,
 			repo          : repository.repo,
-			path          : `en/${file}`,
+            path : `${localesDir}/${locale}/${file}`,
 			target_branch : branch
 		}
 	);
 
-	return JSON.parse(content.data);
+    const fileContent = isBackend? yaml.load(content.data)[locale] : JSON.parse(content.data);
+	return fileContent;
 }
 
 async function main (): Promise<void> {
@@ -155,11 +158,13 @@ async function main (): Promise<void> {
 		base_branch: string;
 		target_branch: string;
 		langs: string;
+        is_backend: boolean;
 	} = {
 		token         : core.getInput('repo-token', { required: true }),
 		base_branch   : core.getInput('base-branch'),
 		target_branch : core.getInput('target-branch'),
-		langs         : core.getInput('langs')
+		langs         : core.getInput('langs'),
+		is_backend    : core.getInput('is-backend') || false
 	};
 
 	const pullNumber = github.context.payload.pull_request.number;
@@ -176,7 +181,7 @@ async function main (): Promise<void> {
 		}
 	);
 
-	transformResponse(response);
+	transformResponse(response, inputs.is_backend);
 
 	if (allFiles['en'] === undefined) {
 		console.log('No modified/added keys in english locale');
@@ -193,8 +198,8 @@ async function main (): Promise<void> {
 	}
 
 	for (const file in allFiles['en']) {
-		const baseFile = await getFileContent(octokit, inputs.base_branch, repository, file);
-		const targetFile = await getFileContent(octokit, inputs.target_branch, repository, file);
+		const baseFile = await getFileContent(octokit, inputs.base_branch,  repository, file, inputs.is_backend);
+		const targetFile = await getFileContent(octokit, inputs.target_branch, repository, file, inputs.is_backend);
 
 		const keyDifference = compareFiles(baseFile, targetFile);
 		const absent = validateKeySync(keyDifference, file, languages);
