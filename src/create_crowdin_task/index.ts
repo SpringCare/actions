@@ -1,56 +1,21 @@
-import {ProjectsGroups, SourceFiles, Tasks} from '@crowdin/crowdin-api-client';
-import {addLabels, getLabels, removeLabel} from '../utils/labeler';
-import {GitHub} from '@actions/github';
+import {Tasks} from '@crowdin/crowdin-api-client';
+import {addLabels} from '../utils/labeler';
+import {Octokit} from '@octokit/core';
 
-const core = require('@actions/core');
 const github = require('@actions/github');
+const {getInput} = require('@actions/core');
 const crowdin = require('@crowdin/crowdin-api-client');
 
 enum labels {
-	ManualTranslations = 'Manual Translations Needed',
 	InProgress = 'Translations in-progress'
 }
 
-interface Sync {
-	retry: number;
-	label: string;
-	failFlag: boolean;
-}
-
-async function getProjectId(projectsGroupsApi: ProjectsGroups): Promise<number> {
-	const response = await projectsGroupsApi.listProjects();
-	return response.data[0].data.id;
-}
-
-async function getEnDirectoryId(sourceFilesApi: SourceFiles, projectId: number, branchId: number): Promise<number> {
-	const enResponse = await sourceFilesApi.listProjectDirectories(projectId, {
-		branchId: branchId, filter: 'en', recursion: 'true'
-	});
-	return enResponse.data[0].data.id;
-}
-
-async function getBranchId(sourceFilesApi: SourceFiles, projectId: number, branchName: string): Promise<number> {
-	const branches = await sourceFilesApi.listProjectBranches(projectId, {
-		name: branchName
-	});
-
-	return branches.data[0].data.id;
-}
-
-async function getFileIds(sourceFilesApi: SourceFiles, projectId: number, enLocaleDirId: number, translationFiles: Array<string>): Promise<Array<number>> {
-	const files = await sourceFilesApi.listProjectFiles(projectId, {
-		directoryId: enLocaleDirId
-	});
-
-	return files.data.filter(elem => translationFiles.includes(elem.data.name)).map(elem => elem.data.id);
-}
-
-async function createTask(tasksApi: Tasks, projectId: number, filesIds: Array<number>, languages: string[], pullNumber: number): Promise<void> {
+async function createTask(tasksApi: Tasks, projectId: number, fileId: Array<number>, languages: string[], pullNumber: number): Promise<void> {
 	for (const lang of languages) {
 		await tasksApi.addTask(projectId, {
 			title                          : `#${pullNumber} - SH Translation Task`,
 			type                           : 3,
-			fileIds                        : filesIds,
+			fileIds                        : fileId,
 			languageId                     : lang,
 			vendor                         : 'oht',
 			skipAssignedStrings            : true,
@@ -61,79 +26,52 @@ async function createTask(tasksApi: Tasks, projectId: number, filesIds: Array<nu
 	}
 }
 
-async function getTargetLanguages(projectsGroupsApi: ProjectsGroups): Promise<Array<string>> {
-	const response = await projectsGroupsApi.listProjects();
-	return response.data[0].data.targetLanguageIds;
-}
+async function getPullRequest(octokit: Octokit, repository: Record<string, any>, headBranch: string) {
+	const prs = await octokit.request(
+		'GET /repos/{owner}/{repo}/pulls{?state,head,base,sort,direction,per_page,page}', {
+			headers: {
+				Accept: 'application/vnd.github.v3.raw',
+			},
+			owner : repository.owner,
+			repo  : repository.repo,
+			base  : headBranch,
+		});
 
-function sleep(ms: number): Promise<unknown> {
-	return new Promise( resolve => setTimeout(resolve, ms) );
-}
-
-const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber: number, translationFiles: Array<string> ,label = labels.ManualTranslations): Promise<Sync> => {
-	const {
-		projectsGroupsApi,
-		sourceFilesApi,
-		tasksApi
-	} = crowdinAPIs;
-
-	const branchName = '[SpringCare.arceus] ' + branch.replace('/', '.');
-	const projectId = await getProjectId(projectsGroupsApi);
-	const branchId = await getBranchId(sourceFilesApi, projectId, branchName);
-	const enLocaleDirId = await getEnDirectoryId(sourceFilesApi, projectId, branchId);
-
-	const filesIds = await getFileIds(sourceFilesApi, projectId, enLocaleDirId, translationFiles);
-
-	const languages = await getTargetLanguages(projectsGroupsApi);
-
-	let failFlag = false;
-
-	try {
-		await createTask(tasksApi, projectId, filesIds, languages, pullNumber);
-		label = labels.InProgress;
-		retry = 0;
-	} catch (e) {
-		if (e.message === 'Language has no unapproved words')
-			retry--;
-		else {
-			retry = 0;
-			failFlag = true;
-		}
-	}
-	return {retry, label, failFlag};
-};
-
-async function addLabelsToPR(client: GitHub, pullNumber: number, label: string): Promise<void> {
-	const existingLabels = await getLabels(client, pullNumber);
-
-	if (label === labels.InProgress && existingLabels.includes(labels.ManualTranslations)) {
-		await removeLabel(client, pullNumber, labels.ManualTranslations);
-	} else if (label === labels.ManualTranslations && existingLabels.includes(labels.InProgress)) {
-		return;
-	}
-
-	await addLabels(client, pullNumber, [label]);
+	return JSON.parse(prs.data);
 }
 
 async function main (): Promise<void> {
 	const inputs: {
 		token: string;
+		headBranch: string;
 		crowdinToken: string;
-		github_object: string;
+		githubContext: string;
 	} = {
-		token         : core.getInput('repo-token', {required: true}),
-		crowdinToken  : core.getInput('crowdin-token', {required: true}),
-		github_object : core.getInput('github_context', {required: true}),
+		token         : getInput('repo-token', {required: true}),
+		headBranch    : getInput('head-branch'),
+		crowdinToken  : getInput('crowdin-token', {required: true}),
+		githubContext : getInput('github_context', {required: true}),
 	};
+
+	const payload = JSON.parse(inputs.githubContext);
 
 	const crowdinAPIs = new crowdin.default({token: inputs.crowdinToken});
 
-	const payload = JSON.parse(inputs.github_object);
+	const fileId = payload.file.id;
+	const projectId = payload.file.project.id;
+	const targetLanguages = payload.file.project.targetLanguageIds;
 
-	console.log('Github Object: ', typeof payload, ' ', payload);
+	const {
+		tasksApi
+	} = crowdinAPIs;
 
 	const client = new github.GitHub(inputs.token);
-	const pullNumber = github.context.payload.pull_request.number;
+	const repository = github.context.repo;
+	const octokit = new Octokit({ auth: inputs.token });
+	const pullNumber = await getPullRequest(octokit, repository, inputs.headBranch);
+
+	await createTask(tasksApi, projectId, fileId, targetLanguages, pullNumber);
+	await addLabels(client, pullNumber, [labels.InProgress]);
 }
 
 main();

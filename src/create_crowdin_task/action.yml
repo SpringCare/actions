@@ -4,6 +4,9 @@ inputs:
   repo-token:
     required: true
     description: 'The GITHUB_TOKEN secret'
+  head-branch:
+    required: false
+    description: 'The base branch of the PR'
   crowdin-token:
     required: true
     description: 'Crowdin API Token'
