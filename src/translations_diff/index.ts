@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-import { Octokit } from '@octokit/core';
+import {Octokit} from '@octokit/core';
 import _ from 'lodash';
 
 const allFiles = {};
@@ -193,6 +193,7 @@ async function main (): Promise<void> {
 	}
 
 	for (const file in allFiles['en']) {
+		console.log('File: ', file);
 		const baseFile = await getFileContent(octokit, inputs.base_branch, repository, file);
 		const targetFile = await getFileContent(octokit, inputs.target_branch, repository, file);
 
@@ -211,6 +212,7 @@ async function main (): Promise<void> {
 	}
 
 	if (failFlag) {
+		console.log('Is this failing?');
 		core.setFailed('Translations out of sync!');
 	}
 }
