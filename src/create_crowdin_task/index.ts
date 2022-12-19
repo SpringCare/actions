@@ -11,19 +11,19 @@ enum labels {
 }
 
 async function createTask(tasksApi: Tasks, projectId: number, fileId: Array<number>, languages: string[], pullNumber: number): Promise<void> {
-	for (const lang of languages) {
-		await tasksApi.addTask(projectId, {
-			title                          : `#${pullNumber} - SH Translation Task`,
-			type                           : 3,
-			fileIds                        : fileId,
-			languageId                     : lang,
-			vendor                         : 'oht',
-			skipAssignedStrings            : true,
-			skipUntranslatedStrings        : false,
-			includeUntranslatedStringsOnly : true,
-			description                    : ''
-		});
-	}
+	// for (const lang of languages) {
+	await tasksApi.addTask(projectId, {
+		title                          : `#${pullNumber} - SH Translation Task`,
+		type                           : 3,
+		fileIds                        : fileId,
+		languageId                     : 'de',
+		vendor                         : 'oht',
+		skipAssignedStrings            : true,
+		skipUntranslatedStrings        : false,
+		includeUntranslatedStringsOnly : true,
+		description                    : ''
+	});
+	// }
 }
 
 async function getPullRequest(octokit: Octokit, repository: Record<string, any>, headBranch: string) {

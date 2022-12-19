@@ -17190,19 +17190,19 @@ var labels;
 })(labels || (labels = {}));
 function createTask(tasksApi, projectId, fileId, languages, pullNumber) {
     return create_crowdin_task_awaiter(this, void 0, void 0, function* () {
-        for (const lang of languages) {
-            yield tasksApi.addTask(projectId, {
-                title: `#${pullNumber} - SH Translation Task`,
-                type: 3,
-                fileIds: fileId,
-                languageId: lang,
-                vendor: 'oht',
-                skipAssignedStrings: true,
-                skipUntranslatedStrings: false,
-                includeUntranslatedStringsOnly: true,
-                description: ''
-            });
-        }
+        // for (const lang of languages) {
+        yield tasksApi.addTask(projectId, {
+            title: `#${pullNumber} - SH Translation Task`,
+            type: 3,
+            fileIds: fileId,
+            languageId: 'de',
+            vendor: 'oht',
+            skipAssignedStrings: true,
+            skipUntranslatedStrings: false,
+            includeUntranslatedStringsOnly: true,
+            description: ''
+        });
+        // }
     });
 }
 function getPullRequest(octokit, repository, headBranch) {
@@ -17238,7 +17238,6 @@ function main() {
         const pullNumber = yield getPullRequest(octokit, repository, inputs.headBranch);
         yield createTask(tasksApi, projectId, fileId, targetLanguages, pullNumber);
         yield addLabels(client, pullNumber, [labels.InProgress]);
-        //	NAMING CAN BE IMPROVE
     });
 }
 main();
