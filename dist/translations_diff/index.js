@@ -27766,15 +27766,23 @@ function languageCheck(languages) {
 }
 function getFileContent(octokit, branch, repository, file) {
     return __awaiter(this, void 0, void 0, function* () {
-        const content = yield octokit.request('GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
-            headers: {
-                Accept: 'application/vnd.github.v3.raw',
-            },
-            owner: repository.owner,
-            repo: repository.repo,
-            path: `en/${file}`,
-            target_branch: branch
-        });
+        let content = {
+            'data': '{}'
+        };
+        try {
+            content = yield octokit.request('GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
+                headers: {
+                    Accept: 'application/vnd.github.v3.raw',
+                },
+                owner: repository.owner,
+                repo: repository.repo,
+                path: `en/${file}`,
+                target_branch: branch
+            });
+        }
+        catch (e) {
+            content['data'] = '{}';
+        }
         return JSON.parse(content.data);
     });
 }

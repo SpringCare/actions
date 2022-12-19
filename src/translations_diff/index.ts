@@ -134,19 +134,26 @@ function languageCheck(languages: Array<string>): Array<string> {
 }
 
 async function getFileContent(octokit: Octokit, branch: string, repository: Record<string, any>, file: string) {
-	const content = await octokit.request(
-		'GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
-			headers: {
-				Accept: 'application/vnd.github.v3.raw',
-			},
-			owner         : repository.owner,
-			repo          : repository.repo,
-			path          : `en/${file}`,
-			target_branch : branch
-		}
-	);
+	let content = {
+		'data': '{}'
+	};
+	try {
+		content = await octokit.request(
+			'GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
+				headers: {
+					Accept: 'application/vnd.github.v3.raw',
+				},
+				owner         : repository.owner,
+				repo          : repository.repo,
+				path          : `en/${file}`,
+				target_branch : branch
+			}
+		);
+	} catch (e) {
+		content['data'] = '{}';
+	}
 
-	return JSON.parse(content.data);
+	return JSON.parse(<string>content.data);
 }
 
 async function main (): Promise<void> {
