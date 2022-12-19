@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-import { Octokit } from '@octokit/core';
+import {Octokit} from '@octokit/core';
 import _ from 'lodash';
 
 const allFiles = {};
@@ -134,19 +134,23 @@ function languageCheck(languages: Array<string>): Array<string> {
 }
 
 async function getFileContent(octokit: Octokit, branch: string, repository: Record<string, any>, file: string) {
-	const content = await octokit.request(
-		'GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
-			headers: {
-				Accept: 'application/vnd.github.v3.raw',
-			},
-			owner         : repository.owner,
-			repo          : repository.repo,
-			path          : `en/${file}`,
-			target_branch : branch
-		}
-	);
+	try {
+		const content = await octokit.request(
+			'GET /repos/{owner}/{repo}/contents/packages/cherrim/src/public/locales/{path}?ref={target_branch}', {
+				headers: {
+					Accept: 'application/vnd.github.v3.raw',
+				},
+				owner         : repository.owner,
+				repo          : repository.repo,
+				path          : `en/${file}`,
+				target_branch : branch
+			}
+		);
 
-	return JSON.parse(content.data);
+		return JSON.parse(content.data);
+	} catch (e) {
+		return {};
+	}
 }
 
 async function main (): Promise<void> {
