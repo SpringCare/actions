@@ -30715,15 +30715,15 @@ function languageCheck(languages) {
     }
     return langNotPresent;
 }
-function getFileContent(octokit, branch, repository, file, isBackend, locale = 'en') {
+function getFileContent(octokit, branch, file, isBackend, locale = 'en') {
     return __awaiter(this, void 0, void 0, function* () {
         const localesDir = isBackend ? 'config/locales' : 'packages/cherrim/src/public/locales';
-        const content = yield octokit.request('GET /repos/{owner}/{repo}/contents/packages/{path}?ref={target_branch}', {
+        const content = yield octokit.request('GET /repos/{owner}/{repo}/contents/{path}?ref={target_branch}', {
             headers: {
                 Accept: 'application/vnd.github.v3.raw',
             },
-            owner: repository.owner,
-            repo: repository.repo,
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
             path: `${localesDir}/${locale}/${file}`,
             target_branch: branch
         });
@@ -30762,8 +30762,8 @@ function main() {
             failFlag = true;
         }
         for (const file in allFiles['en']) {
-            const baseFile = yield getFileContent(octokit, inputs.base_branch, repository, file, inputs.is_backend);
-            const targetFile = yield getFileContent(octokit, inputs.target_branch, repository, file, inputs.is_backend);
+            const baseFile = yield getFileContent(octokit, inputs.base_branch, file, inputs.is_backend);
+            const targetFile = yield getFileContent(octokit, inputs.target_branch, file, inputs.is_backend);
             const keyDifference = compareFiles(baseFile, targetFile);
             const absent = validateKeySync(keyDifference, file, languages);
             if (!lodash__WEBPACK_IMPORTED_MODULE_1___default().isEmpty(absent['fileNotPresent'])) {

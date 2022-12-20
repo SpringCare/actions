@@ -134,15 +134,15 @@ function languageCheck(languages: Array<string>): Array<string> {
 	return langNotPresent;
 }
 
-async function getFileContent(octokit: Octokit, branch: string, repository: Record<string, any>, file: string, isBackend: boolean, locale = 'en') {
+async function getFileContent(octokit: Octokit, branch: string, file: string, isBackend: boolean, locale = 'en') {
 	const localesDir = isBackend? 'config/locales' : 'packages/cherrim/src/public/locales';
 	const content = await octokit.request(
-		'GET /repos/{owner}/{repo}/contents/packages/{path}?ref={target_branch}', {
+		'GET /repos/{owner}/{repo}/contents/{path}?ref={target_branch}', {
 			headers: {
 				Accept: 'application/vnd.github.v3.raw',
 			},
-			owner         : repository.owner,
-			repo          : repository.repo,
+			owner         : github.context.repo.owner,
+			repo          : github.context.repo.repo,
 			path          : `${localesDir}/${locale}/${file}`,
 			target_branch : branch
 		}
@@ -198,8 +198,8 @@ async function main (): Promise<void> {
 	}
 
 	for (const file in allFiles['en']) {
-		const baseFile = await getFileContent(octokit, inputs.base_branch, repository, file, inputs.is_backend);
-		const targetFile = await getFileContent(octokit, inputs.target_branch, repository, file, inputs.is_backend);
+		const baseFile = await getFileContent(octokit, inputs.base_branch, file, inputs.is_backend);
+		const targetFile = await getFileContent(octokit, inputs.target_branch, file, inputs.is_backend);
 
 		const keyDifference = compareFiles(baseFile, targetFile);
 		const absent = validateKeySync(keyDifference, file, languages);
