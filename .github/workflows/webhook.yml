@@ -1,0 +1,15 @@
+name: Crowdin Notification Listener
+
+on:
+  repository_dispatch:
+    types: [create_crowdin_task]
+
+jobs:
+  crowdin_webhook_trigger:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Payload
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
