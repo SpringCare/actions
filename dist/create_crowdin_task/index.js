@@ -14662,6 +14662,7 @@ const trackSync = (branch, crowdinAPIs, retry, pullNumber, translationFiles, lab
         retry = 0;
     }
     catch (e) {
+        console.log('Error: ', e);
         if (e.message === 'Language has no unapproved words')
             retry--;
         else {
@@ -14706,7 +14707,7 @@ function main() {
             label = sync.label;
             failFlag = sync.failFlag;
             if (retry > 0) {
-                yield sleep(20 * 60 * 1000); // Todo: change the wait value to what is in the config
+                yield sleep(20 * 60 * 1000);
             }
         }
         yield addLabelsToPR(client, pullNumber, label);

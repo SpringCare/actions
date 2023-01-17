@@ -93,6 +93,7 @@ const trackSync = async (branch: string, crowdinAPIs, retry: number, pullNumber:
 		label = labels.InProgress;
 		retry = 0;
 	} catch (e) {
+		console.log('Error: ', e);
 		if (e.message === 'Language has no unapproved words')
 			retry--;
 		else {
