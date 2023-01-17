@@ -1,0 +1,24 @@
+name: Create Crowdin Task
+description: "Create a task in Crowdin"
+inputs:
+  repo-token:
+    required: true
+    description: 'The GITHUB_TOKEN secret'
+  branch:
+    required: false
+    description: 'The base branch of the PR'
+  crowdin-token:
+    required: true
+    description: 'Crowdin API Token'
+  retry:
+    required: true
+    description: 'Number of retries'
+  changed-files:
+    required: true
+    description: 'Array of changed files'
+branding:
+  icon: 'git-pull-request'
+  color: green
+runs:
+  using: 'node12'
+  main: 'index.js'
