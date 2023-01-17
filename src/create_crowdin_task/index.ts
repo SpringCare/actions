@@ -140,13 +140,13 @@ async function main (): Promise<void> {
 	let failFlag;
 
 	while (retry > 0) {
-		await sleep(2 * 60 * 1000); // wait till sync is completed
+		await sleep(5 * 60 * 1000); // wait till sync is completed
 		const sync = await trackSync(inputs.branch, crowdinAPIs, retry, pullNumber, translationFiles);
 		retry = sync.retry;
 		label = sync.label;
 		failFlag = sync.failFlag;
 		if (retry > 0) {
-			await sleep(2 * 60 * 1000); // Todo: change the wait value to what is in the config
+			await sleep(20 * 60 * 1000);
 		}
 	}
 
