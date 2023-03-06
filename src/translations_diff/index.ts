@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const yaml = require('js-yaml');
 
-import { Octokit } from '@octokit/core';
+import {Octokit} from '@octokit/core';
 import _ from 'lodash';
 
 const allFiles = {};
@@ -136,20 +136,24 @@ function languageCheck(languages: Array<string>): Array<string> {
 
 async function getFileContent(octokit: Octokit, branch: string, file: string, isBackend: boolean, locale = 'en') {
 	const localesDir = isBackend? 'config/locales' : 'packages/cherrim/src/public/locales';
-	const content = await octokit.request(
-		'GET /repos/{owner}/{repo}/contents/{path}?ref={target_branch}', {
-			headers: {
-				Accept: 'application/vnd.github.v3.raw',
-			},
-			owner         : github.context.repo.owner,
-			repo          : github.context.repo.repo,
-			path          : `${localesDir}/${locale}/${file}`,
-			target_branch : branch
-		}
-	);
+	try {
+		const content = await octokit.request(
+			'GET /repos/{owner}/{repo}/contents/{path}?ref={target_branch}', {
+				headers: {
+					Accept: 'application/vnd.github.v3.raw',
+				},
+				owner         : github.context.repo.owner,
+				repo          : github.context.repo.repo,
+				path          : `${localesDir}/${locale}/${file}`,
+				target_branch : branch
+			}
+		);
 
-	const fileContent = isBackend? yaml.load(content.data)[locale] : JSON.parse(content.data);
-	return fileContent;
+		const fileContent = isBackend? yaml.load(content.data)[locale] : JSON.parse(content.data);
+		return fileContent;
+	} catch (e) {
+		return {};
+	}
 }
 
 async function main (): Promise<void> {
@@ -158,7 +162,7 @@ async function main (): Promise<void> {
 		base_branch: string;
 		target_branch: string;
 		langs: string;
-        is_backend: boolean;
+		is_backend: boolean;
 	} = {
 		token         : core.getInput('repo-token', { required: true }),
 		base_branch   : core.getInput('base-branch'),
