@@ -149,8 +149,7 @@ async function getFileContent(octokit: Octokit, branch: string, file: string, is
 			}
 		);
 
-		const fileContent = isBackend? yaml.load(content.data)[locale] : JSON.parse(content.data);
-		return fileContent;
+		return isBackend? yaml.load(content.data)[locale] : JSON.parse(content.data);
 	} catch (e) {
 		return {};
 	}

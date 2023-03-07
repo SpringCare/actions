@@ -30728,8 +30728,7 @@ function getFileContent(octokit, branch, file, isBackend, locale = 'en') {
                 path: `${localesDir}/${locale}/${file}`,
                 target_branch: branch
             });
-            const fileContent = isBackend ? yaml.load(content.data)[locale] : JSON.parse(content.data);
-            return fileContent;
+            return isBackend ? yaml.load(content.data)[locale] : JSON.parse(content.data);
         }
         catch (e) {
             return {};
