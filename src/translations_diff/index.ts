@@ -103,6 +103,7 @@ function validateKeySync(keyDifference: Array<string>, fileName: string, languag
 *  }
 * }
 */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function transformResponse(response: Record<string, any>, isBackend: boolean): void {
 	const fileRegex = isBackend? '.*/locales/.*.yml' : '.*/locales/.*.json';
 	const filesFromResponse = response.data.filter(elem => new RegExp(fileRegex).test(elem.filename));
