@@ -52,7 +52,7 @@ const getPrsForCommit = async (
 			`GET ${commitsUrl}/${prHeadCommitSha}/pulls`
 		);
 		const prsForCommit = prsForCommitResponse.data;
-		const formattedPrs = prsForCommit.map((pr: { number: any; title: any }) => {
+		const formattedPrs = prsForCommit.map((pr: { number: unknown; title: unknown }) => {
 			return { number: pr.number, title: pr.title };
 		});
 		console.log('PRs: ', formattedPrs);
