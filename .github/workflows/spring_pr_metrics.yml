@@ -2,7 +2,7 @@ name: Spring Pull Request Metrics
 
 on:
   pull_request:
-    types: [closed, opened]
+    types: [closed]
 
 jobs:
   PullRequestMetrics:
