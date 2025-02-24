@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: SpringCare/actions/dist/pull_request_metrics@bugfix/metrics-not-sending
+    - uses: SpringCare/actions/dist/pull_request_metrics@main
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         firebase-secret: ${{ secrets.FIREBASE_SECRET }}
