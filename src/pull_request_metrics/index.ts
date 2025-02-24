@@ -45,19 +45,25 @@ async function main(): Promise<void> {
 	console.log('PR number is', pullNumber);
 	console.log('Inputs', inputs);
 
-	axios.put(`${inputs.firebaseURL}/github/pull-request-closed/${repo}/${pullNumber}.json?auth=${inputs.firebaseSecret}`, {
-		author: {
-			id   : author.id,
-			name : author.login,
-		},
-		body,
-		state,
-		created_at,
-		merged_at,
-		closed_at,
-		approvers     : approvedReviews.length,
-		total_reviews : activeReviews.length,
-	});
+  try {
+    const res = await axios.put(`${inputs.firebaseURL}/github/pull-request-closed/${repo}/${pullNumber}.json?auth=${inputs.firebaseSecret}`, {
+		  author: {
+			  id   : author.id,
+			  name : author.login,
+		  },
+		  body,
+		  state,
+		  created_at,
+		  merged_at,
+		  closed_at,
+		  approvers     : approvedReviews.length,
+		  total_reviews : activeReviews.length,
+	  });
+    console.log('Response', res.data);
+  } catch (error) {
+    console.error('Error', error);
+    throw error;
+  }
 }
 
 // Call the main function.
