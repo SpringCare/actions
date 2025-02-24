@@ -23,6 +23,9 @@ async function main(): Promise<void> {
 	const pr = github.context.payload.pull_request;
 	const repo = github.context.payload.repository.full_name;
 
+	console.log('PR', pr);
+	console.log('Repo', repo);
+
 	if (!pr) {
 		core.setFailed('This action must be run with only "pull_request"');
 		return;
@@ -46,6 +49,7 @@ async function main(): Promise<void> {
 	console.log('Inputs', inputs);
 
   try {
+    console.log('Updating Firebase');
     const res = await axios.put(`${inputs.firebaseURL}/github/pull-request-closed/${repo}/${pullNumber}.json?auth=${inputs.firebaseSecret}`, {
 		  author: {
 			  id   : author.id,
