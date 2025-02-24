@@ -35,7 +35,7 @@ getBuildFiles('./src').forEach(async (file) => {
 	console.log(`Building ${inputPath} to ${outputPath}`);
 
 	try {
-		const { code } = await ncc(inputPath, { minify: true });
+		const { code } = await ncc(inputPath, { minify: false });
 
 		// Ensure the directory structure exists
 		const dir = path.dirname(outputPath);
