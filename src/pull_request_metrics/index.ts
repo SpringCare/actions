@@ -13,9 +13,9 @@ async function main(): Promise<void> {
 		firebaseSecret: string;
 		firebaseURL: string;
 	} = {
-		token		      : core.getInput('repo-token', { required: true }),
+		token  		      : core.getInput('repo-token', { required: true }),
 		firebaseSecret : core.getInput('firebase-secret'),
-		firebaseURL		: core.getInput('firebase-url'),
+		firebaseURL  		: core.getInput('firebase-url'),
 	};
 
 	console.log('payload', github.context.payload);
@@ -56,7 +56,7 @@ async function main(): Promise<void> {
 		console.log('Updating Firebase');
 		const res = await axios.put(`${inputs.firebaseURL}/github/pull-request-closed/${repo}/${pullNumber}.json?auth=${inputs.firebaseSecret}`, {
 			author: {
-				id	 : author.id,
+				id 	 : author.id,
 				name : author.login,
 			},
 			body,
@@ -64,7 +64,7 @@ async function main(): Promise<void> {
 			created_at,
 			merged_at,
 			closed_at,
-			approvers	   : approvedReviews.length,
+			approvers 	   : approvedReviews.length,
 			total_reviews : activeReviews.length,
 		});
 		console.log('Response', res.data);
