@@ -2,14 +2,14 @@ name: Spring Pull Request Metrics
 
 on:
   pull_request:
-    types: [closed]
+    types: [closed, opened]
 
 jobs:
   PullRequestMetrics:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: SpringCare/actions/dist/pull_request_metrics@master
+    - uses: SpringCare/actions/dist/pull_request_metrics@bugfix/metrics-not-sending
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         firebase-secret: ${{ secrets.FIREBASE_SECRET }}
