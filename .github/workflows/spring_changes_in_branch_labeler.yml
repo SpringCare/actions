@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: SpringCare/actions/dist/changes_in_branch_labeler@master
+    - uses: SpringCare/actions/dist/changes_in_branch_labeler@main
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         target-branch: staging

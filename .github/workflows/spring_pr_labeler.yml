@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: SpringCare/actions/dist/pull_request_labeler@master
+    - uses: SpringCare/actions/dist/pull_request_labeler@main
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         required: 2
