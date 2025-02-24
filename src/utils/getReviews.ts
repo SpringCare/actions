@@ -3,7 +3,7 @@ const github = require('@actions/github');
 export async function getReviews(token: string, pullNumber: string): Promise<{data: []}> {
 
   console.log('Getting reviews for PR', pullNumber);
-	const client = new github.GitHub(token);
+  const client = github.getOctokit(token);
 
   try {
     return await client.pulls.listReviews({

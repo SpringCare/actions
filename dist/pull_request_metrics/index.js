@@ -33724,7 +33724,7 @@ exports.getReviews = void 0;
 const github = __nccwpck_require__(3228);
 async function getReviews(token, pullNumber) {
     console.log('Getting reviews for PR', pullNumber);
-    const client = new github.GitHub(token);
+    const client = github.getOctokit(token);
     try {
         return await client.pulls.listReviews({
             owner: github.context.repo.owner,
