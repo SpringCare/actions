@@ -89,7 +89,7 @@ async function main(): Promise<void> {
 		prHeadCommitSha
 	);
 
-	const client = new github.GitHub(inputs.token);
+	const client = github.getOktokit(inputs.token);
 
 	await createLabel(octokit, inputs);
 
