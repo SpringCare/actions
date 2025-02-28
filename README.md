@@ -12,3 +12,7 @@ These are the actions that we use at Spring Health for automating different aspe
 
 # Updating
 To update, make sure that you run the build command before pushing.  The `dist` directory is included on purpose.  Github runs the contents of those files directly when running the actions.
+
+
+
+All trademarks, service marks, and trade names (collectively, the “Trademarks”) used or displayed in this repository are the property of Spring Care, Inc. d/b/a Spring Health (“Trademark Owner”). The license for open source software provided in this repository does not grant you any rights to use our Trademarks. You may not use, reproduce, or modify any Trademarks in any manner without obtaining prior written permission from the Trademark Owner. Unauthorized use of these Trademarks is strictly prohibited and may result in legal action.
