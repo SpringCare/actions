@@ -1,6 +1,3 @@
-# Abandoned Branch - Use "main" Instead
-This branch has been abandoned in favor of the "main" branch.  This branch only exists to prevent breaking existing actions consumers that are pointing to master.
-
 # Spring Health Actions
 These are the actions that we use at Spring Health for automating different aspects of our workflow. They are ever growing.
 
