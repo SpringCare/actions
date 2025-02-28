@@ -52,7 +52,7 @@ const getPrsForCommit = async (
 			`GET ${commitsUrl}/${prHeadCommitSha}/pulls`
 		);
 		const prsForCommit = prsForCommitResponse.data;
-		const formattedPrs = prsForCommit.map((pr: { number: any; title: any }) => {
+		const formattedPrs = prsForCommit.map((pr: { number: unknown; title: unknown }) => {
 			return { number: pr.number, title: pr.title };
 		});
 		console.log('PRs: ', formattedPrs);
@@ -89,7 +89,7 @@ async function main(): Promise<void> {
 		prHeadCommitSha
 	);
 
-	const client = new github.GitHub(inputs.token);
+	const client = github.getOktokit(inputs.token);
 
 	await createLabel(octokit, inputs);
 

@@ -1,80 +1,58 @@
 const fs = require('fs');
 const path = require('path');
 
-const ncc = require('@zeit/ncc');
+const ncc = require('@vercel/ncc');
 
-const IGNORE = new RegExp('^utils');
+const IGNORE = /^utils/;
 
-function getBuildFiles(path, prepend = '') {
-	return fs
-		.readdirSync(path)
-		.reduce((acc, val) => {
-			if (!IGNORE.test(val)) {
-				// If Directory, need to recursively go deeper.
-				if (fs.lstatSync(`${path}/${val}`).isDirectory()) {
-					const nestedPages = getBuildFiles(`${path}/${val}`, `${prepend}${val}/`);
-					acc.push(...nestedPages);
-				} else {
-					if (val.includes('.js') || val.includes('.ts')) {
-						acc.push(prepend.length ? `${prepend}${val}` : val);
-					}
-				}
+function getBuildFiles(dir, prepend = '') {
+	return fs.readdirSync(dir).reduce((acc, val) => {
+		const fullPath = path.join(dir, val);
+		if (!IGNORE.test(val)) {
+			if (fs.lstatSync(fullPath).isDirectory()) {
+				acc.push(...getBuildFiles(fullPath, `${prepend}${val}/`));
+			} else if (val.endsWith('.js') || val.endsWith('.ts')) {
+				acc.push(prepend.length ? `${prepend}${val}` : val);
 			}
-
-			return acc;
-		}, []);
+		}
+		return acc;
+	}, []);
 }
 
 function clearDirectory(directory) {
-	fs.readdir(directory, (err, files) => {
-		if (err) throw err;
-
-		for (const file of files) {
-			const currentPath = path.join(directory, file);
-
-			if (fs.lstatSync(currentPath).isDirectory()) {
-				clearDirectory(currentPath);
-			} else {
-				fs.unlink(currentPath, err => {
-					if (err) throw err;
-				});
-			}
-		}
-	});
+	if (fs.existsSync(directory)) {
+		fs.rmSync(directory, { recursive: true, force: true });
+	}
 }
 
 clearDirectory('./dist');
 
-getBuildFiles('./src').forEach((file) => {
-	// Swap .ts for .js
-	let jsFile;
+getBuildFiles('./src').forEach(async (file) => {
+	let jsFile = file.replace(/\.ts$/, '.js');
+	const inputPath = path.resolve(`./src/${file}`);
+	const outputPath = path.resolve(`./dist/${jsFile}`);
 
-	if (file.includes('.ts')) {
-		jsFile = file.substr(0, file.indexOf('.ts')) + '.js';
-	} else {
-		jsFile = file;
+	console.log(`Building ${inputPath} to ${outputPath}`);
+
+	try {
+		const { code } = await ncc(inputPath, { minify: false });
+
+		// Ensure the directory structure exists
+		const dir = path.dirname(outputPath);
+		fs.mkdirSync(dir, { recursive: true });
+
+		fs.writeFileSync(outputPath, code);
+		console.log(`Wrote ${jsFile}`);
+
+		// Copy action.yml if it exists
+		const actionYamlPath = path.join('./src', path.dirname(file), 'action.yml');
+		const destYamlPath = path.join('./dist', path.dirname(file), 'action.yml');
+		if (fs.existsSync(actionYamlPath)) {
+			fs.copyFileSync(actionYamlPath, destYamlPath);
+			console.log('Copied action.yml');
+		}
+	} catch (error) {
+		console.error(`Error building ${file}:`, error);
 	}
-
-	const output = './dist/' + jsFile;
-	console.log(`building ${file} to ${output}`);
-
-	ncc(`./src/${file}`).then(({ code }) => {
-		let dir = jsFile.split('/');
-		dir.pop(); // remove the file name, leaving just parent dirs
-		dir = dir.join('/');
-
-		fs.mkdir(`./dist/${dir}`, { recursive: true }, (err) => {
-			if (!err) {
-				fs.writeFile(output, code, function() {
-					console.log(`wrote ${jsFile}`);
-				});
-
-				fs.copyFileSync(`./src/${dir}/action.yml`, `./dist/${dir}/action.yml`);
-				console.log('copied action.yml');
-			} else {
-				console.error(err);
-				return;
-			}
-		});
-	});
 });
+
